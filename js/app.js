@@ -174,6 +174,28 @@ class ClaudeApp {
     this.btnCloseSettings.addEventListener('click', () => this.closeSettingsModal());
     this.btnSaveSettings.addEventListener('click', () => this.saveSettings());
 
+    // 1-Click Fast Setup TuongTacGPT
+    const btnQuickSetup = document.getElementById('btn-quick-setup-tuongtac');
+    if (btnQuickSetup) {
+      btnQuickSetup.addEventListener('click', () => {
+        const fastSettings = {
+          provider: 'tuongtacgpt',
+          apiType: 'openai',
+          apiBase: 'https://api.tuongtacgpt.click/v1',
+          apiKey: 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127',
+          model: 'gpt-5.6-luna',
+          temperature: 0.7,
+          maxTokens: 4096,
+          lenientMode: true,
+          customSystemPrompt: ''
+        };
+        Storage.saveSettings(fastSettings);
+        this.openSettingsModal();
+        this.updateModelPill();
+        alert('Đã thiết lập thành công TuongTacGPT GPT-5.6 Luna! Bạn có thể đóng cài đặt và chat ngay lập tức!');
+      });
+    }
+
     // Auto-detect provider when typing or pasting API Key
     if (this.settingApiKey) {
       this.settingApiKey.addEventListener('input', (e) => {
@@ -705,15 +727,16 @@ class ClaudeApp {
   // ==========================================
   openSettingsModal() {
     const s = Storage.getSettings();
-    this.settingProviderPresets.value = s.provider || 'openrouter';
-    this.handlePresetChange(s.provider || 'openrouter', false);
+    const curProvider = s.provider || 'tuongtacgpt';
+    this.settingProviderPresets.value = curProvider;
+    this.handlePresetChange(curProvider, false);
 
     this.settingApiType.value = s.apiType || 'openai';
-    this.settingApiBase.value = s.apiBase || 'https://openrouter.ai/api/v1';
-    this.settingApiKey.value = s.apiKey || '';
-    this.settingModel.value = s.model || 'anthropic/claude-sonnet-5';
+    this.settingApiBase.value = s.apiBase || 'https://api.tuongtacgpt.click/v1';
+    this.settingApiKey.value = s.apiKey || 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127';
+    this.settingModel.value = s.model || 'gpt-5.6-luna';
     if (this.settingModelSelect) {
-      this.settingModelSelect.value = s.model || '';
+      this.settingModelSelect.value = s.model || 'gpt-5.6-luna';
     }
     this.settingTemp.value = s.temperature || 0.7;
     this.settingTempVal.textContent = s.temperature || 0.7;

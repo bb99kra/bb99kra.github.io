@@ -233,17 +233,12 @@ export const Storage = {
       if (!data) return { ...DEFAULT_SETTINGS };
       const parsed = JSON.parse(data);
 
-      // Auto-migrate if user has tuongtacgpt or sk-codex key with wrong model:
-      if ((parsed.apiBase && parsed.apiBase.includes('tuongtacgpt.click')) || (parsed.apiKey && parsed.apiKey.startsWith('sk-codex-'))) {
-        if (!parsed.model || (!parsed.model.includes('gpt-5') && !parsed.model.includes('unrestrict'))) {
-          parsed.model = 'gpt-5.6-luna';
-          parsed.provider = 'tuongtacgpt';
-          parsed.apiType = 'openai';
-          parsed.apiBase = 'https://api.tuongtacgpt.click/v1';
-          localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
-        }
-      } else if (!parsed.model || parsed.model.includes('3.7') || parsed.model.includes('3.5')) {
-        parsed.model = 'anthropic/claude-sonnet-5';
+      // Auto-load working TuongTacGPT key if empty or if legacy cache
+      if (!parsed.apiKey || parsed.apiKey.trim() === '' || parsed.model?.includes('3.7') || parsed.model?.includes('3.5')) {
+        parsed.apiKey = DEFAULT_SETTINGS.apiKey;
+        parsed.apiBase = DEFAULT_SETTINGS.apiBase;
+        parsed.provider = DEFAULT_SETTINGS.provider;
+        parsed.model = DEFAULT_SETTINGS.model;
         localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
       }
       return { ...DEFAULT_SETTINGS, ...parsed };
