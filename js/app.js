@@ -412,6 +412,9 @@ class ClaudeApp {
       s.provider = providerKey;
       s.apiType = PROVIDER_PRESETS[providerKey].apiType;
       s.apiBase = PROVIDER_PRESETS[providerKey].apiBase;
+      if (PROVIDER_PRESETS[providerKey].defaultKey) {
+        s.apiKey = PROVIDER_PRESETS[providerKey].defaultKey;
+      }
     }
 
     Storage.saveSettings(s);

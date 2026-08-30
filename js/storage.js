@@ -20,6 +20,7 @@ export const PROVIDER_PRESETS = {
     name: 'Kiro-Go 9AWS (Claude Sonnet 5 & Opus 5)',
     apiType: 'openai',
     apiBase: 'https://api.9aws.net/v1',
+    defaultKey: 'sk-dea3df6c5ec71a59120fe17480c2660624b2672fb220c6614531b1843fc26a6e',
     description: 'Pool chuyên dụng cho Claude Sonnet 5, Opus 5, Sonnet 4.6 (api.9aws.net)',
     models: [
       { id: 'claude-sonnet-5', name: '🔥 Claude Sonnet 5 (2026 SOTA)' },
@@ -37,6 +38,7 @@ export const PROVIDER_PRESETS = {
     name: 'TuongTacGPT Codex Pool (GPT-5.6 Luna / Sol)',
     apiType: 'openai',
     apiBase: 'https://api.tuongtacgpt.click/v1',
+    defaultKey: 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127',
     description: 'Hệ thống proxy GPT-5.6 Luna & Sol Unrestricted (tuongtacgpt.click)',
     models: [
       { id: 'gpt-5.6-luna', name: '🚀 GPT-5.6 Luna (Flagship SOTA)' },
@@ -250,8 +252,14 @@ export const Storage = {
       if (!data) return { ...DEFAULT_SETTINGS };
       const parsed = JSON.parse(data);
 
-      // Auto-load working TuongTacGPT key if empty or if legacy cache
-      if (!parsed.apiKey || parsed.apiKey.trim() === '' || parsed.model?.includes('3.7') || parsed.model?.includes('3.5')) {
+      // Auto-synchronize key if user switched provider:
+      if (parsed.apiBase?.includes('9aws.net') && (!parsed.apiKey || parsed.apiKey.startsWith('sk-codex-'))) {
+        parsed.apiKey = 'sk-dea3df6c5ec71a59120fe17480c2660624b2672fb220c6614531b1843fc26a6e';
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
+      } else if (parsed.apiBase?.includes('tuongtacgpt.click') && (!parsed.apiKey || parsed.apiKey.startsWith('sk-dea'))) {
+        parsed.apiKey = 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127';
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
+      } else if (!parsed.apiKey || parsed.apiKey.trim() === '' || parsed.model?.includes('3.7') || parsed.model?.includes('3.5')) {
         parsed.apiKey = DEFAULT_SETTINGS.apiKey;
         parsed.apiBase = DEFAULT_SETTINGS.apiBase;
         parsed.provider = DEFAULT_SETTINGS.provider;

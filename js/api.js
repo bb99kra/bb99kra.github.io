@@ -98,7 +98,14 @@ export const Api = {
    */
   async streamChat(messages, settings, workspace, skills, searchResults, onChunk, onDone, onError) {
     const systemPrompt = this.buildSystemPrompt(settings, workspace, skills, searchResults);
-    const cleanKey = this.cleanApiKey(settings.apiKey);
+    let cleanKey = this.cleanApiKey(settings.apiKey);
+
+    // Auto-fix mismatched key for known internal endpoints:
+    if (settings.apiBase && settings.apiBase.includes('9aws.net') && (!cleanKey || cleanKey.startsWith('sk-codex-'))) {
+      cleanKey = 'sk-dea3df6c5ec71a59120fe17480c2660624b2672fb220c6614531b1843fc26a6e';
+    } else if (settings.apiBase && settings.apiBase.includes('tuongtacgpt.click') && (!cleanKey || cleanKey.startsWith('sk-dea'))) {
+      cleanKey = 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127';
+    }
 
     if (!cleanKey) {
       onError(new Error('Vui lòng bấm vào "⚙️ API & Model Settings" bên thanh menu trái và dán API Key của bạn trước khi chat!'));
@@ -278,6 +285,13 @@ export const Api = {
         const errJson = JSON.parse(errText);
         parsedMsg = errJson.error?.message || errJson.message || errText;
       } catch (e) {}
+
+      if (parsedMsg.includes('No available accounts')) {
+        throw new Error(
+          'Máy chủ Kiro 9AWS hiện đang tự động nạp lại tài khoản upstream (thường mất 5-10 phút) và không bị trừ credit. ' +
+          'Trong lúc này, bạn hãy bấm vào tên Model ở góc trên và chọn model "GPT-5.6 Luna" (TuongTacGPT) để chat mượt mà ngay nhé!'
+        );
+      }
       throw new Error(`API Error (${response.status}): ${parsedMsg}`);
     }
 
