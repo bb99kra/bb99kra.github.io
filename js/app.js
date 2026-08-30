@@ -85,12 +85,6 @@ class ClaudeApp {
     // 8. Update Model Pill
     this.updateModelPill();
     this.updateSkillsBadge();
-
-    // 9. Auto-prompt for API Key if empty
-    const settings = Storage.getSettings();
-    if (!settings.apiKey) {
-      setTimeout(() => this.openSettingsModal(), 600);
-    }
   }
 
   bindEvents() {
@@ -302,14 +296,14 @@ class ClaudeApp {
       this.attachmentInput.addEventListener('change', (e) => this.handleAttachmentUpload(e));
     }
 
-    // Suggestion Cards on Welcome Screen
+    // Suggestion Cards on Welcome Screen - Click to send immediately like ChatGPT!
     document.querySelectorAll('.suggestion-card').forEach(card => {
       card.addEventListener('click', () => {
         const prompt = card.getAttribute('data-prompt');
-        if (prompt) {
+        if (prompt && !this.isGenerating) {
           this.textarea.value = prompt;
           this.textarea.dispatchEvent(new Event('input'));
-          this.textarea.focus();
+          this.handleSendMessage();
         }
       });
     });
