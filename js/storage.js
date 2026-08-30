@@ -262,11 +262,11 @@ const DEFAULT_SKILLS = [
     builtin: true
   },
   {
-    id: 'skill-minecraft-builder',
-    name: 'Minecraft Plugin Auto-Decompile & Standalone Builder',
-    icon: '⛏️',
-    description: 'Tự động giải nén, dịch ngược, viết lại đầy đủ source code Java, cấu hình pom.xml / plugin.yml và đóng gói Standalone / Pure offline-ready.',
-    instructions: 'When the user attaches a .jar file or asks to "giải file jar", "build", "decompile", or "viết lại": You must act as an elite Minecraft & Java reverse engineer. 1) Analyze the decompiled classes and plugin.yml provided in the context. 2) Provide a complete architectural breakdown. 3) Output the full, reconstructed, clean Java source code for the main class, listeners, and commands inside an interactive Artifact tag so the user can inspect or download it: <antArtifact identifier="plugin-source" type="application/vnd.ant.code" title="Reconstructed Java Plugin Source">complete code</antArtifact>. 4) Provide the ready-to-build pom.xml and plugin.yml. Always provide 100% full implementations, never omit code with comments.',
+    id: 'skill-project-builder',
+    name: 'Autonomous Code & Project Rebuilder Studio',
+    icon: '⚡',
+    description: 'Tự động giải nén, dịch ngược, phân tích kiến trúc và viết lại đầy đủ 100% source code dự án, đóng gói Standalone / ZIP hoàn chỉnh.',
+    instructions: 'When the user attaches source files, archives (.zip/.jar/.tar), or asks to "giải", "build", "decompile", "viết lại", or "tái cấu trúc": You must act as an elite software architect and engineer. 1) Analyze the project structure and context. 2) Provide a clear architectural breakdown. 3) Output the complete, clean, working production-ready source code for all modules inside an interactive Artifact tag: <antArtifact identifier="project-source" type="application/vnd.ant.code" title="Reconstructed Project Source">complete code</antArtifact> so the user can inspect, copy, or click "📦 Download Project .ZIP" to download the whole project! Always provide 100% full implementations, never omit code with comments or placeholders.',
     enabled: true,
     builtin: true
   }

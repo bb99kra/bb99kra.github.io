@@ -673,7 +673,7 @@ class ClaudeApp {
       const fileName = file.name;
       const lowerName = fileName.toLowerCase();
 
-      // Check if file is a .jar or .zip archive (Minecraft plugin / zip)
+      // Check if file is a .jar or .zip archive
       if (lowerName.endsWith('.jar') || lowerName.endsWith('.zip')) {
         try {
           if (window.JSZip) {
@@ -762,7 +762,7 @@ class ClaudeApp {
               Storage.addFileToActiveWorkspace(`${fileName}/pom.xml`, pomXml);
             }
 
-            let jarSummary = `[Minecraft Plugin / Java Archive: ${fileName} - Dung lượng: ${(file.size / 1024).toFixed(1)} KB]\n`;
+            let jarSummary = `[Project Archive: ${fileName} - Dung lượng: ${(file.size / 1024).toFixed(1)} KB]\n`;
             if (pluginYml) {
               jarSummary += `\n--- plugin.yml ---\n${pluginYml.slice(0, 3000)}\n--- End of plugin.yml ---\n`;
               Storage.addFileToActiveWorkspace(`${fileName}/plugin.yml`, pluginYml);
