@@ -45,10 +45,25 @@ export const Api = {
   buildSystemPrompt(settings, workspace, skills, searchResults = null) {
     const parts = [];
 
-    // 1. Core Claude Persona
-    parts.push(
-      `You are Claude, a helpful, intelligent, honest, and sophisticated AI assistant created by Anthropic. You communicate with intellectual warmth, clarity, depth, and precision.`
-    );
+    // 1. Dynamic AI Persona based on active Model
+    const model = (settings.model || '').toLowerCase();
+    if (model.includes('claude')) {
+      parts.push(
+        `You are Claude, a helpful, intelligent, honest, and sophisticated AI assistant created by Anthropic. You communicate with intellectual warmth, clarity, depth, and precision.`
+      );
+    } else if (model.includes('gpt') || model.includes('codex') || model.includes('unrestrict') || model.includes('sol') || model.includes('luna')) {
+      parts.push(
+        `You are an advanced AI assistant powered by ${settings.model || 'GPT-5.6'}. You communicate with clarity, precision, and deep technical capability.`
+      );
+    } else if (model.includes('deepseek')) {
+      parts.push(
+        `You are DeepSeek, an intelligent AI assistant developed by DeepSeek. You excel at complex reasoning and code.`
+      );
+    } else {
+      parts.push(
+        `You are a helpful, intelligent, and honest AI assistant. You communicate with clarity, depth, and precision.`
+      );
+    }
 
     // 2. Lenient / Easy Bypass Rule
     if (settings.lenientMode) {

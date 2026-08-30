@@ -507,22 +507,88 @@ class ClaudeApp {
     }
   }
 
-  handleAttachmentUpload(e) {
+  async handleAttachmentUpload(e) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     for (const file of files) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        this.pendingAttachments.push({
-          name: file.name,
-          content: event.target.result
+      const fileName = file.name;
+      const lowerName = fileName.toLowerCase();
+
+      // Check if file is a .jar or .zip archive (Minecraft plugin / zip)
+      if (lowerName.endsWith('.jar') || lowerName.endsWith('.zip')) {
+        try {
+          if (window.JSZip) {
+            const zip = await JSZip.loadAsync(file);
+            const entryNames = Object.keys(zip.files);
+
+            // Extract plugin.yml if present (Spigot / Paper / Bungee)
+            let pluginYml = '';
+            const pluginFile = zip.file(/^(plugin|bungee|velocity-plugin)\.(yml|json)$/i)[0];
+            if (pluginFile) {
+              pluginYml = await pluginFile.async('string');
+            }
+
+            // Extract config.yml or messages.yml if present
+            let configYml = '';
+            const configFile = zip.file(/^(config|messages|settings)\.yml$/i)[0];
+            if (configFile) {
+              configYml = await configFile.async('string');
+            }
+
+            // Filter class files and resources
+            const classFiles = entryNames.filter(n => n.endsWith('.class'));
+            const resourceFiles = entryNames.filter(n => !n.endsWith('.class') && !n.endsWith('/'));
+
+            let jarSummary = `[Minecraft Plugin / Java Archive: ${fileName} - Dung lượng: ${(file.size / 1024).toFixed(1)} KB]\n`;
+            if (pluginYml) {
+              jarSummary += `\n--- plugin.yml ---\n${pluginYml.slice(0, 3000)}\n--- End of plugin.yml ---\n`;
+            }
+            if (configYml) {
+              jarSummary += `\n--- config.yml Preview ---\n${configYml.slice(0, 2000)}\n--- End of config.yml ---\n`;
+            }
+            jarSummary += `\n--- Danh sách Classes trong JAR (${classFiles.length} file .class) ---\n${classFiles.slice(0, 50).join('\n')}`;
+            if (classFiles.length > 50) {
+              jarSummary += `\n... và ${classFiles.length - 50} class khác.`;
+            }
+            if (resourceFiles.length > 0) {
+              jarSummary += `\n\n--- Resource Files ---\n${resourceFiles.slice(0, 30).join('\n')}`;
+            }
+
+            this.pendingAttachments.push({
+              name: fileName,
+              content: jarSummary
+            });
+          } else {
+            this.pendingAttachments.push({
+              name: fileName,
+              content: `[File .jar: ${fileName} - ${(file.size / 1024).toFixed(1)} KB]`
+            });
+          }
+        } catch (err) {
+          console.error('Error parsing jar:', err);
+          this.pendingAttachments.push({
+            name: fileName,
+            content: `[File .jar: ${fileName} - ${(file.size / 1024).toFixed(1)} KB (Parse error: ${err.message})]`
+          });
+        }
+      } else {
+        // Regular text file (.java, .yml, .json, .txt, .xml, .md, .log, etc.)
+        await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            this.pendingAttachments.push({
+              name: fileName,
+              content: event.target.result
+            });
+            resolve();
+          };
+          reader.readAsText(file);
         });
-        this.renderAttachmentPreviews();
-        this.btnSend.disabled = false;
-      };
-      reader.readAsText(file);
+      }
     }
+    this.renderAttachmentPreviews();
+    this.btnSend.disabled = false;
     e.target.value = '';
   }
 
