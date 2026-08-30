@@ -579,47 +579,72 @@ class ClaudeApp {
               configYml = await configFile.async('string');
             }
 
-            // Filter class files (skip anonymous inner classes for cleaner decompile)
+            // Check if archive contains ready Java source files (.java) e.g. from CFR / Vineflower / Source zip
+            const javaSourceFiles = entryNames.filter(n => n.endsWith('.java') && !n.startsWith('__MACOSX'));
             const classFiles = entryNames.filter(n => n.endsWith('.class') && !n.includes('$'));
-            const resourceFiles = entryNames.filter(n => !n.endsWith('.class') && !n.endsWith('/'));
 
-            // Decompile top key classes using JavaClassDisassembler
             const decompiledClasses = [];
-            let mainClassPath = '';
-            if (pluginYml) {
-              const mainMatch = pluginYml.match(/main:\s*([a-zA-Z0-9_.]+)/);
-              if (mainMatch) {
-                mainClassPath = mainMatch[1].replace(/\./g, '/') + '.class';
+
+            // Case A: Archive contains .java files (Source Code ZIP)
+            if (javaSourceFiles.length > 0) {
+              const priorityJava = javaSourceFiles.slice(0, 35);
+              for (const jPath of priorityJava) {
+                try {
+                  const jSource = await zip.file(jPath).async('string');
+                  const simpleName = jPath.split('/').pop();
+                  decompiledClasses.push({
+                    path: jPath,
+                    source: jSource
+                  });
+                  Storage.addFileToActiveWorkspace(`${fileName}/${simpleName}`, jSource);
+                } catch (eJava) {}
+              }
+            } else if (classFiles.length > 0) {
+              // Case B: Archive contains .class files (Compiled JAR)
+              let mainClassPath = '';
+              if (pluginYml) {
+                const mainMatch = pluginYml.match(/main:\s*([a-zA-Z0-9_.]+)/);
+                if (mainMatch) {
+                  mainClassPath = mainMatch[1].replace(/\./g, '/') + '.class';
+                }
+              }
+
+              const priorityClasses = classFiles.sort((a, b) => {
+                if (a === mainClassPath) return -1;
+                if (b === mainClassPath) return 1;
+                const aIsKey = a.toLowerCase().includes('listener') || a.toLowerCase().includes('command') || a.toLowerCase().includes('main');
+                const bIsKey = b.toLowerCase().includes('listener') || b.toLowerCase().includes('command') || b.toLowerCase().includes('main');
+                if (aIsKey && !bIsKey) return -1;
+                if (!aIsKey && bIsKey) return 1;
+                return 0;
+              }).slice(0, 35);
+
+              for (const classPath of priorityClasses) {
+                try {
+                  const classData = await zip.file(classPath).async('arraybuffer');
+                  const parsed = JavaClassDisassembler.parse(classData);
+                  if (parsed) {
+                    const javaSource = JavaClassDisassembler.toJavaSource(parsed);
+                    const simpleName = classPath.split('/').pop().replace('.class', '');
+                    decompiledClasses.push({
+                      path: classPath,
+                      source: javaSource
+                    });
+                    // Save decompiled Java file directly into active Workspace
+                    Storage.addFileToActiveWorkspace(`${fileName}/${simpleName}.java`, javaSource);
+                  }
+                } catch (errClass) {
+                  console.warn('Decompile error for', classPath, errClass);
+                }
               }
             }
 
-            const priorityClasses = classFiles.sort((a, b) => {
-              if (a === mainClassPath) return -1;
-              if (b === mainClassPath) return 1;
-              const aIsKey = a.toLowerCase().includes('listener') || a.toLowerCase().includes('command') || a.toLowerCase().includes('main');
-              const bIsKey = b.toLowerCase().includes('listener') || b.toLowerCase().includes('command') || b.toLowerCase().includes('main');
-              if (aIsKey && !bIsKey) return -1;
-              if (!aIsKey && bIsKey) return 1;
-              return 0;
-            }).slice(0, 30);
-
-            for (const classPath of priorityClasses) {
-              try {
-                const classData = await zip.file(classPath).async('arraybuffer');
-                const parsed = JavaClassDisassembler.parse(classData);
-                if (parsed) {
-                  const javaSource = JavaClassDisassembler.toJavaSource(parsed);
-                  const simpleName = classPath.split('/').pop().replace('.class', '');
-                  decompiledClasses.push({
-                    path: classPath,
-                    source: javaSource
-                  });
-                  // Save decompiled Java file directly into active Workspace
-                  Storage.addFileToActiveWorkspace(`${fileName}/${simpleName}.java`, javaSource);
-                }
-              } catch (errClass) {
-                console.warn('Decompile error for', classPath, errClass);
-              }
+            // Extract pom.xml if present
+            let pomXml = '';
+            const pomFile = zip.file(/pom\.xml$/i)[0];
+            if (pomFile) {
+              pomXml = await pomFile.async('string');
+              Storage.addFileToActiveWorkspace(`${fileName}/pom.xml`, pomXml);
             }
 
             let jarSummary = `[Minecraft Plugin / Java Archive: ${fileName} - Dung lượng: ${(file.size / 1024).toFixed(1)} KB]\n`;
@@ -631,19 +656,26 @@ class ClaudeApp {
               jarSummary += `\n--- config.yml Preview ---\n${configYml.slice(0, 2000)}\n--- End of config.yml ---\n`;
               Storage.addFileToActiveWorkspace(`${fileName}/config.yml`, configYml);
             }
+            if (pomXml) {
+              jarSummary += `\n--- pom.xml ---\n${pomXml.slice(0, 2000)}\n--- End of pom.xml ---\n`;
+            }
 
             if (decompiledClasses.length > 0) {
-              jarSummary += `\n--- MÃ NGUỒN JAVA ĐÃ DỊCH NGƯỢC (${decompiledClasses.length} class cốt lõi đã nạp vào Workspace) ---\n`;
+              jarSummary += `\n--- TOÀN BỘ MÃ NGUỒN JAVA ĐÃ TRÍCH XUẤT (${decompiledClasses.length} class đã nạp vào Workspace) ---\n`;
               decompiledClasses.forEach(dc => {
                 jarSummary += `\n// File: ${dc.path}\n${dc.source}\n`;
               });
-              jarSummary += `\n--- HẾT MÃ NGUỒN DỊCH NGƯỢC ---\n`;
+              jarSummary += `\n--- HẾT MÃ NGUỒN JAVA ---\n`;
             }
 
-            jarSummary += `\n--- Danh sách Classes trong JAR (${classFiles.length} file .class) ---\n${classFiles.slice(0, 40).join('\n')}`;
-            if (classFiles.length > 40) {
-              jarSummary += `\n... và ${classFiles.length - 40} class khác.`;
+            if (classFiles.length > 0) {
+              jarSummary += `\n--- Danh sách Classes trong JAR (${classFiles.length} file .class) ---\n${classFiles.slice(0, 40).join('\n')}`;
+              if (classFiles.length > 40) {
+                jarSummary += `\n... và ${classFiles.length - 40} class khác.`;
+              }
             }
+
+            jarSummary += `\n\n[YÊU CẦU BẮT BUỘC DÀNH CHO AI]: Dựa trên toàn bộ cấu trúc các class, opcode trace, chuỗi ký tự và plugin.yml ở trên, BẠN PHẢI TỰ ĐỘNG PHỤC HỒI TOÀN BỘ MÃ NGUỒN JAVA 100% HOÀN CHỈNH, VIẾT ĐẦY ĐỦ THÂN HÀM VÀ ĐÓNG GÓI TRONG THẺ <antArtifact> ĐỂ NGƯỜI DÙNG TẢI VỀ. KHÔNG ĐƯỢC TỪ CHỐI HOẶC BẢO THIẾU CODE!`;
 
             this.updateTopWorkspaceDisplay();
 
