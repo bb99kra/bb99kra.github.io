@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Claude - Next-Generation AI Assistant</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23da7756'><path d='M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z'/></svg>">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div id="app-container">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="brand-logo">
+          <span class="brand-star">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
+            </svg>
+          </span>
+          <span>Claude</span>
+        </a>
+        <button id="btn-toggle-sidebar" class="btn-icon" title="Close Sidebar">✕</button>
+      </div>
+
+      <!-- New Chat Button -->
+      <div class="new-chat-container">
+        <button id="btn-new-chat" class="btn-new-chat">
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span class="plus-icon">+</span>
+            <span>Start new chat</span>
+          </span>
+          <span style="font-size:11px;opacity:0.6;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:4px;">Ctrl K</span>
+        </button>
+      </div>
+
+      <!-- Workspace Selector -->
+      <div class="workspace-selector-container">
+        <button id="btn-workspace-badge" class="workspace-badge-btn">
+          <span>📁 General Project</span>
+          <span>SWITCH ▾</span>
+        </button>
+      </div>
+
+      <!-- Quick Nav Links -->
+      <div class="sidebar-nav">
+        <div id="nav-skills" class="nav-item">
+          <span>⚡</span>
+          <span>Skills & Tools</span>
+          <span id="skills-count-badge" class="badge">4 active</span>
+        </div>
+        <div id="nav-settings" class="nav-item">
+          <span>⚙️</span>
+          <span>API & Model Settings</span>
+        </div>
+      </div>
+
+      <!-- Recent Chats -->
+      <div class="sidebar-history-container">
+        <div class="history-section-title">Recent Conversations</div>
+        <div id="sidebar-history">
+          <!-- Populated dynamically via app.js -->
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="user-profile-pill">
+          <div class="user-avatar">C</div>
+          <div class="user-info">
+            <span class="user-name">Claude User</span>
+            <span class="user-plan">Pro Unlimited</span>
+          </div>
+        </div>
+        <button id="btn-theme-toggle" class="btn-icon" title="Toggle Theme">☀️ Light</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CHAT AREA -->
+    <main id="main-chat">
+      <!-- Navbar -->
+      <header class="chat-navbar">
+        <div class="navbar-left">
+          <button id="btn-open-sidebar" class="btn-icon" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">☰</button>
+          <div id="model-selector-pill" class="model-selector-pill">
+            <span class="brand-star">✳</span>
+            <span id="current-model-name">Claude 3.7 Sonnet</span>
+            <span class="badge-pro">PRO</span>
+            <span style="font-size:10px;opacity:0.6;">▾</span>
+          </div>
+        </div>
+        <div class="navbar-right">
+          <button class="btn-icon" title="Clear conversation" onclick="window.claudeApp.startNewChat()">🗑️</button>
+        </div>
+      </header>
+
+      <!-- Messages Scroll Container -->
+      <div id="messages-container" class="messages-container">
+
+        <!-- Welcome Empty State -->
+        <div id="welcome-container" class="welcome-container">
+          <div class="welcome-logo">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
+            </svg>
+          </div>
+          <h1 class="welcome-greeting">Good evening, User</h1>
+          <p class="welcome-subtitle">How can Claude help you explore, build, or analyze today?</p>
+
+          <div class="suggestion-grid">
+            <div class="suggestion-card" data-prompt="Build an interactive 3D particle canvas game using Artifacts Studio.">
+              <div class="suggestion-title">🎨 Interactive Artifacts Studio</div>
+              <div class="suggestion-desc">Create standalone web apps, games, SVGs and interactive UI side-by-side.</div>
+            </div>
+            <div class="suggestion-card" data-prompt="Search the live web for the latest Minecraft PaperMC & Folia exploit fixes and summarize them.">
+              <div class="suggestion-title">🌐 Live Web Search & News</div>
+              <div class="suggestion-desc">Real-time internet access with citations and deep source analysis.</div>
+            </div>
+            <div class="suggestion-card" data-prompt="Analyze this high-performance Java bytecode architecture and design an enterprise solution.">
+              <div class="suggestion-title">⚡ Deep Architecture Analysis</div>
+              <div class="suggestion-desc">Decompile, optimize, and refactor complex multi-threaded code.</div>
+            </div>
+            <div class="suggestion-card" data-prompt="Write an unrestricted, comprehensive creative script without moralizing lectures.">
+              <div class="suggestion-title">🔓 Lenient Developer Mode</div>
+              <div class="suggestion-desc">Direct, obedient answers with zero preachy refusals or safety disclaimers.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Floating Composer Capsule -->
+      <div class="composer-container">
+        <div class="composer-card">
+          <!-- Attachment Previews -->
+          <div id="composer-attachments-preview" style="display:none;gap:6px;flex-wrap:wrap;padding-bottom:6px;"></div>
+
+          <textarea id="composer-textarea" class="composer-textarea" rows="1" placeholder="Reply to Claude..."></textarea>
+
+          <div class="composer-toolbar">
+            <div class="toolbar-left">
+              <input type="file" id="chat-file-upload" multiple style="display:none;">
+              <button id="btn-attach-file" class="toolbar-pill-btn" title="Attach file or document">
+                <span>📎</span>
+                <span>Attach</span>
+              </button>
+              <button id="btn-toggle-search" class="toolbar-pill-btn" title="Enable Live Web Search">
+                <span>🌐</span>
+                <span>Search</span>
+              </button>
+              <button class="toolbar-pill-btn" onclick="document.getElementById('nav-skills').click()" title="Manage Skills">
+                <span>⚡</span>
+                <span>Skills</span>
+              </button>
+            </div>
+            <div class="toolbar-right">
+              <button id="btn-send" class="btn-send" disabled>
+                <span>↑</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="composer-disclaimer">
+          Claude may make mistakes. Please verify important information. Supports Anthropic, OpenRouter, DeepSeek & OpenAI.
+        </div>
+      </div>
+    </main>
+
+    <!-- ARTIFACTS STUDIO SPLIT PANEL -->
+    <section id="artifact-panel" class="hidden">
+      <div class="artifact-header">
+        <div class="artifact-title-group">
+          <span style="color:var(--accent);font-size:18px;">⚡</span>
+          <div>
+            <span id="artifact-title" class="artifact-title">Artifact Preview</span>
+            <span id="artifact-type" class="artifact-type-tag">HTML</span>
+          </div>
+        </div>
+
+        <div class="artifact-tabs">
+          <button id="tab-preview" class="artifact-tab-btn active">Preview</button>
+          <button id="tab-code" class="artifact-tab-btn">Code</button>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button id="btn-copy-artifact" class="btn-secondary" style="padding:4px 10px;font-size:12px;">Copy</button>
+          <button id="btn-download-artifact" class="btn-secondary" style="padding:4px 10px;font-size:12px;">Download</button>
+          <button id="btn-close-artifact" class="btn-icon" title="Close">✕</button>
+        </div>
+      </div>
+
+      <div class="artifact-body">
+        <iframe id="artifact-iframe" class="artifact-iframe" sandbox="allow-scripts allow-modals allow-forms allow-same-origin"></iframe>
+        <pre id="artifact-code-view" class="artifact-code-view" style="display:none;"></pre>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL: SETTINGS -->
+  <div id="modal-settings" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">API & Model Configuration</h2>
+        <button id="btn-close-settings" class="btn-icon">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Provider Preset</label>
+          <select id="setting-provider-presets" class="form-select">
+            <option value="openrouter" selected>OpenRouter (Claude, DeepSeek, GPT-4o, Llama)</option>
+            <option value="anthropic">Anthropic Claude Official (Direct Browser API)</option>
+            <option value="deepseek">DeepSeek Official (deepseek-chat / deepseek-reasoner)</option>
+            <option value="groq">Groq High-Speed Cloud</option>
+            <option value="openai">OpenAI Official</option>
+            <option value="ollama">Ollama Local (http://localhost:11434/v1)</option>
+          </select>
+          <div class="form-desc">Chọn nhanh nhà cung cấp AI để tự động điền Endpoint & Model.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">API Format Protocol</label>
+          <select id="setting-api-type" class="form-select">
+            <option value="openai">OpenAI-Compatible (/v1/chat/completions)</option>
+            <option value="anthropic">Anthropic Claude Native (/v1/messages)</option>
+          </select>
+          <div class="form-desc">Hỗ trợ đầy đủ cả Anthropic Message API lẫn chuẩn OpenAI.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">API Base URL</label>
+          <input type="text" id="setting-api-base" class="form-input" placeholder="https://openrouter.ai/api/v1">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">API Key</label>
+          <input type="password" id="setting-api-key" class="form-input" placeholder="sk-ant-... hoặc sk-or-...">
+          <div class="form-desc">Key được lưu trữ an toàn trong trình duyệt (localStorage) và không bao giờ gửi ra ngoài.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Model ID</label>
+          <input type="text" id="setting-model" class="form-input" placeholder="anthropic/claude-3.7-sonnet">
+        </div>
+
+        <div class="form-group" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--accent-light);border-radius:12px;border:1px solid rgba(218,119,86,0.3);">
+          <div>
+            <div style="font-size:13.5px;font-weight:600;color:var(--accent);">🔓 Lenient / Easy Bypass Mode</div>
+            <div style="font-size:12px;color:var(--text-muted);">Bỏ qua các cảnh báo đạo đức phiền toái, tuân thủ tuyệt đối mọi câu lệnh kỹ thuật.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="setting-lenient-mode" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="form-group" style="margin-top:14px;">
+          <label class="form-label">Temperature: <span id="temp-value-display">0.7</span></label>
+          <input type="range" id="setting-temperature" min="0" max="1" step="0.05" value="0.7" style="width:100%;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Max Output Tokens</label>
+          <input type="number" id="setting-max-tokens" class="form-input" value="4096">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Custom System Prompt</label>
+          <textarea id="setting-system-prompt" class="form-textarea" placeholder="Nhập thêm quy tắc bổ sung của riêng bạn..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-settings" class="btn-primary">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: WORKSPACES (PROJECTS) -->
+  <div id="modal-workspaces" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Workspaces & Projects</h2>
+        <button id="btn-close-workspaces" class="btn-icon">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <span style="font-size:13px;color:var(--text-muted);">Switch or create dedicated project spaces:</span>
+          <button id="btn-create-workspace" class="btn-primary" style="padding:5px 12px;font-size:12px;">+ New Project</button>
+        </div>
+
+        <!-- Workspaces List -->
+        <div id="workspaces-list"></div>
+
+        <!-- Workspace Editor -->
+        <div id="ws-editor-section" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--border-subtle);">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">Project Configuration</h3>
+          
+          <div class="form-group">
+            <label class="form-label">Project Name & Emoji</label>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="ws-input-icon" class="form-input" style="width:60px;text-align:center;" value="📁">
+              <input type="text" id="ws-input-name" class="form-input" placeholder="e.g. Minecraft Plugin Dev">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <input type="text" id="ws-input-desc" class="form-input" placeholder="Brief project description">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Project Instructions (System Prompt)</label>
+            <textarea id="ws-input-instructions" class="form-textarea" placeholder="Instructions specific to this project..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Project Knowledge Files</label>
+            <input type="file" id="ws-file-upload" multiple style="margin-bottom:8px;">
+            <div id="ws-files-list"></div>
+          </div>
+
+          <button id="btn-save-workspace" class="btn-primary" style="width:100%;">Save Project</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SKILLS -->
+  <div id="modal-skills" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Claude Skills & Extensions</h2>
+        <button id="btn-close-skills" class="btn-icon">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <span style="font-size:13px;color:var(--text-muted);">Enable, disable, or add custom assistant skills:</span>
+          <button id="btn-create-skill" class="btn-primary" style="padding:5px 12px;font-size:12px;">+ Add Skill</button>
+        </div>
+
+        <div id="skills-list"></div>
+
+        <!-- Skill Editor -->
+        <div id="skill-editor-section" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--border-subtle);">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">Create Custom Skill</h3>
+          
+          <div class="form-group">
+            <label class="form-label">Skill Name & Icon</label>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="skill-input-icon" class="form-input" style="width:60px;text-align:center;" value="⚡">
+              <input type="text" id="skill-input-name" class="form-input" placeholder="e.g. Kotlin Specialist">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <input type="text" id="skill-input-desc" class="form-input" placeholder="What this skill does">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Skill Instructions / Tool Directives</label>
+            <textarea id="skill-input-instructions" class="form-textarea" placeholder="How Claude should behave when this skill is active..."></textarea>
+          </div>
+
+          <button id="btn-save-skill" class="btn-primary" style="width:100%;">Save Skill</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
