@@ -231,6 +231,12 @@ export const Api = {
       endpoint = endpoint.replace(/\/+$/, '') + '/chat/completions';
     }
 
+    // Critical: If calling tuongtacgpt or sk-codex, append ?key=<apiKey> so browser OPTIONS preflight succeeds!
+    if (endpoint.includes('tuongtacgpt.click') || (settings.apiKey && settings.apiKey.startsWith('sk-codex-'))) {
+      const sep = endpoint.includes('?') ? '&' : '?';
+      endpoint = `${endpoint}${sep}key=${encodeURIComponent(settings.apiKey)}`;
+    }
+
     // Insert system prompt as first message
     const formattedMessages = [
       { role: 'system', content: systemPrompt },

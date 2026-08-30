@@ -16,6 +16,19 @@ const STORAGE_KEYS = {
 
 // Official & Popular Providers with 2026 Live Flagship Generation
 export const PROVIDER_PRESETS = {
+  tuongtacgpt: {
+    name: 'TuongTacGPT Codex Pool (GPT-5.6 Luna / Sol)',
+    apiType: 'openai',
+    apiBase: 'https://api.tuongtacgpt.click/v1',
+    description: 'Hệ thống proxy GPT-5.6 Luna & Sol Unrestricted (tuongtacgpt.click)',
+    models: [
+      { id: 'gpt-5.6-luna', name: '🚀 GPT-5.6 Luna (Flagship SOTA)' },
+      { id: 'gpt-5.6-sol-unrestrict', name: '🔓 GPT-5.6 Sol Unrestricted (Bypass)' },
+      { id: 'gpt-5.5-unrestrict', name: '🔓 GPT-5.5 Unrestricted' },
+      { id: 'unrestrict-5.6-sol', name: '⚡ Unrestricted 5.6 Sol' },
+      { id: 'gpt-5.5', name: 'GPT-5.5 Standard' }
+    ]
+  },
   openrouter: {
     name: 'OpenRouter (Flagship Gateway)',
     apiType: 'openai',
@@ -146,13 +159,13 @@ export const PROVIDER_PRESETS = {
   }
 };
 
-// Default Settings (Set default to Claude Sonnet 5!)
+// Default Settings (Configured with TuongTacGPT GPT-5.6 Luna)
 const DEFAULT_SETTINGS = {
-  provider: 'openrouter',
+  provider: 'tuongtacgpt',
   apiType: 'openai',
-  apiBase: 'https://openrouter.ai/api/v1',
-  apiKey: '',
-  model: 'anthropic/claude-sonnet-5',
+  apiBase: 'https://api.tuongtacgpt.click/v1',
+  apiKey: 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127',
+  model: 'gpt-5.6-luna',
   temperature: 0.7,
   maxTokens: 4096,
   stream: true,
@@ -219,8 +232,17 @@ export const Storage = {
       const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       if (!data) return { ...DEFAULT_SETTINGS };
       const parsed = JSON.parse(data);
-      // Auto-migrate any cached legacy 3.x model to Claude Sonnet 5
-      if (!parsed.model || parsed.model.includes('3.7') || parsed.model.includes('3.5')) {
+
+      // Auto-migrate if user has tuongtacgpt or sk-codex key with wrong model:
+      if ((parsed.apiBase && parsed.apiBase.includes('tuongtacgpt.click')) || (parsed.apiKey && parsed.apiKey.startsWith('sk-codex-'))) {
+        if (!parsed.model || (!parsed.model.includes('gpt-5') && !parsed.model.includes('unrestrict'))) {
+          parsed.model = 'gpt-5.6-luna';
+          parsed.provider = 'tuongtacgpt';
+          parsed.apiType = 'openai';
+          parsed.apiBase = 'https://api.tuongtacgpt.click/v1';
+          localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
+        }
+      } else if (!parsed.model || parsed.model.includes('3.7') || parsed.model.includes('3.5')) {
         parsed.model = 'anthropic/claude-sonnet-5';
         localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
       }

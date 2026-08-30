@@ -177,8 +177,11 @@ class ClaudeApp {
     // Auto-detect provider when typing or pasting API Key
     if (this.settingApiKey) {
       this.settingApiKey.addEventListener('input', (e) => {
-        const val = e.target.value.trim().replace(/^Bearer\s+/i, '').replace(/["']/g, '');
-        if (val.startsWith('sk-ant-') && this.settingProviderPresets.value !== 'anthropic') {
+        const val = e.target.value.trim().replace(/^Bearer\s+/i, '');
+        if (val.startsWith('sk-codex-') && this.settingProviderPresets.value !== 'tuongtacgpt') {
+          this.settingProviderPresets.value = 'tuongtacgpt';
+          this.handlePresetChange('tuongtacgpt', true);
+        } else if (val.startsWith('sk-ant-') && this.settingProviderPresets.value !== 'anthropic') {
           this.settingProviderPresets.value = 'anthropic';
           this.handlePresetChange('anthropic', true);
         } else if (val.startsWith('sk-or-') && this.settingProviderPresets.value !== 'openrouter') {
@@ -276,6 +279,7 @@ class ClaudeApp {
 
   renderPickerTabs() {
     const providers = [
+      { key: 'tuongtacgpt', name: '⚡ TuongTacGPT (SOTA)' },
       { key: 'openrouter', name: 'OpenRouter (Tất cả SOTA)' },
       { key: 'anthropic', name: 'Anthropic Claude' },
       { key: 'deepseek', name: 'DeepSeek' },
