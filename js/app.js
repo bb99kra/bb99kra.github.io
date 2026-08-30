@@ -502,11 +502,15 @@ class ClaudeApp {
   // ==========================================
   openModelPickerModal(providerKey) {
     const s = Storage.getSettings();
-    this.activePickerProvider = providerKey || s.provider || 'openrouter';
+    this.activePickerProvider = providerKey || s.provider || 'kiro';
     this.renderPickerTabs();
     this.renderPickerModels();
-    this.pickerCustomInput.value = s.model || 'anthropic/claude-sonnet-5';
-    this.modalModelPicker.classList.remove('hidden');
+    if (this.pickerCustomInput) {
+      this.pickerCustomInput.value = s.model || 'claude-sonnet-5';
+    }
+    if (this.modalModelPicker) {
+      this.modalModelPicker.classList.remove('hidden');
+    }
   }
 
   closeModelPickerModal() {
