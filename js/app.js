@@ -953,6 +953,11 @@ BẮT BUỘC BỌC TOÀN BỘ PROJECT HOÀN CHỈNH TRONG THẺ:
 để mở Studio và người dùng bấm nút '📦 Download Project .ZIP' tải về máy!`;
     }
 
+    // ── AUTO-MEMORY ENGINE ─────────────────────────────────────────────────────
+    // Tự động nhận diện và lưu thông tin quan trọng từ tin nhắn người dùng,
+    // giống hệt cách ChatGPT Memory và hệ thống context-aware AI hoạt động.
+    this.autoExtractMemory(text);
+
     this.hideWelcome();
 
     if (!this.currentChat) {
@@ -1506,6 +1511,90 @@ BẮT BUỘC BỌC TOÀN BỘ PROJECT HOÀN CHỈNH TRONG THẺ:
         </div>
       `;
     }).join('');
+  }
+
+  // ==========================================
+  // AUTO-MEMORY EXTRACTION ENGINE
+  // Tự động trích xuất & lưu trí nhớ từ hội thoại
+  // (Giống ChatGPT Memory & Antigravity Context System)
+  // ==========================================
+  autoExtractMemory(text) {
+    if (!text || text.trim().length < 5) return;
+
+    const t = text.trim();
+    const lower = t.toLowerCase();
+
+    // Danh sách pattern nhận diện thông tin cần ghi nhớ
+    const patterns = [
+      // Lệnh nhớ tường minh
+      { re: /nhớ (?:giúp mình|rằng|là|:)?\s*(.+)/i,       prefix: '📝 ' },
+      { re: /remember (?:that\s*)?(.+)/i,                   prefix: '📝 ' },
+      { re: /hãy nhớ:?\s*(.+)/i,                            prefix: '📝 ' },
+      { re: /lưu (?:lại\s*)?(?:là\s*)?:?\s*(.+)/i,         prefix: '📝 ' },
+      { re: /ghi nhớ:?\s*(.+)/i,                            prefix: '📝 ' },
+
+      // Thông tin cá nhân
+      { re: /(?:tên|name)\s+(?:mình|tao|tôi|of mine)\s+là\s+(.+)/i,   prefix: '👤 Tên người dùng: ' },
+      { re: /(?:mình|tao|tôi|i)\s+tên\s+(?:là\s*)?(.+)/i,             prefix: '👤 Tên người dùng: ' },
+      { re: /(?:call me|gọi mình là)\s+(.+)/i,                          prefix: '👤 Gọi người dùng là: ' },
+
+      // Nghề nghiệp & kỹ năng
+      { re: /(?:mình|tao|tôi)\s+(?:là|làm)\s+(?:lập trình viên|developer|dev|programmer|kỹ sư)\s*(.+)?/i, prefix: '💼 Nghề nghiệp: ' },
+      { re: /(?:mình|tao|tôi)\s+(?:biết|dùng|code|viết)\s+(.+)/i,     prefix: '🛠️ Kỹ năng: ' },
+      { re: /(?:mình|tao)\s+(?:chuyên|giỏi)\s+(.+)/i,                  prefix: '⭐ Chuyên môn: ' },
+
+      // Dự án đang làm
+      { re: /(?:mình|tao)\s+đang\s+(?:làm|build|tạo|code|phát triển)\s+(.+)/i,  prefix: '🔨 Đang làm: ' },
+      { re: /dự án\s+(?:của mình|hiện tại)\s+(?:là\s*)?(.+)/i,                   prefix: '📁 Dự án: ' },
+      { re: /project\s+(?:of mine|của mình)\s+(?:is\s*|là\s*)?(.+)/i,            prefix: '📁 Dự án: ' },
+
+      // Sở thích & phong cách
+      { re: /(?:mình|tao|tôi)\s+thích\s+(.+)/i,             prefix: '❤️ Sở thích: ' },
+      { re: /(?:mình|tao|tôi)\s+không\s+thích\s+(.+)/i,     prefix: '🚫 Không thích: ' },
+      { re: /(?:mình|tao|tôi)\s+hay\s+dùng\s+(.+)/i,        prefix: '🔄 Hay dùng: ' },
+      { re: /(?:server|máy chủ)\s+(?:của mình|mình dùng)\s+(?:là\s*)?(.+)/i, prefix: '🖥️ Server: ' },
+    ];
+
+    for (const { re, prefix } of patterns) {
+      const match = t.match(re);
+      if (match && match[1] && match[1].trim().length > 2) {
+        const fact = prefix + match[1].trim().replace(/[.!?]+$/, '');
+        // Tránh lưu trùng
+        const existing = Storage.getMemories();
+        const isDuplicate = existing.some(m => m.text.toLowerCase().includes(match[1].toLowerCase().slice(0, 15)));
+        if (!isDuplicate) {
+          Storage.addMemory(fact);
+          this.showMemoryToast(fact);
+        }
+        return; // Chỉ lưu 1 memory mỗi tin nhắn để tránh spam
+      }
+    }
+  }
+
+  showMemoryToast(text) {
+    // Xoá toast cũ nếu có
+    const old = document.getElementById('memory-toast');
+    if (old) old.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'memory-toast';
+    toast.style.cssText = `
+      position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+      background:var(--bg-card); border:1px solid var(--accent);
+      color:var(--text-primary); padding:9px 16px; border-radius:20px;
+      font-size:12.5px; display:flex; align-items:center; gap:8px;
+      box-shadow:var(--shadow-md); z-index:9999;
+      animation:fadeIn 0.25s ease;
+      max-width:320px; text-align:center; line-height:1.4;
+    `;
+    toast.innerHTML = `<span style="font-size:16px;">🧠</span> <span><strong>Đã ghi nhớ:</strong> ${this.escapeHtml(text.slice(0, 60))}${text.length > 60 ? '...' : ''}</span>`;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.4s ease';
+      setTimeout(() => toast.remove(), 400);
+    }, 3000);
   }
 }
 
