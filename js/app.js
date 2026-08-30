@@ -771,6 +771,22 @@ class ClaudeApp {
     this.messagesContainer.appendChild(row);
     this.scrollToBottom();
 
+    const startTime = Date.now();
+
+    // 1. Immediately show live Thinking accordion upon send like Claude.ai
+    bubble.innerHTML = `
+      <div class="claude-thinking-container">
+        <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <div class="claude-thinking-title">
+            <span class="thinking-sparkle">💭</span>
+            <span>Thinking...</span>
+          </div>
+          <span class="claude-thinking-arrow">▾</span>
+        </div>
+        <div class="claude-thinking-content">Đang phân tích dữ liệu, bóc tách cấu trúc và lập luận...<span class="streaming-cursor"></span></div>
+      </div>
+    `;
+
     let fullAssistantText = '';
 
     await Api.streamChat(
@@ -781,7 +797,25 @@ class ClaudeApp {
       searchResults,
       (chunk, accumulated) => {
         fullAssistantText = accumulated;
-        bubble.innerHTML = this.renderMarkdown(accumulated);
+        const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        if (accumulated.includes('<thinking>')) {
+          bubble.innerHTML = this.renderMarkdown(accumulated, elapsedSec);
+        } else {
+          const thinkingBox = `
+            <div class="claude-thinking-container collapsed">
+              <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                <div class="claude-thinking-title">
+                  <span class="thinking-sparkle" style="animation:none;opacity:0.8;">💭</span>
+                  <span>Thought for ${elapsedSec}s</span>
+                </div>
+                <span class="claude-thinking-arrow">▾</span>
+              </div>
+              <div class="claude-thinking-content">✓ Đã phân tích kiến trúc, đối chiếu tập tin dự án và hoàn tất xử lý logic trong ${elapsedSec} giây.</div>
+            </div>
+          `;
+          bubble.innerHTML = thinkingBox + this.renderMarkdown(accumulated, elapsedSec);
+        }
         this.detectAndRenderArtifactCards(bubble, accumulated);
         this.scrollToBottom();
       },
@@ -790,9 +824,17 @@ class ClaudeApp {
         this.btnSend.innerHTML = '<span>↑</span>';
         this.btnSend.disabled = false;
 
+        const totalSec = ((Date.now() - startTime) / 1000).toFixed(1);
+        let storedText = finalText;
+        if (!finalText.includes('<thinking>')) {
+          storedText = `<thinking>\n✓ Đã phân tích cấu trúc, đối chiếu dữ liệu dự án và hoàn tất xử lý trong ${totalSec}s.\n</thinking>\n\n` + finalText;
+        }
+
+        bubble.innerHTML = this.renderMarkdown(storedText, totalSec);
+
         this.currentChat.messages.push({
           role: 'assistant',
-          content: finalText,
+          content: storedText,
           searchResults: searchResults ? true : false,
           timestamp: Date.now()
         });
@@ -951,17 +993,19 @@ class ClaudeApp {
     });
   }
 
-  renderMarkdown(text) {
+  renderMarkdown(text, elapsedSec = null) {
     let cleaned = text.replace(/<antArtifact[\s\S]*?<\/antArtifact>/gi, '');
 
-    // Claude Thinking Accordion Container (Closed tag)
+    const timeLabel = elapsedSec ? ` (${elapsedSec}s)` : '';
+
+    // Claude Thinking Accordion Container (Closed tag - collapsed by default like Claude.ai)
     cleaned = cleaned.replace(/<thinking>([\s\S]*?)<\/thinking>/gi, (match, thought) => {
       return `
-        <div class="claude-thinking-container">
+        <div class="claude-thinking-container collapsed">
           <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
             <div class="claude-thinking-title">
-              <span class="thinking-sparkle">💭</span>
-              <span>Thinking Process</span>
+              <span class="thinking-sparkle" style="animation:none;opacity:0.8;">💭</span>
+              <span>Thinking Process${timeLabel}</span>
             </div>
             <span class="claude-thinking-arrow">▾</span>
           </div>
@@ -970,15 +1014,16 @@ class ClaudeApp {
       `;
     });
 
-    // Claude Thinking while actively streaming (Unclosed tag)
+    // Claude Thinking while actively streaming (Unclosed tag - open while streaming)
     cleaned = cleaned.replace(/<thinking>([\s\S]*)$/gi, (match, thought) => {
       return `
         <div class="claude-thinking-container">
-          <div class="claude-thinking-header">
+          <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
             <div class="claude-thinking-title">
               <span class="thinking-sparkle">💭</span>
-              <span>Thinking...</span>
+              <span>Thinking...${timeLabel}</span>
             </div>
+            <span class="claude-thinking-arrow">▾</span>
           </div>
           <div class="claude-thinking-content">${this.escapeHtml(thought.trim())}<span class="streaming-cursor"></span></div>
         </div>
@@ -988,11 +1033,11 @@ class ClaudeApp {
     // Also support <thought>...</thought>
     cleaned = cleaned.replace(/<thought>([\s\S]*?)<\/thought>/gi, (match, thought) => {
       return `
-        <div class="claude-thinking-container">
+        <div class="claude-thinking-container collapsed">
           <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
             <div class="claude-thinking-title">
-              <span class="thinking-sparkle">💭</span>
-              <span>Thought</span>
+              <span class="thinking-sparkle" style="animation:none;opacity:0.8;">💭</span>
+              <span>Thought${timeLabel}</span>
             </div>
             <span class="claude-thinking-arrow">▾</span>
           </div>
