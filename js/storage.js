@@ -16,6 +16,23 @@ const STORAGE_KEYS = {
 
 // Official & Popular Providers with 2026 Live Flagship Generation
 export const PROVIDER_PRESETS = {
+  kiro: {
+    name: 'Kiro-Go 9AWS (Claude Sonnet 5 & Opus 5)',
+    apiType: 'openai',
+    apiBase: 'https://api.9aws.net/v1',
+    description: 'Pool chuyên dụng cho Claude Sonnet 5, Opus 5, Sonnet 4.6 (api.9aws.net)',
+    models: [
+      { id: 'claude-sonnet-5', name: '🔥 Claude Sonnet 5 (2026 SOTA)' },
+      { id: 'claude-opus-5', name: '🧠 Claude Opus 5 (Trí tuệ suy luận)' },
+      { id: 'claude-opus-4.8', name: 'Claude Opus 4.8' },
+      { id: 'claude-opus-4.7', name: 'Claude Opus 4.7' },
+      { id: 'claude-sonnet-4.6', name: 'Claude Sonnet 4.6' },
+      { id: 'claude-sonnet-4.5', name: 'Claude Sonnet 4.5' },
+      { id: 'gpt-5.6-sol', name: '🚀 GPT-5.6 Sol' },
+      { id: 'qwen3-coder-next', name: '💻 Qwen 3 Coder Next' },
+      { id: 'auto', name: '⚡ Auto Route Model' }
+    ]
+  },
   tuongtacgpt: {
     name: 'TuongTacGPT Codex Pool (GPT-5.6 Luna / Sol)',
     apiType: 'openai',

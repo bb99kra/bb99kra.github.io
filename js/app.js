@@ -196,11 +196,71 @@ class ClaudeApp {
       });
     }
 
+    // 1-Click Fast Setup Kiro 9AWS (Claude 5)
+    const btnKiroSetup = document.getElementById('btn-quick-setup-kiro');
+    if (btnKiroSetup) {
+      btnKiroSetup.addEventListener('click', () => {
+        const kiroSettings = {
+          provider: 'kiro',
+          apiType: 'openai',
+          apiBase: 'https://api.9aws.net/v1',
+          apiKey: 'sk-dea3df6c5ec71a59120fe17480c2660624b2672fb220c6614531b1843fc26a6e',
+          model: 'claude-sonnet-5',
+          temperature: 0.7,
+          maxTokens: 4096,
+          lenientMode: true,
+          customSystemPrompt: ''
+        };
+        Storage.saveSettings(kiroSettings);
+        this.openSettingsModal();
+        this.updateModelPill();
+        alert('Đã thiết lập thành công Kiro-Go 9AWS với Model Claude Sonnet 5 (1000 Credits)! Bạn có thể đóng cài đặt và bắt đầu chat!');
+      });
+    }
+
+    // Check Credit Button
+    const btnCheckCredit = document.getElementById('btn-check-credit');
+    if (btnCheckCredit) {
+      btnCheckCredit.addEventListener('click', async () => {
+        const s = Storage.getSettings();
+        const key = s.apiKey || 'sk-dea3df6c5ec71a59120fe17480c2660624b2672fb220c6614531b1843fc26a6e';
+        btnCheckCredit.textContent = '⏳...';
+        try {
+          const res = await fetch('https://api.9aws.net/v1/key/info', {
+            headers: { 'Authorization': `Bearer ${key}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const remain = (data.creditLimit - (data.creditsUsed || 0)).toFixed(1);
+            const dateStr = data.expiresAt ? new Date(data.expiresAt * 1000).toLocaleString('vi-VN') : '31/08/2026';
+            alert(
+              `📊 THÔNG TIN TÀI KHOẢN KIRO 9AWS:\n\n` +
+              `• Trạng thái Key: ${data.valid ? '✅ Hợp lệ (Active)' : '❌ Không hợp lệ'}\n` +
+              `• Số Credits Còn Lại: ${remain} / ${data.creditLimit} Credits\n` +
+              `• Tổng Tokens Đã Dùng: ${Number(data.tokensUsed || 0).toLocaleString()}\n` +
+              `• Số Yêu Cầu Đã Gửi: ${data.requestsCount || 0} lượt\n` +
+              `• Hạn Sử Dụng: ${dateStr}\n\n` +
+              `💡 Lưu ý: Nếu pool báo "No available accounts", hệ thống đang nạp tài khoản upstream (mất ~10 phút) và không bị trừ credit!`
+            );
+          } else {
+            window.open('https://api.9aws.net/check', '_blank');
+          }
+        } catch (e) {
+          window.open('https://api.9aws.net/check', '_blank');
+        } finally {
+          btnCheckCredit.textContent = '📊 Check';
+        }
+      });
+    }
+
     // Auto-detect provider when typing or pasting API Key
     if (this.settingApiKey) {
       this.settingApiKey.addEventListener('input', (e) => {
         const val = e.target.value.trim().replace(/^Bearer\s+/i, '');
-        if (val.startsWith('sk-codex-') && this.settingProviderPresets.value !== 'tuongtacgpt') {
+        if (val.startsWith('sk-dea') && this.settingProviderPresets.value !== 'kiro') {
+          this.settingProviderPresets.value = 'kiro';
+          this.handlePresetChange('kiro', true);
+        } else if (val.startsWith('sk-codex-') && this.settingProviderPresets.value !== 'tuongtacgpt') {
           this.settingProviderPresets.value = 'tuongtacgpt';
           this.handlePresetChange('tuongtacgpt', true);
         } else if (val.startsWith('sk-ant-') && this.settingProviderPresets.value !== 'anthropic') {
@@ -301,7 +361,8 @@ class ClaudeApp {
 
   renderPickerTabs() {
     const providers = [
-      { key: 'tuongtacgpt', name: '⚡ TuongTacGPT (SOTA)' },
+      { key: 'kiro', name: '🔥 Kiro 9AWS (Claude 5)' },
+      { key: 'tuongtacgpt', name: '⚡ TuongTacGPT (GPT-5.6)' },
       { key: 'openrouter', name: 'OpenRouter (Tất cả SOTA)' },
       { key: 'anthropic', name: 'Anthropic Claude' },
       { key: 'deepseek', name: 'DeepSeek' },
