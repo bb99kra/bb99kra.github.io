@@ -82,9 +82,10 @@ class ClaudeApp {
       this.showWelcome();
     }
 
-    // 8. Update Model Pill
+    // 8. Update Model Pill & Workspace Name
     this.updateModelPill();
     this.updateSkillsBadge();
+    this.updateTopWorkspaceDisplay();
   }
 
   bindEvents() {
@@ -139,6 +140,17 @@ class ClaudeApp {
         const next = current === 'dark' ? 'light' : 'dark';
         this.applyTheme(next);
       });
+    }
+
+    // Top Navbar Workspace and Tools buttons
+    const btnTopWs = document.getElementById('btn-top-workspace');
+    if (btnTopWs) {
+      btnTopWs.addEventListener('click', () => Workspaces.openModal());
+    }
+
+    const btnTopSkills = document.getElementById('btn-top-skills');
+    if (btnTopSkills) {
+      btnTopSkills.addEventListener('click', () => Skills.openModal());
     }
 
     // Top Model Pill Click -> Opens Interactive Model Picker Modal!
@@ -335,6 +347,14 @@ class ClaudeApp {
     if (el) el.textContent = modelDisplay;
   }
 
+  updateTopWorkspaceDisplay() {
+    const active = Storage.getActiveWorkspace();
+    const el = document.getElementById('top-workspace-name');
+    if (el && active) {
+      el.textContent = active.name;
+    }
+  }
+
   // ==========================================
   // INTERACTIVE MODEL PICKER MODAL
   // ==========================================
@@ -434,6 +454,7 @@ class ClaudeApp {
   }
 
   onWorkspaceChanged() {
+    this.updateTopWorkspaceDisplay();
     this.renderChatHistory();
     this.startNewChat();
   }
@@ -554,6 +575,15 @@ class ClaudeApp {
             if (resourceFiles.length > 0) {
               jarSummary += `\n\n--- Resource Files ---\n${resourceFiles.slice(0, 30).join('\n')}`;
             }
+
+            // Auto-save extracted files to active Project Workspace
+            if (pluginYml) {
+              Storage.addFileToActiveWorkspace(`${fileName}/plugin.yml`, pluginYml);
+            }
+            if (configYml) {
+              Storage.addFileToActiveWorkspace(`${fileName}/config.yml`, configYml);
+            }
+            this.updateTopWorkspaceDisplay();
 
             this.pendingAttachments.push({
               name: fileName,

@@ -96,7 +96,15 @@
           <!-- Quick Model Dropdown Menu -->
           <div id="quick-model-menu" class="quick-model-menu hidden"></div>
         </div>
-        <div class="navbar-right">
+        <div class="navbar-right" style="display:flex;align-items:center;gap:8px;">
+          <button id="btn-top-workspace" class="btn-secondary" style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:12.5px;border-radius:18px;" title="Project Workspace & Knowledge Files">
+            <span>📁</span>
+            <span id="top-workspace-name" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Project</span>
+          </button>
+          <button id="btn-top-skills" class="btn-secondary" style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:12.5px;border-radius:18px;" title="Skills & Automation Tools">
+            <span>⚡</span>
+            <span>Tools</span>
+          </button>
           <button class="btn-icon" title="Clear conversation" onclick="window.claudeApp.startNewChat()">🗑️</button>
         </div>
       </header>

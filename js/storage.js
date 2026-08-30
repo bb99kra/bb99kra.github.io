@@ -324,6 +324,21 @@ export const Storage = {
     return list.find(w => w.id === activeId) || list[0] || DEFAULT_WORKSPACES[0];
   },
 
+  addFileToActiveWorkspace(fileName, content) {
+    const list = this.getWorkspaces();
+    const activeId = this.getActiveWorkspaceId();
+    let active = list.find(w => w.id === activeId) || list[0];
+    if (!active) return;
+    if (!active.files) active.files = [];
+    const existingIdx = active.files.findIndex(f => f.name === fileName);
+    if (existingIdx >= 0) {
+      active.files[existingIdx].content = content;
+    } else {
+      active.files.push({ name: fileName, content });
+    }
+    this.saveWorkspaces(list);
+  },
+
   getSkills() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SKILLS);
