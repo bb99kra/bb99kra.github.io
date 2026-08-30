@@ -17,19 +17,20 @@ const STORAGE_KEYS = {
 // Official & Popular Providers with 2026 Live Flagship Generation
 export const PROVIDER_PRESETS = {
   kiro: {
-    name: 'Kiro-Go 9AWS (Claude Sonnet 5 & Opus 5)',
+    name: 'Kiro-Go 9Kiro (Claude Sonnet 5 & Opus 5)',
     apiType: 'openai',
-    apiBase: 'https://api.9aws.net/v1',
-    defaultKey: 'sk-dea3df6c5ec71a59120fe17480c2660624b2672fb220c6614531b1843fc26a6e',
-    description: 'Pool chuyên dụng cho Claude Sonnet 5, Opus 5, Sonnet 4.6 (api.9aws.net)',
+    apiBase: 'https://api.9kiro.lol/v1',
+    defaultKey: 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8',
+    description: 'Pool Kiro-Go chuyên dụng cho Claude Sonnet 5, Opus 5 (api.9kiro.lol - 5000 Credits)',
     models: [
       { id: 'claude-sonnet-5', name: '🔥 Claude Sonnet 5 (2026 SOTA)' },
       { id: 'claude-opus-5', name: '🧠 Claude Opus 5 (Trí tuệ suy luận)' },
+      { id: 'claude-sonnet-5-thinking', name: '💭 Claude Sonnet 5 Thinking' },
+      { id: 'claude-opus-5-thinking', name: '💭 Claude Opus 5 Thinking' },
       { id: 'claude-opus-4.8', name: 'Claude Opus 4.8' },
       { id: 'claude-opus-4.7', name: 'Claude Opus 4.7' },
       { id: 'claude-sonnet-4.6', name: 'Claude Sonnet 4.6' },
       { id: 'claude-sonnet-4.5', name: 'Claude Sonnet 4.5' },
-      { id: 'gpt-5.6-sol', name: '🚀 GPT-5.6 Sol' },
       { id: 'qwen3-coder-next', name: '💻 Qwen 3 Coder Next' },
       { id: 'auto', name: '⚡ Auto Route Model' }
     ]
@@ -178,13 +179,13 @@ export const PROVIDER_PRESETS = {
   }
 };
 
-// Default Settings (Configured with TuongTacGPT GPT-5.6 Luna)
+// Default Settings (Configured with Kiro-Go 9Kiro Claude Sonnet 5 - 5000 Credits)
 const DEFAULT_SETTINGS = {
-  provider: 'tuongtacgpt',
+  provider: 'kiro',
   apiType: 'openai',
-  apiBase: 'https://api.tuongtacgpt.click/v1',
-  apiKey: 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127',
-  model: 'gpt-5.6-luna',
+  apiBase: 'https://api.9kiro.lol/v1',
+  apiKey: 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8',
+  model: 'claude-sonnet-5',
   temperature: 0.7,
   maxTokens: 4096,
   stream: true,
@@ -261,14 +262,14 @@ export const Storage = {
       if (!data) return { ...DEFAULT_SETTINGS };
       const parsed = JSON.parse(data);
 
-      // Auto-synchronize key if user switched provider:
-      if (parsed.apiBase?.includes('9aws.net') && (!parsed.apiKey || parsed.apiKey.startsWith('sk-codex-'))) {
-        parsed.apiKey = 'sk-dea3df6c5ec71a59120fe17480c2660624b2672fb220c6614531b1843fc26a6e';
+      // Auto-synchronize key if user switched provider or has expired key:
+      if (parsed.apiBase?.includes('9aws.net') || parsed.apiBase?.includes('9kiro.lol')) {
+        parsed.apiBase = 'https://api.9kiro.lol/v1';
+        parsed.apiKey = 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8';
+        parsed.provider = 'kiro';
+        if (!parsed.model || parsed.model === 'gpt-5.6-luna') parsed.model = 'claude-sonnet-5';
         localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
-      } else if (parsed.apiBase?.includes('tuongtacgpt.click') && (!parsed.apiKey || parsed.apiKey.startsWith('sk-dea'))) {
-        parsed.apiKey = 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127';
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
-      } else if (!parsed.apiKey || parsed.apiKey.trim() === '' || parsed.model?.includes('3.7') || parsed.model?.includes('3.5')) {
+      } else if (!parsed.apiKey || parsed.apiKey.startsWith('sk-dea') || parsed.apiKey.trim() === '') {
         parsed.apiKey = DEFAULT_SETTINGS.apiKey;
         parsed.apiBase = DEFAULT_SETTINGS.apiBase;
         parsed.provider = DEFAULT_SETTINGS.provider;

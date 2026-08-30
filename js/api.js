@@ -141,9 +141,11 @@ You are an elite Minecraft Java reverse engineer and plugin architect.
     let cleanKey = this.cleanApiKey(settings.apiKey);
 
     // Auto-fix mismatched key for known internal endpoints:
-    if (settings.apiBase && settings.apiBase.includes('9aws.net') && (!cleanKey || cleanKey.startsWith('sk-codex-'))) {
-      cleanKey = 'sk-dea3df6c5ec71a59120fe17480c2660624b2672fb220c6614531b1843fc26a6e';
-    } else if (settings.apiBase && settings.apiBase.includes('tuongtacgpt.click') && (!cleanKey || cleanKey.startsWith('sk-dea'))) {
+    if (settings.apiBase && (settings.apiBase.includes('9kiro.lol') || settings.apiBase.includes('9aws.net'))) {
+      if (!cleanKey || cleanKey.startsWith('sk-dea') || cleanKey.startsWith('sk-codex-')) {
+        cleanKey = 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8';
+      }
+    } else if (settings.apiBase && settings.apiBase.includes('tuongtacgpt.click') && (!cleanKey || cleanKey.startsWith('sk-dea') || cleanKey.startsWith('sk-762'))) {
       cleanKey = 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127';
     }
 

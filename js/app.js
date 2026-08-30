@@ -256,15 +256,15 @@ class ClaudeApp {
       });
     }
 
-    // 1-Click Fast Setup Kiro 9AWS (Claude 5)
+    // 1-Click Fast Setup Kiro 9Kiro (Claude 5)
     const btnKiroSetup = document.getElementById('btn-quick-setup-kiro');
     if (btnKiroSetup) {
       btnKiroSetup.addEventListener('click', () => {
         const kiroSettings = {
           provider: 'kiro',
           apiType: 'openai',
-          apiBase: 'https://api.9aws.net/v1',
-          apiKey: 'sk-dea3df6c5ec71a59120fe17480c2660624b2672fb220c6614531b1843fc26a6e',
+          apiBase: 'https://api.9kiro.lol/v1',
+          apiKey: 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8',
           model: 'claude-sonnet-5',
           temperature: 0.7,
           maxTokens: 4096,
@@ -274,7 +274,7 @@ class ClaudeApp {
         Storage.saveSettings(kiroSettings);
         this.openSettingsModal();
         this.updateModelPill();
-        alert('Đã thiết lập thành công Kiro-Go 9AWS với Model Claude Sonnet 5 (1000 Credits)! Bạn có thể đóng cài đặt và bắt đầu chat!');
+        alert('Đã thiết lập thành công Kiro-Go 9Kiro với Model Claude Sonnet 5 (5000 Credits)! Bạn có thể đóng cài đặt và bắt đầu chat!');
       });
     }
 
@@ -283,30 +283,35 @@ class ClaudeApp {
     if (btnCheckCredit) {
       btnCheckCredit.addEventListener('click', async () => {
         const s = Storage.getSettings();
-        const key = s.apiKey || 'sk-dea3df6c5ec71a59120fe17480c2660624b2672fb220c6614531b1843fc26a6e';
+        const key = s.apiKey || 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8';
         btnCheckCredit.textContent = '⏳...';
         try {
-          const res = await fetch('https://api.9aws.net/v1/key/info', {
-            headers: { 'Authorization': `Bearer ${key}` }
+          const res = await fetch('https://api.9kiro.lol/check/api/usage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key })
           });
           if (res.ok) {
-            const data = await res.json();
-            const remain = (data.creditLimit - (data.creditsUsed || 0)).toFixed(1);
-            const dateStr = data.expiresAt ? new Date(data.expiresAt * 1000).toLocaleString('vi-VN') : '31/08/2026';
-            alert(
-              `📊 THÔNG TIN TÀI KHOẢN KIRO 9AWS:\n\n` +
-              `• Trạng thái Key: ${data.valid ? '✅ Hợp lệ (Active)' : '❌ Không hợp lệ'}\n` +
-              `• Số Credits Còn Lại: ${remain} / ${data.creditLimit} Credits\n` +
-              `• Tổng Tokens Đã Dùng: ${Number(data.tokensUsed || 0).toLocaleString()}\n` +
-              `• Số Yêu Cầu Đã Gửi: ${data.requestsCount || 0} lượt\n` +
-              `• Hạn Sử Dụng: ${dateStr}\n\n` +
-              `💡 Lưu ý: Nếu pool báo "No available accounts", hệ thống đang nạp tài khoản upstream (mất ~10 phút) và không bị trừ credit!`
-            );
-          } else {
-            window.open('https://api.9aws.net/check', '_blank');
+            const result = await res.json();
+            if (result.ok && result.key) {
+              const k = result.key;
+              const remain = (k.creditsRemaining != null ? k.creditsRemaining : (k.creditLimit - (k.creditsUsed || 0))).toFixed(1);
+              const used = Number(k.creditsUsed || 0).toFixed(1);
+              alert(
+                `📊 THÔNG TIN TÀI KHOẢN KIRO-GO (api.9kiro.lol):\n\n` +
+                `• Tên Key: ${k.name || 'tg-pool'}\n` +
+                `• Key: ${k.keyMasked || key.slice(0, 10) + '...'}\n` +
+                `• Trạng thái: ${k.enabled ? '✅ Hợp lệ (Active)' : '❌ Đã vô hiệu'}\n` +
+                `• Số Credits Còn Lại: ${remain} / ${k.creditLimit} Credits\n` +
+                `• Số Credits Đã Dùng: ${used} Credits\n\n` +
+                `💡 Kiểm tra chi tiết trực tiếp tại: https://api.9kiro.lol/check`
+              );
+              return;
+            }
           }
+          window.open('https://api.9kiro.lol/check', '_blank');
         } catch (e) {
-          window.open('https://api.9aws.net/check', '_blank');
+          window.open('https://api.9kiro.lol/check', '_blank');
         } finally {
           btnCheckCredit.textContent = '📊 Check';
         }
@@ -317,7 +322,7 @@ class ClaudeApp {
     if (this.settingApiKey) {
       this.settingApiKey.addEventListener('input', (e) => {
         const val = e.target.value.trim().replace(/^Bearer\s+/i, '');
-        if (val.startsWith('sk-dea') && this.settingProviderPresets.value !== 'kiro') {
+        if ((val.startsWith('sk-762') || val.startsWith('sk-dea')) && this.settingProviderPresets.value !== 'kiro') {
           this.settingProviderPresets.value = 'kiro';
           this.handlePresetChange('kiro', true);
         } else if (val.startsWith('sk-codex-') && this.settingProviderPresets.value !== 'tuongtacgpt') {
