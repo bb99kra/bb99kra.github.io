@@ -21,72 +21,99 @@ class ClaudeApp {
   }
 
   init() {
-    // 1. Initialize Sub-modules
-    Artifacts.init();
-    Workspaces.init(() => this.onWorkspaceChanged());
-    Skills.init(() => this.updateSkillsBadge());
+    try {
+      // 1. Initialize Sub-modules
+      Artifacts.init();
+      Workspaces.init(() => this.onWorkspaceChanged());
+      Skills.init(() => this.updateSkillsBadge());
 
-    // 2. DOM Elements
-    this.messagesContainer = document.getElementById('messages-container');
-    this.welcomeContainer = document.getElementById('welcome-container');
-    this.textarea = document.getElementById('composer-textarea');
-    this.btnSend = document.getElementById('btn-send');
-    this.historyContainer = document.getElementById('sidebar-history');
-    this.btnNewChat = document.getElementById('btn-new-chat');
-    this.btnWebSearch = document.getElementById('btn-toggle-search');
-    this.btnModelPill = document.getElementById('model-selector-pill');
-    this.btnSettings = document.getElementById('nav-settings');
-    this.btnThemeToggle = document.getElementById('btn-theme-toggle');
-    this.sidebar = document.getElementById('sidebar');
-    this.btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
-    this.btnAttach = document.getElementById('btn-attach-file');
-    this.attachmentInput = document.getElementById('chat-file-upload');
-    this.attachmentsPreview = document.getElementById('composer-attachments-preview');
+      // 2. DOM Elements
+      this.messagesContainer = document.getElementById('messages-container');
+      this.welcomeContainer = document.getElementById('welcome-container');
+      this.textarea = document.getElementById('composer-textarea');
+      this.btnSend = document.getElementById('btn-send');
+      this.historyContainer = document.getElementById('sidebar-history');
+      this.btnNewChat = document.getElementById('btn-new-chat');
+      this.btnWebSearch = document.getElementById('btn-toggle-search');
+      this.btnModelPill = document.getElementById('model-selector-pill');
+      this.btnSettings = document.getElementById('nav-settings');
+      this.btnThemeToggle = document.getElementById('btn-theme-toggle');
+      this.sidebar = document.getElementById('sidebar');
+      this.btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+      this.btnAttach = document.getElementById('btn-attach-file');
+      this.attachmentInput = document.getElementById('chat-file-upload');
+      this.attachmentsPreview = document.getElementById('composer-attachments-preview');
 
-    // 3. Settings Modal Elements
-    this.modalSettings = document.getElementById('modal-settings');
-    this.btnCloseSettings = document.getElementById('btn-close-settings');
-    this.btnSaveSettings = document.getElementById('btn-save-settings');
-    this.settingApiType = document.getElementById('setting-api-type');
-    this.settingApiBase = document.getElementById('setting-api-base');
-    this.settingApiKey = document.getElementById('setting-api-key');
-    this.settingModel = document.getElementById('setting-model');
-    this.settingModelSelect = document.getElementById('setting-model-select');
-    this.providerDescDisplay = document.getElementById('provider-desc-display');
-    this.settingTemp = document.getElementById('setting-temperature');
-    this.settingTempVal = document.getElementById('temp-value-display');
-    this.settingMaxTokens = document.getElementById('setting-max-tokens');
-    this.settingLenient = document.getElementById('setting-lenient-mode');
-    this.settingSystemPrompt = document.getElementById('setting-system-prompt');
-    this.settingProviderPresets = document.getElementById('setting-provider-presets');
+      // 3. Settings Modal Elements
+      this.modalSettings = document.getElementById('modal-settings');
+      this.btnCloseSettings = document.getElementById('btn-close-settings');
+      this.btnSaveSettings = document.getElementById('btn-save-settings');
+      this.settingApiType = document.getElementById('setting-api-type');
+      this.settingApiBase = document.getElementById('setting-api-base');
+      this.settingApiKey = document.getElementById('setting-api-key');
+      this.settingModel = document.getElementById('setting-model');
+      this.settingModelSelect = document.getElementById('setting-model-select');
+      this.providerDescDisplay = document.getElementById('provider-desc-display');
+      this.settingTemp = document.getElementById('setting-temperature');
+      this.settingTempVal = document.getElementById('temp-value-display');
+      this.settingMaxTokens = document.getElementById('setting-max-tokens');
+      this.settingLenient = document.getElementById('setting-lenient-mode');
+      this.settingSystemPrompt = document.getElementById('setting-system-prompt');
+      this.settingProviderPresets = document.getElementById('setting-provider-presets');
 
-    // 4. Model Picker Modal Elements
-    this.modalModelPicker = document.getElementById('modal-model-picker');
-    this.btnCloseModelPicker = document.getElementById('btn-close-model-picker');
-    this.pickerProviderTabs = document.getElementById('picker-provider-tabs');
-    this.pickerModelsList = document.getElementById('picker-models-list');
-    this.pickerCustomInput = document.getElementById('picker-custom-model-input');
-    this.pickerBtnApplyCustom = document.getElementById('picker-btn-apply-custom');
+      // 4. Model Picker Modal Elements
+      this.modalModelPicker = document.getElementById('modal-model-picker');
+      this.btnCloseModelPicker = document.getElementById('btn-close-model-picker');
+      this.pickerProviderTabs = document.getElementById('picker-provider-tabs');
+      this.pickerModelsList = document.getElementById('picker-models-list');
+      this.pickerCustomInput = document.getElementById('picker-custom-model-input');
+      this.pickerBtnApplyCustom = document.getElementById('picker-btn-apply-custom');
 
-    // 5. Bind Global Handlers
-    this.bindEvents();
+      // 5. Bind Global Handlers
+      this.bindEvents();
 
-    // 6. Apply Theme
-    this.applyTheme(Storage.getTheme());
+      // 6. Apply Theme
+      this.applyTheme(Storage.getTheme());
 
-    // 7. Load Chats & Active Chat
-    this.renderChatHistory();
-    const activeChatId = Storage.getActiveChatId();
-    if (activeChatId) {
-      this.loadChat(activeChatId);
-    } else {
-      this.showWelcome();
+      // 7. Load Chats & Active Chat safely
+      try {
+        this.renderChatHistory();
+        const activeChatId = Storage.getActiveChatId();
+        if (activeChatId) {
+          this.loadChat(activeChatId);
+        } else {
+          this.showWelcome();
+        }
+      } catch (chatLoadErr) {
+        console.warn('Error loading active chat, starting new chat:', chatLoadErr);
+        this.startNewChat();
+      }
+
+      // 8. Update Model Pill & Workspace Name
+      this.updateModelPill();
+      this.updateSkillsBadge();
+      this.updateTopWorkspaceDisplay();
+    } catch (fatalError) {
+      console.error('Fatal initialization error in ClaudeApp:', fatalError);
+      this.showRecoveryBanner(fatalError);
     }
+  }
 
-    // 8. Update Model Pill & Workspace Name
-    this.updateModelPill();
-    this.updateSkillsBadge();
-    this.updateTopWorkspaceDisplay();
+  showRecoveryBanner(err) {
+    let banner = document.getElementById('claude-recovery-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'claude-recovery-banner';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999999;background:#b91c1c;color:#ffffff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;font-size:13.5px;font-family:sans-serif;box-shadow:0 4px 14px rgba(0,0,0,0.3);';
+      document.body.prepend(banner);
+    }
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">⚠️</span>
+        <span><strong>Phát hiện bộ nhớ đệm trình duyệt bị xung đột:</strong> Vui lòng bấm làm mới để sửa lỗi.</span>
+      </div>
+      <button onclick="localStorage.clear();sessionStorage.clear();window.location.href=window.location.origin+window.location.pathname+'?v='+Date.now();" style="background:#ffffff;color:#b91c1c;border:none;padding:6px 14px;border-radius:6px;font-weight:bold;cursor:pointer;">Dọn Dẹp & Vào Lại</button>
+    `;
   }
 
   bindEvents() {
@@ -346,6 +373,18 @@ class ClaudeApp {
         }
       });
     });
+
+    // Reset Cache & Fix Web Button
+    const btnResetCache = document.getElementById('nav-reset-cache');
+    if (btnResetCache) {
+      btnResetCache.addEventListener('click', () => {
+        if (confirm('Bạn có chắc muốn dọn sạch bộ nhớ cache trình duyệt để khôi phục web về trạng thái mượt mà nhất không?')) {
+          localStorage.clear();
+          sessionStorage.clear();
+          window.location.href = window.location.origin + window.location.pathname + '?v=' + Date.now();
+        }
+      });
+    }
   }
 
   applyTheme(theme) {
@@ -515,20 +554,32 @@ class ClaudeApp {
   }
 
   loadChat(chatId) {
-    const chat = Storage.getChat(chatId);
-    if (!chat) return this.startNewChat();
+    try {
+      const chat = Storage.getChat(chatId);
+      if (!chat) return this.startNewChat();
 
-    this.currentChat = chat;
-    Storage.setActiveChatId(chat.id);
-    this.hideWelcome();
-    this.messagesContainer.innerHTML = '';
+      this.currentChat = chat;
+      Storage.setActiveChatId(chat.id);
+      this.hideWelcome();
+      this.messagesContainer.innerHTML = '';
 
-    (chat.messages || []).forEach(msg => {
-      this.appendMessageElement(msg.role, msg.displayText || msg.content, false, msg.searchResults, msg.attachments);
-    });
+      (chat.messages || []).forEach(msg => {
+        if (!msg) return;
+        this.appendMessageElement(
+          msg.role || 'assistant',
+          msg.displayText || msg.content || '',
+          false,
+          msg.searchResults,
+          msg.attachments
+        );
+      });
 
-    this.renderChatHistory();
-    this.scrollToBottom();
+      this.renderChatHistory();
+      this.scrollToBottom();
+    } catch (err) {
+      console.warn('Error loading chat from storage, falling back to new chat:', err);
+      this.startNewChat();
+    }
   }
 
   renderChatHistory() {
@@ -1009,83 +1060,91 @@ BẮT BUỘC BỌC TOÀN BỘ PROJECT HOÀN CHỈNH TRONG THẺ:
   }
 
   appendMessageElement(role, content, shouldScroll = true, hadSearch = false, attachments = null) {
-    const row = document.createElement('div');
-    row.className = `message-row ${role}`;
+    try {
+      role = (role === 'user') ? 'user' : 'assistant';
+      content = typeof content === 'string' ? content : (content != null ? String(content) : '');
 
-    if (role === 'user') {
-      const bubble = document.createElement('div');
-      bubble.className = 'message-bubble';
+      const row = document.createElement('div');
+      row.className = `message-row ${role}`;
 
-      let displayContent = content || '';
-      let fileChips = attachments ? [...attachments] : [];
+      if (role === 'user') {
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
 
-      // If loaded from history without explicit attachments array, extract attached file names
-      if (fileChips.length === 0 && displayContent.includes('[Attached File:')) {
-        const matches = [...displayContent.matchAll(/\[Attached File:\s*([^\]]+)\]/g)];
-        if (matches.length > 0) {
-          fileChips = matches.map(m => {
-            const fname = m[1].trim();
-            return {
-              name: fname,
-              sizeStr: fname.endsWith('.jar') ? 'Java Archive (Decompiled)' : 'Document',
-              type: fname.endsWith('.jar') ? 'jar' : 'text'
-            };
-          });
-          displayContent = displayContent.replace(/\[Attached File:\s*[^\]]+\][\s\S]*?\[End of [^\]]+\]/g, '').trim();
+        let displayContent = content || '';
+        let fileChips = Array.isArray(attachments) ? [...attachments] : [];
+
+        // If loaded from history without explicit attachments array, extract attached file names
+        if (fileChips.length === 0 && displayContent.includes('[Attached File:')) {
+          const matches = [...displayContent.matchAll(/\[Attached File:\s*([^\]]+)\]/g)];
+          if (matches.length > 0) {
+            fileChips = matches.map(m => {
+              const fname = m[1].trim();
+              return {
+                name: fname,
+                sizeStr: fname.endsWith('.jar') ? 'Java Archive (Decompiled)' : 'Document',
+                type: fname.endsWith('.jar') ? 'jar' : 'text'
+              };
+            });
+            displayContent = displayContent.replace(/\[Attached File:\s*[^\]]+\][\s\S]*?\[End of [^\]]+\]/g, '').trim();
+          }
         }
-      }
 
-      // Render sleek attachment chips like Claude.ai
-      if (fileChips.length > 0) {
-        const container = document.createElement('div');
-        container.className = 'user-attachment-container';
-        container.innerHTML = fileChips.map(f => {
-          const icon = f.name.endsWith('.jar') ? '📦' : f.name.endsWith('.zip') ? '🗂️' : '📄';
-          const badge = f.name.endsWith('.jar') ? '<span class="user-attachment-badge">Decompiled</span>' : '';
-          return `
-            <div class="user-attachment-card">
-              <div class="user-attachment-icon">${icon}</div>
-              <div class="user-attachment-info">
-                <div class="user-attachment-name" title="${f.name}">${this.escapeHtml(f.name)}</div>
-                <div class="user-attachment-meta">
-                  <span>${f.sizeStr || 'File'}</span>
-                  ${badge}
+        // Render sleek attachment chips like Claude.ai
+        if (fileChips.length > 0) {
+          const container = document.createElement('div');
+          container.className = 'user-attachment-container';
+          container.innerHTML = fileChips.map(f => {
+            const icon = f.name.endsWith('.jar') ? '📦' : f.name.endsWith('.zip') ? '🗂️' : '📄';
+            const badge = f.name.endsWith('.jar') ? '<span class="user-attachment-badge">Decompiled</span>' : '';
+            return `
+              <div class="user-attachment-card">
+                <div class="user-attachment-icon">${icon}</div>
+                <div class="user-attachment-info">
+                  <div class="user-attachment-name" title="${f.name}">${this.escapeHtml(f.name)}</div>
+                  <div class="user-attachment-meta">
+                    <span>${f.sizeStr || 'File'}</span>
+                    ${badge}
+                  </div>
                 </div>
               </div>
-            </div>
-          `;
-        }).join('');
-        bubble.appendChild(container);
+            `;
+          }).join('');
+          bubble.appendChild(container);
+        }
+
+        // Render the prompt text
+        if (displayContent) {
+          const textNode = document.createElement('div');
+          textNode.style.whiteSpace = 'pre-wrap';
+          textNode.textContent = displayContent;
+          bubble.appendChild(textNode);
+        }
+
+        row.appendChild(bubble);
+      } else {
+        const avatar = document.createElement('div');
+        avatar.className = 'assistant-avatar';
+        avatar.innerHTML = `<span style="font-size:18px;line-height:1;">✳</span>`;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble markdown-body';
+        bubble.innerHTML = this.renderMarkdown(content);
+        this.detectAndRenderArtifactCards(bubble, content);
+
+        row.appendChild(avatar);
+        row.appendChild(bubble);
       }
 
-      // Render the prompt text
-      if (displayContent) {
-        const textNode = document.createElement('div');
-        textNode.style.whiteSpace = 'pre-wrap';
-        textNode.textContent = displayContent;
-        bubble.appendChild(textNode);
-      }
-
-      row.appendChild(bubble);
-    } else {
-      const avatar = document.createElement('div');
-      avatar.className = 'assistant-avatar';
-      avatar.innerHTML = `<span style="font-size:18px;line-height:1;">✳</span>`;
-
-      const bubble = document.createElement('div');
-      bubble.className = 'message-bubble markdown-body';
-      bubble.innerHTML = this.renderMarkdown(content);
-      this.detectAndRenderArtifactCards(bubble, content);
-
-      row.appendChild(avatar);
-      row.appendChild(bubble);
+      this.messagesContainer.appendChild(row);
+      if (shouldScroll) this.scrollToBottom();
+    } catch (msgErr) {
+      console.error('Error rendering message:', msgErr);
     }
-
-    this.messagesContainer.appendChild(row);
-    if (shouldScroll) this.scrollToBottom();
   }
 
   detectAndRenderArtifactCards(bubbleElement, rawText) {
+    if (!rawText) return;
     const artifacts = Artifacts.extractArtifacts(rawText);
     if (artifacts.length === 0) return;
 
@@ -1112,6 +1171,7 @@ BẮT BUỘC BỌC TOÀN BỘ PROJECT HOÀN CHỈNH TRONG THẺ:
   }
 
   renderMarkdown(text, elapsedSec = null) {
+    if (!text || typeof text !== 'string') return '';
     let cleaned = text.replace(/<antArtifact[\s\S]*?<\/antArtifact>/gi, '');
 
     const timeLabel = elapsedSec ? ` (${elapsedSec}s)` : '';

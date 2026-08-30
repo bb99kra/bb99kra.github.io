@@ -389,34 +389,49 @@ export const Storage = {
   },
 
   saveChats(chats) {
+    if (!Array.isArray(chats)) return;
     try {
       localStorage.setItem(STORAGE_KEYS.CHATS, JSON.stringify(chats));
     } catch (e) {
       console.warn('Chat storage quota exceeded! Auto-pruning heavy payloads to prevent crash...', e);
       try {
         const activeId = this.getActiveChatId();
-        // Prune massive raw attachment blocks from non-active or older chats
-        const pruned = chats.map(c => {
-          if (c.id === activeId) {
-            // Keep last 15 messages in active chat
-            return {
-              ...c,
-              messages: (c.messages || []).slice(-15)
-            };
-          }
-          return {
+        // Tier 1 Pruning: truncate all messages across all chats
+        const pruned = chats.map(c => ({
+          ...c,
+          messages: (c.messages || []).slice(c.id === activeId ? -12 : -5).map(m => ({
+            role: m.role,
+            content: (m.content && m.content.length > 8000)
+              ? m.content.slice(0, 4000) + '\n\n...[Đã lược bớt nội dung đính kèm nặng để chống tràn bộ nhớ]...'
+              : m.content,
+            displayText: m.displayText,
+            attachments: m.attachments,
+            searchResults: m.searchResults,
+            timestamp: m.timestamp
+          }))
+        })).slice(0, 8);
+        localStorage.setItem(STORAGE_KEYS.CHATS, JSON.stringify(pruned));
+      } catch (e2) {
+        console.warn('Tier 2 Pruning: Retaining active chat only...', e2);
+        try {
+          const activeId = this.getActiveChatId();
+          const singleChat = chats.filter(c => c.id === activeId).map(c => ({
             ...c,
             messages: (c.messages || []).slice(-5).map(m => ({
               role: m.role,
-              content: m.content && m.content.length > 2000 ? m.content.slice(0, 1500) + '\n...[Trích đoạn lưu trữ]...' : m.content,
+              content: (m.content && m.content.length > 2000) ? m.content.slice(0, 1500) : m.content,
               displayText: m.displayText,
               timestamp: m.timestamp
             }))
-          };
-        }).slice(0, 10); // Keep max 10 chats
-        localStorage.setItem(STORAGE_KEYS.CHATS, JSON.stringify(pruned));
-      } catch (e2) {
-        console.error('Critical quota error in localStorage', e2);
+          }));
+          localStorage.setItem(STORAGE_KEYS.CHATS, JSON.stringify(singleChat));
+        } catch (e3) {
+          console.error('Critical quota error in localStorage, resetting chat cache to prevent app lockup', e3);
+          try {
+            localStorage.removeItem(STORAGE_KEYS.CHATS);
+            localStorage.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
+          } catch (e4) {}
+        }
       }
     }
   },
