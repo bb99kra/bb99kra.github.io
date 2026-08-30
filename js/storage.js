@@ -316,7 +316,18 @@ export const Storage = {
   },
 
   saveWorkspaces(workspaces) {
-    localStorage.setItem(STORAGE_KEYS.WORKSPACES, JSON.stringify(workspaces));
+    try {
+      localStorage.setItem(STORAGE_KEYS.WORKSPACES, JSON.stringify(workspaces));
+    } catch (e) {
+      console.warn('Workspaces quota limit reached, trimming cache...', e);
+      try {
+        const pruned = workspaces.map(ws => ({
+          ...ws,
+          files: (ws.files || []).slice(-15) // Keep only latest 15 files per workspace
+        }));
+        localStorage.setItem(STORAGE_KEYS.WORKSPACES, JSON.stringify(pruned));
+      } catch (e2) {}
+    }
   },
 
   getActiveWorkspaceId() {
@@ -378,7 +389,36 @@ export const Storage = {
   },
 
   saveChats(chats) {
-    localStorage.setItem(STORAGE_KEYS.CHATS, JSON.stringify(chats));
+    try {
+      localStorage.setItem(STORAGE_KEYS.CHATS, JSON.stringify(chats));
+    } catch (e) {
+      console.warn('Chat storage quota exceeded! Auto-pruning heavy payloads to prevent crash...', e);
+      try {
+        const activeId = this.getActiveChatId();
+        // Prune massive raw attachment blocks from non-active or older chats
+        const pruned = chats.map(c => {
+          if (c.id === activeId) {
+            // Keep last 15 messages in active chat
+            return {
+              ...c,
+              messages: (c.messages || []).slice(-15)
+            };
+          }
+          return {
+            ...c,
+            messages: (c.messages || []).slice(-5).map(m => ({
+              role: m.role,
+              content: m.content && m.content.length > 2000 ? m.content.slice(0, 1500) + '\n...[Trích đoạn lưu trữ]...' : m.content,
+              displayText: m.displayText,
+              timestamp: m.timestamp
+            }))
+          };
+        }).slice(0, 10); // Keep max 10 chats
+        localStorage.setItem(STORAGE_KEYS.CHATS, JSON.stringify(pruned));
+      } catch (e2) {
+        console.error('Critical quota error in localStorage', e2);
+      }
+    }
   },
 
   getActiveChatId() {

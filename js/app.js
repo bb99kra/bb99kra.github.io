@@ -868,6 +868,8 @@ BẮT BUỘC BỌC TOÀN BỘ PROJECT HOÀN CHỈNH TRONG THẺ:
 
     let fullAssistantText = '';
 
+    let lastRender = 0;
+
     await Api.streamChat(
       this.currentChat.messages,
       settings,
@@ -876,7 +878,11 @@ BẮT BUỘC BỌC TOÀN BỘ PROJECT HOÀN CHỈNH TRONG THẺ:
       searchResults,
       (chunk, accumulated) => {
         fullAssistantText = accumulated;
-        const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(1);
+        const now = Date.now();
+        // Throttle UI re-render to 60ms to prevent browser memory lockup on large outputs
+        if (now - lastRender < 60) return;
+        lastRender = now;
+        const elapsedSec = ((now - startTime) / 1000).toFixed(1);
 
         if (accumulated.includes('<thinking>')) {
           bubble.innerHTML = this.renderMarkdown(accumulated, elapsedSec);
