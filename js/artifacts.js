@@ -17,6 +17,7 @@ export const Artifacts = {
     this.btnClose = document.getElementById('btn-close-artifact');
     this.btnCopy = document.getElementById('btn-copy-artifact');
     this.btnDownload = document.getElementById('btn-download-artifact');
+    this.btnDownloadZip = document.getElementById('btn-download-project-zip');
 
     if (!this.panel) return;
 
@@ -45,6 +46,36 @@ export const Artifacts = {
         a.href = url;
         const ext = this.getFileExtension(this.currentArtifact.type);
         a.download = `${this.currentArtifact.title.replace(/\s+/g, '_').toLowerCase()}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    if (this.btnDownloadZip) {
+      this.btnDownloadZip.addEventListener('click', async () => {
+        if (!window.JSZip) return alert('JSZip library is loading, please try again.');
+        const zip = new JSZip();
+        const ws = (window.claudeApp && window.claudeApp.storage) ? window.claudeApp.storage.getActiveWorkspace() : null;
+        
+        // Add all files in workspace to zip
+        if (ws && ws.files && ws.files.length > 0) {
+          ws.files.forEach(f => {
+            zip.file(f.name, f.content);
+          });
+        }
+        
+        // Also add current artifact if present
+        if (this.currentArtifact) {
+          const ext = this.getFileExtension(this.currentArtifact.type);
+          const fname = `${this.currentArtifact.title.replace(/\s+/g, '_')}.${ext}`;
+          zip.file(fname, this.currentArtifact.content);
+        }
+
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${(ws ? ws.name : 'Project').replace(/\s+/g, '_')}-Clean.zip`;
         a.click();
         URL.revokeObjectURL(url);
       });
