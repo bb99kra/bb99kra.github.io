@@ -66,9 +66,22 @@ export const Artifacts = {
         
         // Also add current artifact if present
         if (this.currentArtifact) {
-          const ext = this.getFileExtension(this.currentArtifact.type);
-          const fname = `${this.currentArtifact.title.replace(/\s+/g, '_')}.${ext}`;
-          zip.file(fname, this.currentArtifact.content);
+          const parsedFiles = this.parseMarkdownFiles(this.currentArtifact.content);
+          if (parsedFiles.length > 0) {
+            parsedFiles.forEach(pf => {
+              zip.file(pf.path, pf.content);
+              if (window.claudeApp && window.claudeApp.storage) {
+                window.claudeApp.storage.addFileToActiveWorkspace(pf.path, pf.content);
+              }
+            });
+            if (window.claudeApp) {
+              window.claudeApp.updateTopWorkspaceDisplay();
+            }
+          } else {
+            const ext = this.getFileExtension(this.currentArtifact.type);
+            const fname = `${this.currentArtifact.title.replace(/\s+/g, '_')}.${ext}`;
+            zip.file(fname, this.currentArtifact.content);
+          }
         }
 
         const blob = await zip.generateAsync({ type: 'blob' });
@@ -80,6 +93,38 @@ export const Artifacts = {
         URL.revokeObjectURL(url);
       });
     }
+  },
+
+  parseMarkdownFiles(content) {
+    const files = [];
+    if (!content) return files;
+    const fileBlockRegex = /(?:#{1,6}\s*[`'"]?([a-zA-Z0-9_\-\.\/]+\.[a-zA-Z0-9]+)[`'"]?|(?:File|Tập tin):\s*[`'"]?([a-zA-Z0-9_\-\.\/]+\.[a-zA-Z0-9]+)[`'"]?)\s*\n+```[a-zA-Z0-9_-]*\n([\s\S]*?)```/gi;
+    let match;
+    const addedPaths = new Set();
+
+    while ((match = fileBlockRegex.exec(content)) !== null) {
+      const rawPath = (match[1] || match[2] || '').trim();
+      const code = match[3];
+      if (rawPath && code !== undefined) {
+        const cleanPath = rawPath.replace(/^\.?\/+/, '');
+        files.push({ path: cleanPath, content: code });
+        addedPaths.add(cleanPath);
+      }
+    }
+
+    if (files.length === 0) {
+      const inlineCommentRegex = /```([a-zA-Z0-9_-]*)\n(?:\/\/|#)\s*(?:File:)?\s*([a-zA-Z0-9_\-\.\/]+\.[a-zA-Z0-9]+)\n([\s\S]*?)```/gi;
+      let inlineMatch;
+      while ((inlineMatch = inlineCommentRegex.exec(content)) !== null) {
+        const cleanPath = inlineMatch[2].trim().replace(/^\.?\/+/, '');
+        if (!addedPaths.has(cleanPath)) {
+          files.push({ path: cleanPath, content: inlineMatch[3] });
+          addedPaths.add(cleanPath);
+        }
+      }
+    }
+
+    return files;
   },
 
   getFileExtension(type) {
