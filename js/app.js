@@ -587,7 +587,7 @@ class ClaudeApp {
 
             // Case A: Archive contains .java files (Source Code ZIP)
             if (javaSourceFiles.length > 0) {
-              const priorityJava = javaSourceFiles.slice(0, 35);
+              const priorityJava = javaSourceFiles.slice(0, 100);
               for (const jPath of priorityJava) {
                 try {
                   const jSource = await zip.file(jPath).async('string');
@@ -617,7 +617,7 @@ class ClaudeApp {
                 if (aIsKey && !bIsKey) return -1;
                 if (!aIsKey && bIsKey) return 1;
                 return 0;
-              }).slice(0, 35);
+              }).slice(0, 100);
 
               for (const classPath of priorityClasses) {
                 try {

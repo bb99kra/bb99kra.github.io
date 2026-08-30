@@ -258,12 +258,20 @@ export class JavaClassDisassembler {
           parts.push(`    static {\n        // Static initializer\n    }`);
         } else {
           const sig = this.formatMethodSignature(m.name, m.descriptor);
+          const match = m.descriptor ? m.descriptor.match(/^\(.*?\)(.*)$/) : null;
+          const retType = match ? this.formatDescriptor(match[1]) : 'void';
+          const retStatement = this.getReturnDefault(retType);
+
+          let methodLines = [];
           if (m.opCodes && m.opCodes.length > 0) {
-            const bodyOps = m.opCodes.slice(0, 15).map(op => `        // ${op}`).join('\n');
-            parts.push(`    ${sig} {\n${bodyOps}\n        // (Bytecode logic trace decompiled)\n    }`);
-          } else {
-            parts.push(`    ${sig} {\n        // Bytecode implementation\n    }`);
+            m.opCodes.slice(0, 15).forEach(op => {
+              methodLines.push(`        // ${op}`);
+            });
           }
+          if (retStatement) {
+            methodLines.push(`        ${retStatement}`);
+          }
+          parts.push(`    ${sig} {\n${methodLines.join('\n')}\n    }`);
         }
       });
       parts.push('');
@@ -280,6 +288,22 @@ export class JavaClassDisassembler {
 
     parts.push('}');
     return parts.join('\n');
+  }
+
+  static getReturnDefault(retType) {
+    if (!retType || retType === 'void') return '';
+    if (retType === 'boolean') return 'return true;';
+    if (retType === 'int' || retType === 'short' || retType === 'byte') return 'return 0;';
+    if (retType === 'long') return 'return 0L;';
+    if (retType === 'float') return 'return 0.0f;';
+    if (retType === 'double') return 'return 0.0;';
+    if (retType === 'char') return "return ' ';";
+    if (retType === 'String') return 'return "";';
+    if (retType.endsWith('[]')) return 'return new ' + retType + '{};';
+    if (retType === 'List') return 'return new java.util.ArrayList<>();';
+    if (retType === 'Map') return 'return new java.util.HashMap<>();';
+    if (retType === 'Set') return 'return new java.util.HashSet<>();';
+    return 'return null;';
   }
 
   static formatDescriptor(desc) {
