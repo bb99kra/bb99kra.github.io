@@ -242,6 +242,15 @@ const DEFAULT_SKILLS = [
     instructions: 'Always write clean, modular, production-ready code with complete error handling and modern standards. Never leave placeholders or omit implementation details.',
     enabled: true,
     builtin: true
+  },
+  {
+    id: 'skill-minecraft-builder',
+    name: 'Minecraft Plugin Auto-Decompile & Standalone Builder',
+    icon: '⛏️',
+    description: 'Tự động giải nén, dịch ngược, viết lại đầy đủ source code Java, cấu hình pom.xml / plugin.yml và đóng gói Standalone / Pure offline-ready.',
+    instructions: 'When the user attaches a .jar file or asks to "giải file jar", "build", "decompile", or "viết lại": You must act as an elite Minecraft & Java reverse engineer. 1) Analyze the decompiled classes and plugin.yml provided in the context. 2) Provide a complete architectural breakdown. 3) Output the full, reconstructed, clean Java source code for the main class, listeners, and commands inside an interactive Artifact tag so the user can inspect or download it: <antArtifact identifier="plugin-source" type="application/vnd.ant.code" title="Reconstructed Java Plugin Source">complete code</antArtifact>. 4) Provide the ready-to-build pom.xml and plugin.yml. Always provide 100% full implementations, never omit code with comments.',
+    enabled: true,
+    builtin: true
   }
 ];
 
@@ -342,7 +351,14 @@ export const Storage = {
   getSkills() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SKILLS);
-      return data ? JSON.parse(data) : DEFAULT_SKILLS;
+      let list = data ? JSON.parse(data) : [...DEFAULT_SKILLS];
+      // Ensure all builtin skills exist in user skills list
+      DEFAULT_SKILLS.forEach(ds => {
+        if (!list.some(s => s.id === ds.id)) {
+          list.push({ ...ds });
+        }
+      });
+      return list;
     } catch (e) {
       return DEFAULT_SKILLS;
     }

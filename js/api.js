@@ -99,6 +99,20 @@ export const Api = {
       `[THINKING & REASONING DIRECTIVE]: You MUST ALWAYS begin your response with an internal thought process enclosed in <thinking>...</thinking> tags. In your thinking block, outline your step-by-step reasoning, plan of action, technical analysis, and breakdown of the user's request (e.g. plugin structure, classes, decompiled methods). After the </thinking> tag, provide your final polished response. This displays as an interactive thinking accordion on the user's screen.`
     );
 
+    // 6. Automated Java Decompile & Project Rebuilding Directive (Nguyendzvn Minecraft Suite Protocol)
+    parts.push(
+      `[AUTO DECOMPILE & BUILD INSTRUCTIONS]:
+When the user provides a .jar file, decompiled code, or asks to "giải", "decompile", "build", or "viết lại":
+1. Automatically analyze the decompiled Java source classes, plugin.yml, and config.yml.
+2. Completely reconstruct and explain the full architecture, events, commands, and logic.
+3. Automatically generate the complete, ready-to-use reconstructed Java source code, maven pom.xml, and plugin.yml.
+4. Always wrap interactive code and full reconstructed classes inside an Artifact tag:
+   <antArtifact identifier="plugin-rebuild" type="application/vnd.ant.code" title="Rebuilt Java Plugin Source">
+   // full code here
+   </antArtifact>
+   so the user can view, copy, or download it directly from the Artifact Studio! Never leave methods unimplemented or give placeholder comments.`
+    );
+
     // 6. Custom User System Prompt
     if (settings.customSystemPrompt && settings.customSystemPrompt.trim()) {
       parts.push(`[USER CUSTOM RULES]:\n${settings.customSystemPrompt.trim()}`);

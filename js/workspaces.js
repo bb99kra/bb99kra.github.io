@@ -131,8 +131,14 @@ export const Workspaces = {
 
     this.filesListContainer.innerHTML = this.currentFiles.map((f, idx) => `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--bg-main);border-radius:6px;margin-bottom:4px;font-size:12.5px;">
-        <span>📄 ${f.name} <span style="color:var(--text-muted);font-size:11px;">(${Math.round(f.content.length / 1024 * 10) / 10} KB)</span></span>
-        <button class="btn-icon" onclick="window.claudeApp.removeWorkspaceFile(${idx})" style="padding:2px;">✕</button>
+        <span style="cursor:pointer;color:var(--text-primary);display:flex;align-items:center;gap:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="window.claudeApp.openFileInStudio(${idx})" title="Click to view in Studio">
+          📄 <strong style="text-decoration:underline;">${f.name}</strong> 
+          <span style="color:var(--text-muted);font-size:11px;">(${Math.round(f.content.length / 1024 * 10) / 10} KB)</span>
+        </span>
+        <div style="display:flex;gap:4px;">
+          <button class="btn-secondary" onclick="window.claudeApp.openFileInStudio(${idx})" style="padding:2px 6px;font-size:11px;">View</button>
+          <button class="btn-icon" onclick="window.claudeApp.removeWorkspaceFile(${idx})" style="padding:2px;">✕</button>
+        </div>
       </div>
     `).join('');
   },

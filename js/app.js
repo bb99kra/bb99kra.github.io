@@ -529,6 +529,27 @@ class ClaudeApp {
     }
   }
 
+  openFileInStudio(index) {
+    const ws = Storage.getActiveWorkspace();
+    if (!ws || !ws.files || !ws.files[index]) return;
+    const file = ws.files[index];
+    const isHtml = file.name.endsWith('.html') || file.name.endsWith('.htm');
+    const isSvg = file.name.endsWith('.svg');
+    const isJava = file.name.endsWith('.java');
+    const isYml = file.name.endsWith('.yml') || file.name.endsWith('.yaml');
+
+    Artifacts.open({
+      identifier: 'ws-file-' + index,
+      type: isHtml ? 'text/html' : isSvg ? 'image/svg+xml' : 'application/vnd.ant.code',
+      title: file.name,
+      content: file.content
+    });
+  }
+
+  removeWorkspaceFile(index) {
+    Workspaces.removeFile(index);
+  }
+
   async handleAttachmentUpload(e) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -580,7 +601,7 @@ class ClaudeApp {
               if (aIsKey && !bIsKey) return -1;
               if (!aIsKey && bIsKey) return 1;
               return 0;
-            }).slice(0, 15);
+            }).slice(0, 30);
 
             for (const classPath of priorityClasses) {
               try {
