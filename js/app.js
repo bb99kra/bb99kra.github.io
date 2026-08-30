@@ -704,12 +704,23 @@ class ClaudeApp {
     }
 
     this.attachmentsPreview.style.display = 'flex';
-    this.attachmentsPreview.innerHTML = this.pendingAttachments.map((att, idx) => `
-      <div style="display:flex;align-items:center;gap:6px;background:var(--bg-main);border:1px solid var(--border-subtle);padding:4px 8px;border-radius:8px;font-size:12px;">
-        <span>📄 ${att.name}</span>
-        <button style="border:none;background:transparent;cursor:color:var(--text-muted);" onclick="window.claudeApp.removeAttachment(${idx})">✕</button>
-      </div>
-    `).join('');
+    this.attachmentsPreview.innerHTML = this.pendingAttachments.map((att, idx) => {
+      const icon = att.name.endsWith('.jar') ? '📦' : att.name.endsWith('.zip') ? '🗂️' : '📄';
+      const badge = att.name.endsWith('.jar') ? '<span class="user-attachment-badge">Decompiled</span>' : '';
+      return `
+        <div class="user-attachment-card" style="margin:4px 0;max-width:320px;box-shadow:var(--shadow-sm);background:var(--bg-card);border:1px solid var(--border-color);">
+          <div class="user-attachment-icon" style="width:28px;height:28px;font-size:15px;">${icon}</div>
+          <div class="user-attachment-info" style="flex:1;">
+            <div class="user-attachment-name" title="${att.name}">${this.escapeHtml(att.name)}</div>
+            <div class="user-attachment-meta">
+              <span>${att.sizeStr || 'File'}</span>
+              ${badge}
+            </div>
+          </div>
+          <button style="border:none;background:transparent;cursor:pointer;color:var(--text-muted);font-size:14px;padding:2px 6px;border-radius:4px;" onclick="window.claudeApp.removeAttachment(${idx})" title="Remove">✕</button>
+        </div>
+      `;
+    }).join('');
   }
 
   removeAttachment(idx) {

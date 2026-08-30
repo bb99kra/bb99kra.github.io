@@ -111,7 +111,7 @@ export class JavaClassDisassembler {
         fields.push({ flags: fFlags, name: fName, descriptor: fDesc });
       }
 
-      // 6. Methods
+      // 6. Methods & Bytecode Disassembly
       const methodCount = view.getUint16(offset); offset += 2;
       const methods = [];
       for (let i = 0; i < methodCount && offset + 8 <= view.byteLength; i++) {
@@ -119,12 +119,78 @@ export class JavaClassDisassembler {
         const mName = getUtf8(view.getUint16(offset)); offset += 2;
         const mDesc = getUtf8(view.getUint16(offset)); offset += 2;
         const mAttrCount = view.getUint16(offset); offset += 2;
+        let methodCodeOps = [];
+
         for (let a = 0; a < mAttrCount && offset + 6 <= view.byteLength; a++) {
-          offset += 2; // attr name
+          const attrNameIdx = view.getUint16(offset); offset += 2;
           const aLen = view.getUint32(offset); offset += 4;
+          const attrName = getUtf8(attrNameIdx);
+
+          if (attrName === 'Code' && aLen >= 8 && offset + aLen <= view.byteLength) {
+            const maxStack = view.getUint16(offset);
+            const maxLocals = view.getUint16(offset + 2);
+            const codeLen = view.getUint32(offset + 4);
+            const codeOffset = offset + 8;
+            
+            // Disassemble bytecode instructions into readable traces
+            let cIdx = 0;
+            while (cIdx < codeLen && codeOffset + cIdx < view.byteLength) {
+              const op = view.getUint8(codeOffset + cIdx);
+              if (op === 0xb2 || op === 0xb3) { // getstatic / putstatic
+                const fIdx = view.getUint16(codeOffset + cIdx + 1);
+                const fieldRef = cp[fIdx];
+                const cName = fieldRef ? getClassName(fieldRef.classIndex).split('/').pop() : '';
+                const nt = fieldRef ? cp[fieldRef.nameAndTypeIndex] : null;
+                const fName = nt ? getUtf8(nt.nameIndex) : '';
+                methodCodeOps.push(op === 0xb2 ? `getstatic ${cName}.${fName}` : `putstatic ${cName}.${fName}`);
+                cIdx += 3;
+              } else if (op === 0xb4 || op === 0xb5) { // getfield / putfield
+                const fIdx = view.getUint16(codeOffset + cIdx + 1);
+                const fieldRef = cp[fIdx];
+                const nt = fieldRef ? cp[fieldRef.nameAndTypeIndex] : null;
+                const fName = nt ? getUtf8(nt.nameIndex) : '';
+                methodCodeOps.push(op === 0xb4 ? `this.${fName}` : `this.${fName} = ...`);
+                cIdx += 3;
+              } else if (op === 0xb6 || op === 0xb7 || op === 0xb8 || op === 0xb9) { // invokevirtual / invokespecial / invokestatic / invokeinterface
+                const mRefIdx = view.getUint16(codeOffset + cIdx + 1);
+                const mRef = cp[mRefIdx];
+                const cName = mRef ? getClassName(mRef.classIndex).split('/').pop() : '';
+                const nt = mRef ? cp[mRef.nameAndTypeIndex] : null;
+                const mMethodName = nt ? getUtf8(nt.nameIndex) : '';
+                if (mMethodName && mMethodName !== '<init>') {
+                  methodCodeOps.push(`call ${cName}.${mMethodName}()`);
+                }
+                cIdx += (op === 0xb9 ? 5 : 3);
+              } else if (op === 0x12) { // ldc
+                const strConstIdx = view.getUint8(codeOffset + cIdx + 1);
+                const entry = cp[strConstIdx];
+                if (entry && entry.tag === 8) {
+                  const s = getUtf8(entry.stringIndex);
+                  if (s) methodCodeOps.push(`"${s.replace(/"/g, '\\"')}"`);
+                }
+                cIdx += 2;
+              } else if (op === 0x13 || op === 0x14) { // ldc_w / ldc2_w
+                const strConstIdx = view.getUint16(codeOffset + cIdx + 1);
+                const entry = cp[strConstIdx];
+                if (entry && entry.tag === 8) {
+                  const s = getUtf8(entry.stringIndex);
+                  if (s) methodCodeOps.push(`"${s.replace(/"/g, '\\"')}"`);
+                }
+                cIdx += 3;
+              } else if (op === 0xac || op === 0xb0) { // ireturn / areturn
+                methodCodeOps.push(`return`);
+                cIdx += 1;
+              } else if (op === 0xb1) { // return void
+                methodCodeOps.push(`return`);
+                cIdx += 1;
+              } else {
+                cIdx += 1;
+              }
+            }
+          }
           offset += aLen;
         }
-        methods.push({ flags: mFlags, name: mName, descriptor: mDesc });
+        methods.push({ flags: mFlags, name: mName, descriptor: mDesc, opCodes: methodCodeOps });
       }
 
       // 7. String Constants in Constant Pool
@@ -192,7 +258,12 @@ export class JavaClassDisassembler {
           parts.push(`    static {\n        // Static initializer\n    }`);
         } else {
           const sig = this.formatMethodSignature(m.name, m.descriptor);
-          parts.push(`    ${sig} {\n        // Decompiled method body logic\n    }`);
+          if (m.opCodes && m.opCodes.length > 0) {
+            const bodyOps = m.opCodes.slice(0, 15).map(op => `        // ${op}`).join('\n');
+            parts.push(`    ${sig} {\n${bodyOps}\n        // (Bytecode logic trace decompiled)\n    }`);
+          } else {
+            parts.push(`    ${sig} {\n        // Bytecode implementation\n    }`);
+          }
         }
       });
       parts.push('');
