@@ -181,6 +181,32 @@ class ClaudeApp {
     this.btnCloseSettings.addEventListener('click', () => this.closeSettingsModal());
     this.btnSaveSettings.addEventListener('click', () => this.saveSettings());
 
+    // Universal Modal Backdrop Click to Close
+    document.querySelectorAll('.modal-backdrop').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.add('hidden');
+        }
+      });
+    });
+
+    // Universal Close Buttons ('✕') on All Modals
+    document.querySelectorAll('[id^="btn-close-"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const modal = btn.closest('.modal-backdrop');
+        if (modal) modal.classList.add('hidden');
+      });
+    });
+
+    // Universal Escape Key Handler
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.add('hidden'));
+        Artifacts.close();
+      }
+    });
+
     // 1-Click Fast Setup TuongTacGPT
     const btnQuickSetup = document.getElementById('btn-quick-setup-tuongtac');
     if (btnQuickSetup) {
@@ -442,9 +468,16 @@ class ClaudeApp {
     this.updateModelPill();
     this.closeModelPickerModal();
 
-    // Alert toast notification
-    const modelShort = modelId.split('/').pop();
-    console.log(`Đã chuyển sang model: ${modelId}`);
+    if (this.settingProviderPresets) {
+      this.settingProviderPresets.value = s.provider;
+      this.handlePresetChange(s.provider, false);
+    }
+    if (this.settingModel) {
+      this.settingModel.value = modelId;
+    }
+    if (this.settingModelSelect) {
+      this.settingModelSelect.value = modelId;
+    }
   }
 
   updateSkillsBadge() {
@@ -1206,6 +1239,9 @@ BẮT BUỘC BỌC TOÀN BỘ PROJECT HOÀN CHỈNH TRONG THẺ:
     if (preset) {
       this.settingApiType.value = preset.apiType;
       this.settingApiBase.value = preset.apiBase;
+      if (preset.defaultKey) {
+        this.settingApiKey.value = preset.defaultKey;
+      }
       if (this.providerDescDisplay) {
         this.providerDescDisplay.textContent = preset.description;
       }
@@ -1269,8 +1305,16 @@ BẮT BUỘC BỌC TOÀN BỘ PROJECT HOÀN CHỈNH TRONG THẺ:
   deleteSkill(id) { Skills.deleteSkill(id); }
 }
 
-// Instantiate and attach to window
-window.addEventListener('DOMContentLoaded', () => {
-  window.claudeApp = new ClaudeApp();
-  window.claudeApp.init();
-});
+// Robust instant initialization for type="module" (prevents missing DOMContentLoaded on cached reloads)
+function initClaudeApp() {
+  if (!window.claudeApp) {
+    window.claudeApp = new ClaudeApp();
+    window.claudeApp.init();
+  }
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', initClaudeApp);
+} else {
+  initClaudeApp();
+}
