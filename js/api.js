@@ -94,12 +94,17 @@ export const Api = {
       });
     }
 
-    // 5. Custom User System Prompt
+    // 5. Explicit Claude Thinking & Deep Reasoning Directive
+    parts.push(
+      `[THINKING & REASONING DIRECTIVE]: You MUST ALWAYS begin your response with an internal thought process enclosed in <thinking>...</thinking> tags. In your thinking block, outline your step-by-step reasoning, plan of action, technical analysis, and breakdown of the user's request (e.g. plugin structure, classes, decompiled methods). After the </thinking> tag, provide your final polished response. This displays as an interactive thinking accordion on the user's screen.`
+    );
+
+    // 6. Custom User System Prompt
     if (settings.customSystemPrompt && settings.customSystemPrompt.trim()) {
       parts.push(`[USER CUSTOM RULES]:\n${settings.customSystemPrompt.trim()}`);
     }
 
-    // 6. Live Web Search Injected Context
+    // 7. Live Web Search Injected Context
     if (searchResults) {
       parts.push(`[LIVE WEB SEARCH RESULTS - RECENT REAL-TIME DATA]:\n${searchResults}\n[INSTRUCTION]: Incorporate relevant facts from the search results above and cite with markdown links [Title](URL).`);
     }
@@ -314,6 +319,7 @@ export const Api = {
     const decoder = new TextDecoder('utf-8');
     let buffer = '';
     let fullText = '';
+    let isReasoning = false;
 
     while (true) {
       const { value, done } = await reader.read();
@@ -331,15 +337,33 @@ export const Api = {
 
         try {
           const parsed = JSON.parse(dataStr);
-          const delta = parsed.choices?.[0]?.delta?.content;
-          if (delta) {
-            fullText += delta;
-            onChunk(delta, fullText);
+          const delta = parsed.choices?.[0]?.delta;
+          const reasoning = delta?.reasoning_content || delta?.reasoning;
+          const content = delta?.content;
+
+          if (reasoning) {
+            if (!isReasoning) {
+              isReasoning = true;
+              fullText += '<thinking>\n';
+            }
+            fullText += reasoning;
+            onChunk(reasoning, fullText);
+          } else if (content) {
+            if (isReasoning) {
+              isReasoning = false;
+              fullText += '\n</thinking>\n\n';
+            }
+            fullText += content;
+            onChunk(content, fullText);
           }
         } catch (e) {
           // ignore partial parse errors
         }
       }
+    }
+
+    if (isReasoning) {
+      fullText += '\n</thinking>\n\n';
     }
 
     onDone(fullText);
