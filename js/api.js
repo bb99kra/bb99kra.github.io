@@ -344,13 +344,20 @@ You are an elite Minecraft Java reverse engineer and plugin architect.
       headers['X-Title'] = 'Claude AI Web';
     }
 
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(payload)
-    });
+    let response;
+    let attempts = 0;
+    const maxAttempts = 3;
 
-    if (!response.ok) {
+    while (attempts < maxAttempts) {
+      attempts++;
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) break;
+
       const errText = await response.text();
       let parsedMsg = errText;
       try {
@@ -358,12 +365,29 @@ You are an elite Minecraft Java reverse engineer and plugin architect.
         parsedMsg = errJson.error?.message || errJson.message || errText;
       } catch (e) {}
 
-      if (parsedMsg.includes('No available accounts')) {
+      // If quota exhausted or account rotating, attempt retry or switch to auto model
+      const isQuotaOrBusy = parsedMsg.includes('quota exhausted') || 
+                            parsedMsg.includes('No available accounts') || 
+                            parsedMsg.includes('rate_limit') ||
+                            response.status === 500 || 
+                            response.status === 503;
+
+      if (isQuotaOrBusy && attempts < maxAttempts) {
+        console.warn(`Upstream quota exhausted or worker busy (attempt ${attempts}/${maxAttempts}). Retrying in 1.5s...`);
+        if (attempts === 2 && endpoint.includes('9kiro.lol')) {
+          payload.model = 'auto';
+        }
+        await new Promise(r => setTimeout(r, 1500));
+        continue;
+      }
+
+      if (parsedMsg.includes('quota exhausted') || parsedMsg.includes('No available accounts')) {
         throw new Error(
-          'Máy chủ Kiro 9AWS hiện đang tự động nạp lại tài khoản upstream (thường mất 5-10 phút) và không bị trừ credit. ' +
-          'Trong lúc này, bạn hãy bấm vào tên Model ở góc trên và chọn model "GPT-5.6 Luna" (TuongTacGPT) để chat mượt mà ngay nhé!'
+          'Máy chủ Kiro CLI hiện đang tự động xoay vòng tài khoản upstream (thường mất 1-2 phút và không bị trừ credit). ' +
+          'Vui lòng bấm Thử lại sau giây lát hoặc đổi sang model "auto" ở trên!'
         );
       }
+
       throw new Error(`API Error (${response.status}): ${parsedMsg}`);
     }
 
