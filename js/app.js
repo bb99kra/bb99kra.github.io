@@ -8,6 +8,7 @@ import { Api } from './api.js';
 import { Artifacts } from './artifacts.js';
 import { Workspaces } from './workspaces.js';
 import { Skills } from './skills.js';
+import { JavaClassDisassembler } from './decompiler.js';
 
 class ClaudeApp {
   constructor() {
@@ -490,7 +491,7 @@ class ClaudeApp {
     this.messagesContainer.innerHTML = '';
 
     (chat.messages || []).forEach(msg => {
-      this.appendMessageElement(msg.role, msg.content, false, msg.searchResults);
+      this.appendMessageElement(msg.role, msg.displayText || msg.content, false, msg.searchResults, msg.attachments);
     });
 
     this.renderChatHistory();
@@ -557,41 +558,87 @@ class ClaudeApp {
               configYml = await configFile.async('string');
             }
 
-            // Filter class files and resources
-            const classFiles = entryNames.filter(n => n.endsWith('.class'));
+            // Filter class files (skip anonymous inner classes for cleaner decompile)
+            const classFiles = entryNames.filter(n => n.endsWith('.class') && !n.includes('$'));
             const resourceFiles = entryNames.filter(n => !n.endsWith('.class') && !n.endsWith('/'));
+
+            // Decompile top key classes using JavaClassDisassembler
+            const decompiledClasses = [];
+            let mainClassPath = '';
+            if (pluginYml) {
+              const mainMatch = pluginYml.match(/main:\s*([a-zA-Z0-9_.]+)/);
+              if (mainMatch) {
+                mainClassPath = mainMatch[1].replace(/\./g, '/') + '.class';
+              }
+            }
+
+            const priorityClasses = classFiles.sort((a, b) => {
+              if (a === mainClassPath) return -1;
+              if (b === mainClassPath) return 1;
+              const aIsKey = a.toLowerCase().includes('listener') || a.toLowerCase().includes('command') || a.toLowerCase().includes('main');
+              const bIsKey = b.toLowerCase().includes('listener') || b.toLowerCase().includes('command') || b.toLowerCase().includes('main');
+              if (aIsKey && !bIsKey) return -1;
+              if (!aIsKey && bIsKey) return 1;
+              return 0;
+            }).slice(0, 15);
+
+            for (const classPath of priorityClasses) {
+              try {
+                const classData = await zip.file(classPath).async('arraybuffer');
+                const parsed = JavaClassDisassembler.parse(classData);
+                if (parsed) {
+                  const javaSource = JavaClassDisassembler.toJavaSource(parsed);
+                  const simpleName = classPath.split('/').pop().replace('.class', '');
+                  decompiledClasses.push({
+                    path: classPath,
+                    source: javaSource
+                  });
+                  // Save decompiled Java file directly into active Workspace
+                  Storage.addFileToActiveWorkspace(`${fileName}/${simpleName}.java`, javaSource);
+                }
+              } catch (errClass) {
+                console.warn('Decompile error for', classPath, errClass);
+              }
+            }
 
             let jarSummary = `[Minecraft Plugin / Java Archive: ${fileName} - Dung lượng: ${(file.size / 1024).toFixed(1)} KB]\n`;
             if (pluginYml) {
               jarSummary += `\n--- plugin.yml ---\n${pluginYml.slice(0, 3000)}\n--- End of plugin.yml ---\n`;
-            }
-            if (configYml) {
-              jarSummary += `\n--- config.yml Preview ---\n${configYml.slice(0, 2000)}\n--- End of config.yml ---\n`;
-            }
-            jarSummary += `\n--- Danh sách Classes trong JAR (${classFiles.length} file .class) ---\n${classFiles.slice(0, 50).join('\n')}`;
-            if (classFiles.length > 50) {
-              jarSummary += `\n... và ${classFiles.length - 50} class khác.`;
-            }
-            if (resourceFiles.length > 0) {
-              jarSummary += `\n\n--- Resource Files ---\n${resourceFiles.slice(0, 30).join('\n')}`;
-            }
-
-            // Auto-save extracted files to active Project Workspace
-            if (pluginYml) {
               Storage.addFileToActiveWorkspace(`${fileName}/plugin.yml`, pluginYml);
             }
             if (configYml) {
+              jarSummary += `\n--- config.yml Preview ---\n${configYml.slice(0, 2000)}\n--- End of config.yml ---\n`;
               Storage.addFileToActiveWorkspace(`${fileName}/config.yml`, configYml);
             }
+
+            if (decompiledClasses.length > 0) {
+              jarSummary += `\n--- MÃ NGUỒN JAVA ĐÃ DỊCH NGƯỢC (${decompiledClasses.length} class cốt lõi đã nạp vào Workspace) ---\n`;
+              decompiledClasses.forEach(dc => {
+                jarSummary += `\n// File: ${dc.path}\n${dc.source}\n`;
+              });
+              jarSummary += `\n--- HẾT MÃ NGUỒN DỊCH NGƯỢC ---\n`;
+            }
+
+            jarSummary += `\n--- Danh sách Classes trong JAR (${classFiles.length} file .class) ---\n${classFiles.slice(0, 40).join('\n')}`;
+            if (classFiles.length > 40) {
+              jarSummary += `\n... và ${classFiles.length - 40} class khác.`;
+            }
+
             this.updateTopWorkspaceDisplay();
 
             this.pendingAttachments.push({
               name: fileName,
+              size: file.size,
+              sizeStr: (file.size / 1024).toFixed(1) + ' KB',
+              type: 'jar',
               content: jarSummary
             });
           } else {
             this.pendingAttachments.push({
               name: fileName,
+              size: file.size,
+              sizeStr: (file.size / 1024).toFixed(1) + ' KB',
+              type: 'jar',
               content: `[File .jar: ${fileName} - ${(file.size / 1024).toFixed(1)} KB]`
             });
           }
@@ -599,6 +646,9 @@ class ClaudeApp {
           console.error('Error parsing jar:', err);
           this.pendingAttachments.push({
             name: fileName,
+            size: file.size,
+            sizeStr: (file.size / 1024).toFixed(1) + ' KB',
+            type: 'jar',
             content: `[File .jar: ${fileName} - ${(file.size / 1024).toFixed(1)} KB (Parse error: ${err.message})]`
           });
         }
@@ -609,6 +659,9 @@ class ClaudeApp {
           reader.onload = (event) => {
             this.pendingAttachments.push({
               name: fileName,
+              size: file.size,
+              sizeStr: (file.size / 1024).toFixed(1) + ' KB',
+              type: 'text',
               content: event.target.result
             });
             resolve();
@@ -648,9 +701,11 @@ class ClaudeApp {
     const text = this.textarea.value.trim();
     if (!text && this.pendingAttachments.length === 0) return;
 
+    const attachmentsCopy = [...this.pendingAttachments];
+
     let fullUserContent = text;
-    if (this.pendingAttachments.length > 0) {
-      const attachBlock = this.pendingAttachments.map(a => `\n[Attached File: ${a.name}]\n${a.content}\n[End of ${a.name}]`).join('\n');
+    if (attachmentsCopy.length > 0) {
+      const attachBlock = attachmentsCopy.map(a => `\n[Attached File: ${a.name}]\n${a.content}\n[End of ${a.name}]`).join('\n');
       fullUserContent = fullUserContent ? `${fullUserContent}\n\n${attachBlock}` : attachBlock;
     }
 
@@ -660,16 +715,19 @@ class ClaudeApp {
       this.currentChat = {
         id: 'chat-' + Date.now(),
         workspaceId: Storage.getActiveWorkspaceId(),
-        title: text.slice(0, 32) || 'Claude Discussion',
+        title: text.slice(0, 32) || (attachmentsCopy[0] ? attachmentsCopy[0].name : 'Claude Discussion'),
         messages: []
       };
     }
 
-    this.appendMessageElement('user', fullUserContent, true);
+    // Append to UI: Elegant message bubble showing file chips and text (no raw text dump!)
+    this.appendMessageElement('user', text, true, false, attachmentsCopy);
 
     this.currentChat.messages.push({
       role: 'user',
       content: fullUserContent,
+      displayText: text,
+      attachments: attachmentsCopy.map(a => ({ name: a.name, sizeStr: a.sizeStr, type: a.type })),
       timestamp: Date.now()
     });
     Storage.saveChat(this.currentChat);
@@ -790,14 +848,64 @@ class ClaudeApp {
     return { row, bubble };
   }
 
-  appendMessageElement(role, content, shouldScroll = true, hadSearch = false) {
+  appendMessageElement(role, content, shouldScroll = true, hadSearch = false, attachments = null) {
     const row = document.createElement('div');
     row.className = `message-row ${role}`;
 
     if (role === 'user') {
       const bubble = document.createElement('div');
       bubble.className = 'message-bubble';
-      bubble.textContent = content;
+
+      let displayContent = content || '';
+      let fileChips = attachments ? [...attachments] : [];
+
+      // If loaded from history without explicit attachments array, extract attached file names
+      if (fileChips.length === 0 && displayContent.includes('[Attached File:')) {
+        const matches = [...displayContent.matchAll(/\[Attached File:\s*([^\]]+)\]/g)];
+        if (matches.length > 0) {
+          fileChips = matches.map(m => {
+            const fname = m[1].trim();
+            return {
+              name: fname,
+              sizeStr: fname.endsWith('.jar') ? 'Java Archive (Decompiled)' : 'Document',
+              type: fname.endsWith('.jar') ? 'jar' : 'text'
+            };
+          });
+          displayContent = displayContent.replace(/\[Attached File:\s*[^\]]+\][\s\S]*?\[End of [^\]]+\]/g, '').trim();
+        }
+      }
+
+      // Render sleek attachment chips like Claude.ai
+      if (fileChips.length > 0) {
+        const container = document.createElement('div');
+        container.className = 'user-attachment-container';
+        container.innerHTML = fileChips.map(f => {
+          const icon = f.name.endsWith('.jar') ? '📦' : f.name.endsWith('.zip') ? '🗂️' : '📄';
+          const badge = f.name.endsWith('.jar') ? '<span class="user-attachment-badge">Decompiled</span>' : '';
+          return `
+            <div class="user-attachment-card">
+              <div class="user-attachment-icon">${icon}</div>
+              <div class="user-attachment-info">
+                <div class="user-attachment-name" title="${f.name}">${this.escapeHtml(f.name)}</div>
+                <div class="user-attachment-meta">
+                  <span>${f.sizeStr || 'File'}</span>
+                  ${badge}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        bubble.appendChild(container);
+      }
+
+      // Render the prompt text
+      if (displayContent) {
+        const textNode = document.createElement('div');
+        textNode.style.whiteSpace = 'pre-wrap';
+        textNode.textContent = displayContent;
+        bubble.appendChild(textNode);
+      }
+
       row.appendChild(bubble);
     } else {
       const avatar = document.createElement('div');
@@ -846,6 +954,54 @@ class ClaudeApp {
   renderMarkdown(text) {
     let cleaned = text.replace(/<antArtifact[\s\S]*?<\/antArtifact>/gi, '');
 
+    // Claude Thinking Accordion Container (Closed tag)
+    cleaned = cleaned.replace(/<thinking>([\s\S]*?)<\/thinking>/gi, (match, thought) => {
+      return `
+        <div class="claude-thinking-container">
+          <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <div class="claude-thinking-title">
+              <span class="thinking-sparkle">💭</span>
+              <span>Thinking Process</span>
+            </div>
+            <span class="claude-thinking-arrow">▾</span>
+          </div>
+          <div class="claude-thinking-content">${this.escapeHtml(thought.trim())}</div>
+        </div>
+      `;
+    });
+
+    // Claude Thinking while actively streaming (Unclosed tag)
+    cleaned = cleaned.replace(/<thinking>([\s\S]*)$/gi, (match, thought) => {
+      return `
+        <div class="claude-thinking-container">
+          <div class="claude-thinking-header">
+            <div class="claude-thinking-title">
+              <span class="thinking-sparkle">💭</span>
+              <span>Thinking...</span>
+            </div>
+          </div>
+          <div class="claude-thinking-content">${this.escapeHtml(thought.trim())}<span class="streaming-cursor"></span></div>
+        </div>
+      `;
+    });
+
+    // Also support <thought>...</thought>
+    cleaned = cleaned.replace(/<thought>([\s\S]*?)<\/thought>/gi, (match, thought) => {
+      return `
+        <div class="claude-thinking-container">
+          <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <div class="claude-thinking-title">
+              <span class="thinking-sparkle">💭</span>
+              <span>Thought</span>
+            </div>
+            <span class="claude-thinking-arrow">▾</span>
+          </div>
+          <div class="claude-thinking-content">${this.escapeHtml(thought.trim())}</div>
+        </div>
+      `;
+    });
+
+    // Code blocks with syntax copy button
     cleaned = cleaned.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
       const safeCode = this.escapeHtml(code.trim());
       const safeLang = lang || 'code';

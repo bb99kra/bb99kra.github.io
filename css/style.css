@@ -1306,3 +1306,166 @@ input:checked + .slider:before {
   color: #ffffff;
   border-color: var(--accent);
 }
+
+/* ==========================================================================
+   AUTHENTIC CLAUDE.AI USER ATTACHMENTS & THINKING ACCORDION STYLES
+   ========================================================================== */
+
+/* User Message Attachment Chips */
+.user-attachment-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.user-attachment-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 8px 12px;
+  max-width: 380px;
+}
+
+[data-theme="dark"] .user-attachment-card {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.user-attachment-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.user-attachment-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.user-attachment-name {
+  font-weight: 500;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+
+.user-attachment-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1px;
+}
+
+.user-attachment-badge {
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Claude Thinking Block (Collapsible Accordion) */
+.claude-thinking-container {
+  background: var(--bg-code);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  margin: 12px 0 16px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.claude-thinking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.02);
+  transition: background 0.15s ease;
+}
+
+.claude-thinking-header:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.claude-thinking-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.thinking-sparkle {
+  color: var(--accent);
+  font-size: 14px;
+  animation: pulseThinking 2s infinite ease-in-out;
+}
+
+@keyframes pulseThinking {
+  0%, 100% { opacity: 0.6; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.claude-thinking-arrow {
+  font-size: 11px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.claude-thinking-container.collapsed .claude-thinking-arrow {
+  transform: rotate(-90deg);
+}
+
+.claude-thinking-container.collapsed .claude-thinking-content {
+  display: none;
+}
+
+.claude-thinking-content {
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  font-style: italic;
+  border-top: 1px solid var(--border-subtle);
+  white-space: pre-wrap;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+/* Streaming Blinking Cursor */
+.streaming-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 15px;
+  background-color: var(--accent);
+  margin-left: 4px;
+  vertical-align: middle;
+  border-radius: 2px;
+  animation: blinkCursor 0.8s infinite;
+}
+
+@keyframes blinkCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
