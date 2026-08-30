@@ -142,14 +142,14 @@ export class JavaClassDisassembler {
                 const cName = fieldRef ? getClassName(fieldRef.classIndex).split('/').pop() : '';
                 const nt = fieldRef ? cp[fieldRef.nameAndTypeIndex] : null;
                 const fName = nt ? getUtf8(nt.nameIndex) : '';
-                methodCodeOps.push(op === 0xb2 ? `getstatic ${cName}.${fName}` : `putstatic ${cName}.${fName}`);
+                methodCodeOps.push(`${cName}.${fName};`);
                 cIdx += 3;
               } else if (op === 0xb4 || op === 0xb5) { // getfield / putfield
                 const fIdx = view.getUint16(codeOffset + cIdx + 1);
                 const fieldRef = cp[fIdx];
                 const nt = fieldRef ? cp[fieldRef.nameAndTypeIndex] : null;
                 const fName = nt ? getUtf8(nt.nameIndex) : '';
-                methodCodeOps.push(op === 0xb4 ? `this.${fName}` : `this.${fName} = ...`);
+                methodCodeOps.push(op === 0xb4 ? `this.${fName};` : `this.${fName} = arg0;`);
                 cIdx += 3;
               } else if (op === 0xb6 || op === 0xb7 || op === 0xb8 || op === 0xb9) { // invokevirtual / invokespecial / invokestatic / invokeinterface
                 const mRefIdx = view.getUint16(codeOffset + cIdx + 1);
@@ -158,7 +158,7 @@ export class JavaClassDisassembler {
                 const nt = mRef ? cp[mRef.nameAndTypeIndex] : null;
                 const mMethodName = nt ? getUtf8(nt.nameIndex) : '';
                 if (mMethodName && mMethodName !== '<init>') {
-                  methodCodeOps.push(`call ${cName}.${mMethodName}()`);
+                  methodCodeOps.push(`${cName ? cName + '.' : ''}${mMethodName}();`);
                 }
                 cIdx += (op === 0xb9 ? 5 : 3);
               } else if (op === 0x12) { // ldc
@@ -265,7 +265,9 @@ export class JavaClassDisassembler {
           let methodLines = [];
           if (m.opCodes && m.opCodes.length > 0) {
             m.opCodes.slice(0, 15).forEach(op => {
-              methodLines.push(`        // ${op}`);
+              if (!op.startsWith('"') && !op.startsWith('return')) {
+                methodLines.push(`        ${op}`);
+              }
             });
           }
           if (retStatement) {
