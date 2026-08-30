@@ -217,7 +217,14 @@ export const Storage = {
   getSettings() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-      return data ? { ...DEFAULT_SETTINGS, ...JSON.parse(data) } : { ...DEFAULT_SETTINGS };
+      if (!data) return { ...DEFAULT_SETTINGS };
+      const parsed = JSON.parse(data);
+      // Auto-migrate any cached legacy 3.x model to Claude Sonnet 5
+      if (!parsed.model || parsed.model.includes('3.7') || parsed.model.includes('3.5')) {
+        parsed.model = 'anthropic/claude-sonnet-5';
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
+      }
+      return { ...DEFAULT_SETTINGS, ...parsed };
     } catch (e) {
       return { ...DEFAULT_SETTINGS };
     }

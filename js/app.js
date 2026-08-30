@@ -1,5 +1,6 @@
 /**
  * CLAUDE AI - CORE APPLICATION CONTROLLER
+ * Full 2026 Generation (Claude 5, GPT-5.6, DeepSeek V4, Gemini 3.7)
  */
 
 import { Storage, PROVIDER_PRESETS } from './storage.js';
@@ -15,6 +16,7 @@ class ClaudeApp {
     this.abortController = null;
     this.webSearchActive = false;
     this.pendingAttachments = [];
+    this.activePickerProvider = 'openrouter';
   }
 
   init() {
@@ -32,7 +34,6 @@ class ClaudeApp {
     this.btnNewChat = document.getElementById('btn-new-chat');
     this.btnWebSearch = document.getElementById('btn-toggle-search');
     this.btnModelPill = document.getElementById('model-selector-pill');
-    this.quickModelMenu = document.getElementById('quick-model-menu');
     this.btnSettings = document.getElementById('nav-settings');
     this.btnThemeToggle = document.getElementById('btn-theme-toggle');
     this.sidebar = document.getElementById('sidebar');
@@ -58,13 +59,21 @@ class ClaudeApp {
     this.settingSystemPrompt = document.getElementById('setting-system-prompt');
     this.settingProviderPresets = document.getElementById('setting-provider-presets');
 
-    // 4. Bind Global Handlers
+    // 4. Model Picker Modal Elements
+    this.modalModelPicker = document.getElementById('modal-model-picker');
+    this.btnCloseModelPicker = document.getElementById('btn-close-model-picker');
+    this.pickerProviderTabs = document.getElementById('picker-provider-tabs');
+    this.pickerModelsList = document.getElementById('picker-models-list');
+    this.pickerCustomInput = document.getElementById('picker-custom-model-input');
+    this.pickerBtnApplyCustom = document.getElementById('picker-btn-apply-custom');
+
+    // 5. Bind Global Handlers
     this.bindEvents();
 
-    // 5. Apply Theme
+    // 6. Apply Theme
     this.applyTheme(Storage.getTheme());
 
-    // 6. Load Chats & Active Chat
+    // 7. Load Chats & Active Chat
     this.renderChatHistory();
     const activeChatId = Storage.getActiveChatId();
     if (activeChatId) {
@@ -73,11 +82,11 @@ class ClaudeApp {
       this.showWelcome();
     }
 
-    // 7. Update Model Pill
+    // 8. Update Model Pill
     this.updateModelPill();
     this.updateSkillsBadge();
 
-    // 8. Auto-prompt for API Key if empty
+    // 9. Auto-prompt for API Key if empty
     const settings = Storage.getSettings();
     if (!settings.apiKey) {
       setTimeout(() => this.openSettingsModal(), 600);
@@ -138,18 +147,27 @@ class ClaudeApp {
       });
     }
 
-    // Quick Model Pill Click -> Opens Quick Model Menu
-    this.btnModelPill.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.toggleQuickModelMenu();
+    // Top Model Pill Click -> Opens Interactive Model Picker Modal!
+    this.btnModelPill.addEventListener('click', () => {
+      this.openModelPickerModal();
     });
 
-    // Close Quick Model Menu on Outside Click
-    document.addEventListener('click', (e) => {
-      if (this.quickModelMenu && !this.quickModelMenu.contains(e.target) && !this.btnModelPill.contains(e.target)) {
-        this.quickModelMenu.classList.add('hidden');
-      }
-    });
+    // Close Model Picker Modal
+    if (this.btnCloseModelPicker) {
+      this.btnCloseModelPicker.addEventListener('click', () => this.closeModelPickerModal());
+    }
+
+    // Apply Custom Model from Picker
+    if (this.pickerBtnApplyCustom) {
+      this.pickerBtnApplyCustom.addEventListener('click', () => {
+        const val = this.pickerCustomInput.value.trim();
+        if (val) {
+          this.selectModel(val);
+        } else {
+          alert('Vui lòng nhập Model ID!');
+        }
+      });
+    }
 
     // Settings Modal
     this.btnSettings.addEventListener('click', () => this.openSettingsModal());
@@ -202,54 +220,106 @@ class ClaudeApp {
 
   updateModelPill() {
     const s = Storage.getSettings();
-    const modelName = s.model ? s.model.split('/').pop() : 'Claude 3.7';
-    document.getElementById('current-model-name').textContent = modelName;
+    let modelDisplay = s.model || 'anthropic/claude-sonnet-5';
+
+    if (modelDisplay.includes('sonnet-5')) modelDisplay = 'Claude Sonnet 5';
+    else if (modelDisplay.includes('opus-5')) modelDisplay = 'Claude Opus 5';
+    else if (modelDisplay.includes('fable-5')) modelDisplay = 'Claude Fable 5';
+    else if (modelDisplay.includes('gpt-5.6')) modelDisplay = 'GPT-5.6 Luna';
+    else if (modelDisplay.includes('deepseek-v4')) modelDisplay = 'DeepSeek V4';
+    else if (modelDisplay.includes('gemini-3.7')) modelDisplay = 'Gemini 3.7 Flash';
+    else if (modelDisplay.includes('o3-mini')) modelDisplay = 'OpenAI o3-mini';
+    else if (modelDisplay.includes('o3')) modelDisplay = 'OpenAI o3';
+    else modelDisplay = modelDisplay.split('/').pop();
+
+    const el = document.getElementById('current-model-name');
+    if (el) el.textContent = modelDisplay;
   }
 
-  toggleQuickModelMenu() {
-    if (!this.quickModelMenu) return;
-    const isHidden = this.quickModelMenu.classList.contains('hidden');
+  // ==========================================
+  // INTERACTIVE MODEL PICKER MODAL
+  // ==========================================
+  openModelPickerModal(providerKey) {
+    const s = Storage.getSettings();
+    this.activePickerProvider = providerKey || s.provider || 'openrouter';
+    this.renderPickerTabs();
+    this.renderPickerModels();
+    this.pickerCustomInput.value = s.model || 'anthropic/claude-sonnet-5';
+    this.modalModelPicker.classList.remove('hidden');
+  }
 
-    if (isHidden) {
-      this.renderQuickModelMenu();
-      this.quickModelMenu.classList.remove('hidden');
-    } else {
-      this.quickModelMenu.classList.add('hidden');
+  closeModelPickerModal() {
+    if (this.modalModelPicker) {
+      this.modalModelPicker.classList.add('hidden');
     }
   }
 
-  renderQuickModelMenu() {
-    const s = Storage.getSettings();
-    const currentProvider = PROVIDER_PRESETS[s.provider] || PROVIDER_PRESETS.openrouter;
-    const models = currentProvider.models || PROVIDER_PRESETS.openrouter.models;
+  renderPickerTabs() {
+    const providers = [
+      { key: 'openrouter', name: 'OpenRouter (Tất cả SOTA)' },
+      { key: 'anthropic', name: 'Anthropic Claude' },
+      { key: 'deepseek', name: 'DeepSeek' },
+      { key: 'openai', name: 'OpenAI' },
+      { key: 'gemini', name: 'Google Gemini' },
+      { key: 'groq', name: 'Groq LPU' },
+      { key: 'together', name: 'Together AI' },
+      { key: 'mistral', name: 'Mistral AI' },
+      { key: 'ollama', name: 'Ollama Local' }
+    ];
 
-    let html = `<div class="quick-model-header">${currentProvider.name} Models</div>`;
-
-    html += models.map(m => `
-      <div class="quick-model-item ${m.id === s.model ? 'active' : ''}" onclick="window.claudeApp.quickSwitchModel('${m.id}')">
-        <span>${m.name}</span>
-        ${m.id === s.model ? '<span style="color:var(--accent);">✓</span>' : ''}
+    this.pickerProviderTabs.innerHTML = providers.map(p => `
+      <div class="provider-tab-pill ${p.key === this.activePickerProvider ? 'active' : ''}" onclick="window.claudeApp.switchPickerProvider('${p.key}')">
+        ${p.name}
       </div>
     `).join('');
-
-    html += `
-      <div style="border-top:1px solid var(--border-subtle);margin-top:6px;padding-top:6px;">
-        <div class="quick-model-item" onclick="window.claudeApp.openSettingsModal(); document.getElementById('quick-model-menu').classList.add('hidden');">
-          <span>⚙️ All Providers & Settings...</span>
-          <span style="font-size:11px;opacity:0.7;">Edit ↗</span>
-        </div>
-      </div>
-    `;
-
-    this.quickModelMenu.innerHTML = html;
   }
 
-  quickSwitchModel(modelId) {
+  switchPickerProvider(providerKey) {
+    this.activePickerProvider = providerKey;
+    this.renderPickerTabs();
+    this.renderPickerModels();
+  }
+
+  renderPickerModels() {
+    const s = Storage.getSettings();
+    const provider = PROVIDER_PRESETS[this.activePickerProvider] || PROVIDER_PRESETS.openrouter;
+    const models = provider.models || [];
+
+    this.pickerModelsList.innerHTML = models.map(m => {
+      const isActive = m.id === s.model;
+      return `
+        <div class="model-picker-card ${isActive ? 'active' : ''}" onclick="window.claudeApp.selectModel('${m.id}', '${this.activePickerProvider}')">
+          <div class="model-picker-info">
+            <div class="model-picker-name">${m.name}</div>
+            <div class="model-picker-id">${m.id}</div>
+          </div>
+          <div>
+            ${isActive 
+              ? '<span style="background:var(--accent);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;">✓</span>' 
+              : '<button class="btn-secondary" style="font-size:11px;padding:4px 10px;pointer-events:none;">Chọn</button>'}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  selectModel(modelId, providerKey) {
     const s = Storage.getSettings();
     s.model = modelId;
+
+    if (providerKey && PROVIDER_PRESETS[providerKey]) {
+      s.provider = providerKey;
+      s.apiType = PROVIDER_PRESETS[providerKey].apiType;
+      s.apiBase = PROVIDER_PRESETS[providerKey].apiBase;
+    }
+
     Storage.saveSettings(s);
     this.updateModelPill();
-    if (this.quickModelMenu) this.quickModelMenu.classList.add('hidden');
+    this.closeModelPickerModal();
+
+    // Alert toast notification
+    const modelShort = modelId.split('/').pop();
+    console.log(`Đã chuyển sang model: ${modelId}`);
   }
 
   updateSkillsBadge() {
@@ -363,7 +433,7 @@ class ClaudeApp {
     this.attachmentsPreview.innerHTML = this.pendingAttachments.map((att, idx) => `
       <div style="display:flex;align-items:center;gap:6px;background:var(--bg-main);border:1px solid var(--border-subtle);padding:4px 8px;border-radius:8px;font-size:12px;">
         <span>📄 ${att.name}</span>
-        <button style="border:none;background:transparent;cursor:pointer;color:var(--text-muted);" onclick="window.claudeApp.removeAttachment(${idx})">✕</button>
+        <button style="border:none;background:transparent;cursor:color:var(--text-muted);" onclick="window.claudeApp.removeAttachment(${idx})">✕</button>
       </div>
     `).join('');
   }
@@ -390,7 +460,7 @@ class ClaudeApp {
       this.currentChat = {
         id: 'chat-' + Date.now(),
         workspaceId: Storage.getActiveWorkspaceId(),
-        title: text.slice(0, 32) || 'Code Discussion',
+        title: text.slice(0, 32) || 'Claude Discussion',
         messages: []
       };
     }
@@ -617,7 +687,7 @@ class ClaudeApp {
     this.settingApiType.value = s.apiType || 'openai';
     this.settingApiBase.value = s.apiBase || 'https://openrouter.ai/api/v1';
     this.settingApiKey.value = s.apiKey || '';
-    this.settingModel.value = s.model || 'anthropic/claude-3.7-sonnet';
+    this.settingModel.value = s.model || 'anthropic/claude-sonnet-5';
     if (this.settingModelSelect) {
       this.settingModelSelect.value = s.model || '';
     }
@@ -661,7 +731,11 @@ class ClaudeApp {
       <option value="${m.id}">${m.name}</option>
     `).join('');
 
-    if (shouldResetModel && models.length > 0) {
+    const s = Storage.getSettings();
+    if (!shouldResetModel && s.model) {
+      this.settingModelSelect.value = s.model;
+      this.settingModel.value = s.model;
+    } else if (shouldResetModel && models.length > 0) {
       this.settingModelSelect.value = models[0].id;
       this.settingModel.value = models[0].id;
     }
@@ -673,7 +747,7 @@ class ClaudeApp {
       apiType: this.settingApiType.value,
       apiBase: this.settingApiBase.value.trim(),
       apiKey: this.settingApiKey.value.trim(),
-      model: this.settingModel.value.trim(),
+      model: this.settingModel.value.trim() || 'anthropic/claude-sonnet-5',
       temperature: parseFloat(this.settingTemp.value),
       maxTokens: parseInt(this.settingMaxTokens.value, 10) || 4096,
       lenientMode: this.settingLenient.checked,

@@ -1240,3 +1240,69 @@ input:checked + .slider:before {
   color: var(--accent);
   font-weight: 600;
 }
+
+/* Model Picker Modal & Cards */
+.model-picker-card {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-card);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.model-picker-card:hover {
+  border-color: var(--accent);
+  background-color: var(--bg-card-hover);
+  transform: translateY(-1px);
+}
+
+.model-picker-card.active {
+  border-color: var(--accent);
+  background-color: var(--accent-light);
+}
+
+.model-picker-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.model-picker-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.model-picker-id {
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.provider-tab-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.provider-tab-pill:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.provider-tab-pill.active {
+  background-color: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}

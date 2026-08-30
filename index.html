@@ -383,6 +383,36 @@
     </div>
   </div>
 
+  <!-- MODAL: MODEL PICKER -->
+  <div id="modal-model-picker" class="modal-backdrop hidden">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="brand-star">✳</span>
+          <h2 class="modal-title">Select Model (Chọn Mô Hình AI)</h2>
+        </div>
+        <button id="btn-close-model-picker" class="btn-icon">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding:16px 20px;">
+        <!-- Provider filter pills -->
+        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--border-subtle);" id="picker-provider-tabs"></div>
+
+        <!-- Models list grid -->
+        <div id="picker-models-list" style="display:flex;flex-direction:column;gap:8px;max-height:380px;overflow-y:auto;padding-right:4px;"></div>
+
+        <!-- Custom Model Input section -->
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-subtle);">
+          <label class="form-label" style="font-size:12.5px;">Hoặc tự nhập Custom Model ID:</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="picker-custom-model-input" class="form-input" placeholder="Ví dụ: anthropic/claude-sonnet-5">
+            <button id="picker-btn-apply-custom" class="btn-primary" style="padding:6px 16px;white-space:nowrap;">Chọn Model</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
