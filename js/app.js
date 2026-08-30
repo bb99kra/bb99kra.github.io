@@ -61,13 +61,14 @@ class ClaudeApp {
       this.settingSystemPrompt = document.getElementById('setting-system-prompt');
       this.settingProviderPresets = document.getElementById('setting-provider-presets');
 
-      // 4. Model Picker Modal Elements
-      this.modalModelPicker = document.getElementById('modal-model-picker');
-      this.btnCloseModelPicker = document.getElementById('btn-close-model-picker');
-      this.pickerProviderTabs = document.getElementById('picker-provider-tabs');
-      this.pickerModelsList = document.getElementById('picker-models-list');
-      this.pickerCustomInput = document.getElementById('picker-custom-model-input');
-      this.pickerBtnApplyCustom = document.getElementById('picker-btn-apply-custom');
+      // 5. Memory Modal Elements
+      this.modalMemory = document.getElementById('modal-memory');
+      this.btnCloseMemory = document.getElementById('btn-close-memory');
+      this.memoryInputNew = document.getElementById('memory-input-new');
+      this.btnAddMemory = document.getElementById('btn-add-memory');
+      this.btnClearAllMemory = document.getElementById('btn-clear-all-memory');
+      this.memoryItemsList = document.getElementById('memory-items-list');
+      this.memoryCountSpan = document.getElementById('memory-count');
 
       // 5. Bind Global Handlers
       this.bindEvents();
@@ -179,6 +180,43 @@ class ClaudeApp {
     const btnTopSkills = document.getElementById('btn-top-skills');
     if (btnTopSkills) {
       btnTopSkills.addEventListener('click', () => Skills.openModal());
+    }
+
+    // Top Navbar & Sidebar Memory Buttons
+    const btnTopMemory = document.getElementById('btn-top-memory');
+    if (btnTopMemory) {
+      btnTopMemory.addEventListener('click', () => this.openMemoryModal());
+    }
+
+    const navMemory = document.getElementById('nav-memory');
+    if (navMemory) {
+      navMemory.addEventListener('click', () => this.openMemoryModal());
+    }
+
+    if (this.btnCloseMemory) {
+      this.btnCloseMemory.addEventListener('click', () => this.closeMemoryModal());
+    }
+
+    if (this.btnAddMemory) {
+      this.btnAddMemory.addEventListener('click', () => this.handleAddMemory());
+    }
+
+    if (this.memoryInputNew) {
+      this.memoryInputNew.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.handleAddMemory();
+        }
+      });
+    }
+
+    if (this.btnClearAllMemory) {
+      this.btnClearAllMemory.addEventListener('click', () => {
+        if (confirm('Bạn có chắc muốn xoá TOÀN BỘ trí nhớ của AI không?')) {
+          Storage.clearMemories();
+          this.renderMemoryItems();
+        }
+      });
     }
 
     // Top Model Pill Click -> Opens Interactive Model Picker Modal!
@@ -1394,6 +1432,68 @@ BẮT BUỘC BỌC TOÀN BỘ PROJECT HOÀN CHỈNH TRONG THẺ:
   toggleSkill(id, enabled) { Skills.toggleSkill(id, enabled); }
   editSkill(id) { Skills.openEditor(id); }
   deleteSkill(id) { Skills.deleteSkill(id); }
+
+  // ==========================================
+  // AI LONG-TERM MEMORY ENGINE METHODS
+  // ==========================================
+  openMemoryModal() {
+    this.renderMemoryItems();
+    if (this.modalMemory) {
+      this.modalMemory.classList.remove('hidden');
+    }
+  }
+
+  closeMemoryModal() {
+    if (this.modalMemory) {
+      this.modalMemory.classList.add('hidden');
+    }
+  }
+
+  handleAddMemory() {
+    if (!this.memoryInputNew) return;
+    const text = this.memoryInputNew.value.trim();
+    if (!text) return;
+    Storage.addMemory(text);
+    this.memoryInputNew.value = '';
+    this.renderMemoryItems();
+  }
+
+  handleDeleteMemory(id) {
+    Storage.deleteMemory(id);
+    this.renderMemoryItems();
+  }
+
+  renderMemoryItems() {
+    const memories = Storage.getMemories();
+    if (this.memoryCountSpan) {
+      this.memoryCountSpan.textContent = memories.length;
+    }
+
+    if (!this.memoryItemsList) return;
+
+    if (memories.length === 0) {
+      this.memoryItemsList.innerHTML = `
+        <div style="text-align:center;padding:24px 16px;color:var(--text-muted);font-size:13px;line-height:1.6;">
+          🧠 <strong>Chưa có trí nhớ nào được lưu.</strong><br>
+          Thêm thông tin mới ở ô phía trên để AI ghi nhớ thói quen, tên, dự án và phong cách của bạn nhé!
+        </div>
+      `;
+      return;
+    }
+
+    this.memoryItemsList.innerHTML = memories.map(m => {
+      const dateStr = m.createdAt ? new Date(m.createdAt).toLocaleDateString('vi-VN') : '';
+      return `
+        <div class="memory-card" style="background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:var(--shadow-sm);">
+          <div style="font-size:13px;color:var(--text-primary);line-height:1.45;flex:1;">
+            ${this.escapeHtml(m.text)}
+            ${dateStr ? `<span style="display:block;font-size:11px;color:var(--text-muted);margin-top:3px;">🕒 ${dateStr}</span>` : ''}
+          </div>
+          <button class="btn-icon" onclick="window.claudeApp.handleDeleteMemory('${m.id}')" style="color:var(--text-muted);font-size:14px;padding:4px;" title="Xoá trí nhớ này">✕</button>
+        </div>
+      `;
+    }).join('');
+  }
 }
 
 // Robust instant initialization for type="module" (prevents missing DOMContentLoaded on cached reloads)

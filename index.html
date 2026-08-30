@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Claude - Next-Generation AI Assistant</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23da7756'><path d='M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z'/></svg>">
-  <link rel="stylesheet" href="css/style.css?v=2.6.9">
+  <link rel="stylesheet" href="css/style.css?v=2.7.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -49,6 +49,10 @@
 
       <!-- Quick Nav Links -->
       <div class="sidebar-nav">
+        <div id="nav-memory" class="nav-item">
+          <span>🧠</span>
+          <span>Trí Nhớ AI (Memory)</span>
+        </div>
         <div id="nav-skills" class="nav-item">
           <span>⚡</span>
           <span>Skills & Tools</span>
@@ -101,6 +105,10 @@
           <div id="quick-model-menu" class="quick-model-menu hidden"></div>
         </div>
         <div class="navbar-right" style="display:flex;align-items:center;gap:8px;">
+          <button id="btn-top-memory" class="btn-secondary" style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:12.5px;border-radius:18px;" title="AI Long-Term Memory & Personalized Knowledge">
+            <span>🧠</span>
+            <span>Memory</span>
+          </button>
           <button id="btn-top-workspace" class="btn-secondary" style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:12.5px;border-radius:18px;" title="Project Workspace & Knowledge Files">
             <span>📁</span>
             <span id="top-workspace-name" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Project</span>
@@ -215,6 +223,44 @@
       </div>
     </section>
 
+  </div>
+
+  <!-- MODAL: AI LONG-TERM MEMORY -->
+  <div id="modal-memory" class="modal-backdrop hidden">
+    <div class="modal-card" style="max-width:540px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" style="display:flex;align-items:center;gap:8px;">
+            <span>🧠</span> Trí Nhớ AI (Long-Term Memory)
+            <span style="font-size:11px;background:var(--accent-light);color:var(--accent);padding:2px 8px;border-radius:10px;font-weight:600;">SOTA 2026</span>
+          </h2>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Trí nhớ dài hạn xuyên suốt mọi cuộc trò chuyện (giống ChatGPT & Claude Custom Memory).</div>
+        </div>
+        <button id="btn-close-memory" class="btn-icon">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+        
+        <!-- Add New Memory Input Box -->
+        <div style="background:var(--bg-card-hover);border:1px solid var(--border-subtle);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+          <label style="font-size:12.5px;font-weight:600;color:var(--text-primary);">➕ Thêm trí nhớ / thói quen mới cho AI:</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="memory-input-new" class="form-input" placeholder="Ví dụ: Mình là lập trình viên Python & Node.js..." style="flex:1;font-size:13px;">
+            <button id="btn-add-memory" class="btn-primary" style="padding:7px 16px;font-size:12.5px;white-space:nowrap;">+ Thêm</button>
+          </div>
+        </div>
+
+        <!-- Memory List Section -->
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="font-size:13px;font-weight:600;color:var(--text-primary);">📋 Danh sách Trí nhớ đã lưu (<span id="memory-count">0</span>)</h3>
+          <button id="btn-clear-all-memory" class="btn-secondary" style="font-size:11.5px;padding:4px 10px;color:#ef4444;border-color:rgba(239,68,68,0.3);">🗑️ Xoá tất cả</button>
+        </div>
+
+        <div id="memory-items-list" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;padding-right:4px;">
+          <!-- Populated dynamically via app.js -->
+        </div>
+
+      </div>
+    </div>
   </div>
 
   <!-- MODAL: SETTINGS -->
@@ -471,6 +517,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/app.js?v=2.6.9"></script>
+  <script type="module" src="js/app.js?v=2.7.0"></script>
 </body>
 </html>

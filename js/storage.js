@@ -11,7 +11,8 @@ const STORAGE_KEYS = {
   CHATS: 'claude_chats',
   ACTIVE_CHAT: 'claude_active_chat',
   THEME: 'claude_theme',
-  CUSTOM_PROVIDERS: 'claude_custom_providers'
+  CUSTOM_PROVIDERS: 'claude_custom_providers',
+  MEMORY: 'claude_memory'
 };
 
 // Official & Popular Providers with 2026 Live Flagship Generation
@@ -495,5 +496,48 @@ export const Storage = {
     if (this.getActiveChatId() === id) {
       this.setActiveChatId(null);
     }
+  },
+
+  // ==========================================
+  // AI LONG-TERM MEMORY & PERSONALIZATION ENGINE
+  // ==========================================
+  getMemories() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.MEMORY);
+      if (!data) return [
+        { id: 'mem-1', text: 'Người dùng tên: Nguyendzvn (bb99kra) - Lập trình viên & Creator.', createdAt: Date.now() },
+        { id: 'mem-2', text: 'Phong cách làm việc: Thân thiện, tôn trọng, thông minh, hỗ trợ tận tình, luôn xuất ra code hoàn chỉnh 100%.', createdAt: Date.now() }
+      ];
+      return JSON.parse(data);
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveMemories(memories) {
+    localStorage.setItem(STORAGE_KEYS.MEMORY, JSON.stringify(memories));
+  },
+
+  addMemory(text) {
+    if (!text || !text.trim()) return null;
+    const memories = this.getMemories();
+    const newMem = {
+      id: 'mem-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+      text: text.trim(),
+      createdAt: Date.now()
+    };
+    memories.unshift(newMem);
+    this.saveMemories(memories);
+    return newMem;
+  },
+
+  deleteMemory(id) {
+    let memories = this.getMemories();
+    memories = memories.filter(m => m.id !== id);
+    this.saveMemories(memories);
+  },
+
+  clearMemories() {
+    localStorage.removeItem(STORAGE_KEYS.MEMORY);
   }
 };

@@ -1469,3 +1469,36 @@ input:checked + .slider:before {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
+
+/* ==========================================================================
+   MEMORY ENGINE - CARD & MODAL STYLES
+   ========================================================================== */
+.memory-card {
+  transition: var(--transition);
+}
+.memory-card:hover {
+  background: var(--bg-card-hover) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* Memory badge glow effect on nav-memory */
+#nav-memory:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+/* Welcome Logo Enhancement (ChatGPT / Claude style) */
+.welcome-logo svg {
+  filter: drop-shadow(0 4px 18px rgba(201, 100, 66, 0.25));
+  transition: transform 0.3s ease;
+}
+.welcome-logo svg:hover {
+  transform: scale(1.08) rotate(8deg);
+}
+
+.welcome-title {
+  background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

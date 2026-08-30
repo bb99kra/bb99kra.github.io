@@ -126,7 +126,20 @@ export const Api = {
       parts.push(`[USER CUSTOM RULES]:\n${settings.customSystemPrompt.trim()}`);
     }
 
-    // 7. Live Web Search Injected Context
+    // 7. Long-Term AI Memory & Personalization (ChatGPT & Claude Style Cross-Session Memory)
+    try {
+      const memories = Storage.getMemories();
+      if (memories && memories.length > 0) {
+        parts.push(
+          `[LONG-TERM AI MEMORY & PERSONALIZED KNOWLEDGE]:\n` +
+          `You have the following long-term memories and facts saved about the user across sessions:\n` +
+          memories.map((m, idx) => `${idx + 1}. ${m.text}`).join('\n') +
+          `\n[MEMORY DIRECTIVE]: Always remember these facts seamlessly. Personalize your responses, tone, style, name, and programming standards according to these long-term memories without making the user repeat themselves. If the user asks you to remember something new, acknowledge it warmly.`
+        );
+      }
+    } catch (e) {}
+
+    // 8. Live Web Search Injected Context
     if (searchResults) {
       parts.push(`[LIVE WEB SEARCH RESULTS - RECENT REAL-TIME DATA]:\n${searchResults}\n[INSTRUCTION]: Incorporate relevant facts from the search results above and cite with markdown links [Title](URL).`);
     }
