@@ -1119,6 +1119,15 @@ class ClaudeApp {
       `;
     });
 
+    // Links and direct download triggers
+    cleaned = cleaned.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
+      const isFile = url.endsWith('.jar') || url.endsWith('.zip') || label.toLowerCase().includes('tải') || label.toLowerCase().includes('download');
+      if (isFile) {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--accent-light);color:var(--accent);border-radius:6px;font-weight:500;text-decoration:none;">📥 ${this.escapeHtml(label)}</a>`;
+      }
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;">${this.escapeHtml(label)}</a>`;
+    });
+
     cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     cleaned = cleaned.replace(/\*(.*?)\*/g, '<em>$1</em>');
     cleaned = cleaned.replace(/`([^`]+)`/g, '<code style="background:var(--bg-code);padding:2px 5px;border-radius:4px;font-size:13px;">$1</code>');

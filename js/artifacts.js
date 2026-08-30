@@ -95,8 +95,11 @@ export const Artifacts = {
    * Parse text for <antArtifact> tags or markdown code blocks
    */
   extractArtifacts(text) {
+    if (!text) return [];
     const artifacts = [];
-    const regex = /<antArtifact\s+identifier="([^"]*)"\s+type="([^"]*)"\s+title="([^"]*)"[^>]*>([\s\S]*?)<\/antArtifact>/gi;
+
+    // 1. Match full <antArtifact ...>...</antArtifact>
+    const regex = /<antArtifact(?:\s+identifier="([^"]*)")?(?:\s+type="([^"]*)")?(?:\s+title="([^"]*)")?[^>]*>([\s\S]*?)<\/antArtifact>/gi;
     let match;
 
     while ((match = regex.exec(text)) !== null) {
@@ -106,6 +109,33 @@ export const Artifacts = {
         title: match[3] || 'Interactive Artifact',
         content: match[4].trim()
       });
+    }
+
+    // 2. Also match fallback artifact tags without quotes or partial
+    if (artifacts.length === 0) {
+      const fallbackRegex = /<antArtifact[^>]*>([\s\S]*?)<\/antArtifact>/gi;
+      let fbMatch;
+      while ((fbMatch = fallbackRegex.exec(text)) !== null) {
+        artifacts.push({
+          identifier: 'artifact-' + Date.now(),
+          type: 'application/vnd.ant.code',
+          title: 'Project Artifact',
+          content: fbMatch[1].trim()
+        });
+      }
+    }
+
+    // 3. If user asked to decompile/build and AI emitted a large Java block, auto-detect as Artifact if no tag was emitted!
+    if (artifacts.length === 0 && (text.includes('public class ') || text.includes('<project xmlns="http://maven.apache.org'))) {
+      const codeBlockMatch = text.match(/```(?:java|xml|yml)?\n([\s\S]{300,})```/);
+      if (codeBlockMatch) {
+        artifacts.push({
+          identifier: 'auto-code-' + Date.now(),
+          type: 'application/vnd.ant.code',
+          title: text.includes('<project') ? 'Maven pom.xml' : 'Rebuilt Source Code',
+          content: codeBlockMatch[1].trim()
+        });
+      }
     }
 
     return artifacts;
