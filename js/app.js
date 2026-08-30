@@ -280,6 +280,33 @@ class ClaudeApp {
       }
     });
 
+    // History Search Input
+    const historySearch = document.getElementById('history-search-input');
+    if (historySearch) {
+      historySearch.addEventListener('input', (e) => {
+        this.renderChatHistory(e.target.value.trim());
+      });
+    }
+
+    // Export All Chats Button
+    const btnExportAll = document.getElementById('btn-export-all-chats');
+    if (btnExportAll) {
+      btnExportAll.addEventListener('click', () => this.exportAllChats());
+    }
+
+    // Cache Reset Handler
+    const navReset = document.getElementById('nav-reset-cache');
+    if (navReset) {
+      navReset.addEventListener('click', () => {
+        if (confirm('Dọn dẹp bộ nhớ đệm và tải lại ứng dụng? (Dữ liệu API key và lịch sử chat vẫn được lưu an toàn)')) {
+          window.location.reload();
+        }
+      });
+    }
+
+    // Setup Slash Commands
+    this.setupSlashCommands();
+
     // 1-Click Fast Setup TuongTacGPT
     const btnQuickSetup = document.getElementById('btn-quick-setup-tuongtac');
     if (btnQuickSetup) {
@@ -627,7 +654,17 @@ class ClaudeApp {
   }
 
   showWelcome() {
-    this.welcomeContainer.style.display = 'block';
+    this.welcomeContainer.style.display = 'flex';
+    const hour = new Date().getHours();
+    let greet = 'Welcome';
+    if (hour >= 5 && hour < 12) greet = 'Good morning';
+    else if (hour >= 12 && hour < 18) greet = 'Good afternoon';
+    else greet = 'Good evening';
+    
+    const greetEl = document.getElementById('welcome-greeting-text');
+    if (greetEl) {
+      greetEl.textContent = `${greet}, Nguyendzvn`;
+    }
   }
 
   hideWelcome() {
@@ -663,15 +700,20 @@ class ClaudeApp {
     }
   }
 
-  renderChatHistory() {
+  renderChatHistory(filterQuery = '') {
     const chats = Storage.getChats();
     const activeWs = Storage.getActiveWorkspaceId();
     const activeChatId = Storage.getActiveChatId();
 
-    const wsChats = chats.filter(c => !c.workspaceId || c.workspaceId === activeWs);
+    let wsChats = chats.filter(c => !c.workspaceId || c.workspaceId === activeWs);
+
+    if (filterQuery) {
+      const q = filterQuery.toLowerCase();
+      wsChats = wsChats.filter(c => (c.title || '').toLowerCase().includes(q));
+    }
 
     if (wsChats.length === 0) {
-      this.historyContainer.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:12px 10px;">No chats in this workspace yet.</div>';
+      this.historyContainer.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:12px 10px;">No chats found.</div>';
       return;
     }
 
@@ -679,10 +721,83 @@ class ClaudeApp {
       <div class="history-item ${c.id === activeChatId ? 'active' : ''}" onclick="window.claudeApp.loadChat('${c.id}')">
         <span class="history-title">${this.escapeHtml(c.title || 'New Conversation')}</span>
         <div class="history-actions" onclick="event.stopPropagation()">
-          <button class="btn-icon" title="Delete" onclick="window.claudeApp.deleteChat('${c.id}')">🗑️</button>
+          <button class="btn-icon-xs" title="Export this chat as JSON" onclick="window.claudeApp.exportChat('${c.id}')">💾</button>
+          <button class="btn-icon-xs" title="Delete" onclick="window.claudeApp.deleteChat('${c.id}')">🗑️</button>
         </div>
       </div>
     `).join('');
+  }
+
+  exportChat(chatId) {
+    const chat = Storage.getChat(chatId);
+    if (!chat) return;
+    const blob = new Blob([JSON.stringify(chat, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-${(chat.title || 'export').replace(/[^a-zA-Z0-9_-]/g, '_')}-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  exportAllChats() {
+    const chats = Storage.getChats();
+    if (!chats || chats.length === 0) return alert('Chưa có lịch sử chat để export!');
+    const blob = new Blob([JSON.stringify(chats, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `all-chats-backup-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  setupSlashCommands() {
+    const slashMenu = document.getElementById('slash-command-menu');
+    const slashItems = document.getElementById('slash-menu-items');
+    if (!slashMenu || !slashItems || !this.textarea) return;
+
+    const quickPrompts = [
+      { cmd: '/code', title: '💻 Viết Code Hoàn Chỉnh', prompt: 'Viết toàn bộ mã nguồn hoàn chỉnh, cấu trúc rõ ràng cho: ' },
+      { cmd: '/fix', title: '🛠️ Debug & Sửa Lỗi', prompt: 'Hãy phân tích, tìm nguyên nhân và sửa toàn bộ lỗi trong: ' },
+      { cmd: '/explain', title: '📖 Giải Thích Trực Quan', prompt: 'Giải thích chi tiết, dễ hiểu từng bước về: ' },
+      { cmd: '/optimize', title: '⚡ Tối Ưu Hiệu Năng', prompt: 'Tối ưu hóa thuật toán và tốc độ xử lý cho: ' },
+      { cmd: '/studio', title: '🎨 Tạo App Artifacts', prompt: 'Tạo một ứng dụng Web tương tác hoàn chỉnh trong thẻ <antArtifact>: ' }
+    ];
+
+    this.textarea.addEventListener('input', () => {
+      const val = this.textarea.value.trim();
+      if (val.startsWith('/')) {
+        const query = val.slice(1).toLowerCase();
+        const matches = quickPrompts.filter(p => p.cmd.toLowerCase().includes(query) || p.title.toLowerCase().includes(query));
+        if (matches.length > 0) {
+          slashItems.innerHTML = matches.map(p => `
+            <div class="slash-menu-item" onclick="window.claudeApp.applySlashPrompt('${p.prompt.replace(/'/g, "\\'")}')">
+              <span><strong>${p.cmd}</strong> — ${p.title}</span>
+            </div>
+          `).join('');
+          slashMenu.classList.remove('hidden');
+        } else {
+          slashMenu.classList.add('hidden');
+        }
+      } else {
+        slashMenu.classList.add('hidden');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!slashMenu.contains(e.target) && e.target !== this.textarea) {
+        slashMenu.classList.add('hidden');
+      }
+    });
+  }
+
+  applySlashPrompt(promptText) {
+    this.textarea.value = promptText;
+    this.textarea.focus();
+    const slashMenu = document.getElementById('slash-command-menu');
+    if (slashMenu) slashMenu.classList.add('hidden');
+    this.textarea.dispatchEvent(new Event('input'));
   }
 
   deleteChat(chatId) {

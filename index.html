@@ -3,74 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Claude - Next-Generation AI Assistant</title>
+  <title>Claude AI & ChatGPT Pro — Next-Gen AI Workspace</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23da7756'><path d='M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z'/></svg>">
-  <link rel="stylesheet" href="css/style.css?v=3.0.0">
+  <link rel="stylesheet" href="css/style.css?v=3.1.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
   <div id="app-container">
 
-    <!-- SIDEBAR -->
+    <!-- ── SIDEBAR ─────────────────────────────────────────────── -->
     <aside id="sidebar">
+      <!-- Sidebar Header -->
       <div class="sidebar-header">
-        <a href="#" class="brand-logo">
+        <a href="#" class="brand-logo" title="Claude & ChatGPT Web Suite">
           <span class="brand-star">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
             </svg>
           </span>
-          <span>Claude</span>
+          <span class="brand-title">Claude 5 Pro</span>
         </a>
-        <button id="btn-toggle-sidebar" class="btn-icon" title="Close Sidebar">✕</button>
+        <button id="btn-toggle-sidebar" class="btn-icon" title="Close Sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       </div>
 
       <!-- New Chat Button -->
       <div class="new-chat-container">
         <button id="btn-new-chat" class="btn-new-chat">
-          <span style="display:flex;align-items:center;gap:8px;">
+          <div class="btn-new-chat-left">
             <span class="plus-icon">+</span>
-            <span>Start new chat</span>
-          </span>
-          <span style="font-size:11px;opacity:0.6;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:4px;">Ctrl K</span>
+            <span>New conversation</span>
+          </div>
+          <span class="kbd-shortcut">Ctrl K</span>
         </button>
       </div>
 
-      <!-- Workspace Selector -->
+      <!-- Workspace / Project Switcher -->
       <div class="workspace-selector-container">
-        <button id="btn-workspace-badge" class="workspace-badge-btn">
-          <span>📁 General Project</span>
-          <span>SWITCH ▾</span>
+        <button id="btn-workspace-badge" class="workspace-badge-btn" title="Switch or manage project workspaces">
+          <div class="ws-badge-left">
+            <span class="ws-icon">📁</span>
+            <span class="ws-text">General Project</span>
+          </div>
+          <span class="ws-badge-tag">PROJECTS ▾</span>
         </button>
       </div>
 
-      <!-- Quick Nav Links -->
+      <!-- Sidebar Quick Navigation -->
       <div class="sidebar-nav">
-        <div id="nav-memory" class="nav-item">
-          <span>🧠</span>
-          <span>Trí Nhớ AI (Memory)</span>
+        <div id="nav-memory" class="nav-item" title="Long-term AI Memory & Profile Facts">
+          <span class="nav-icon">🧠</span>
+          <span class="nav-label">Trí Nhớ AI (Memory)</span>
+          <span id="nav-memory-badge" class="badge">Live</span>
         </div>
-        <div id="nav-skills" class="nav-item">
-          <span>⚡</span>
-          <span>Skills & Tools</span>
+        <div id="nav-skills" class="nav-item" title="Assistant Skills & Tool Directives">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-label">Skills & Extensions</span>
           <span id="skills-count-badge" class="badge">4 active</span>
         </div>
-        <div id="nav-settings" class="nav-item">
-          <span>⚙️</span>
-          <span>API & Model Settings</span>
+        <div id="nav-settings" class="nav-item" title="Configure API Keys, Models & Endpoints">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">API & Model Settings</span>
         </div>
-        <div id="nav-reset-cache" class="nav-item" style="color:var(--text-muted);font-size:12.5px;" title="Xóa cache và khôi phục web nếu bị đơ hoặc xung đột dữ liệu">
-          <span>🔄</span>
-          <span>Dọn Cache & Tải Lại</span>
+        <div id="nav-reset-cache" class="nav-item nav-item-muted" title="Clean cache & reload application if stuck">
+          <span class="nav-icon">🔄</span>
+          <span class="nav-label">Dọn Cache & Tải Lại</span>
         </div>
       </div>
 
-      <!-- Recent Chats -->
+      <!-- Search in Chat History -->
+      <div class="history-search-container">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="history-search-input" class="history-search-input" placeholder="Search conversations...">
+        </div>
+      </div>
+
+      <!-- Chat History List -->
       <div class="sidebar-history-container">
-        <div class="history-section-title">Recent Conversations</div>
+        <div class="history-section-header">
+          <span>Recent Chats</span>
+          <button id="btn-export-all-chats" class="btn-icon-xs" title="Export all chats as JSON">📥 Export</button>
+        </div>
         <div id="sidebar-history">
           <!-- Populated dynamically via app.js -->
         </div>
@@ -78,127 +96,169 @@
 
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
-        <div class="user-profile-pill">
-          <div class="user-avatar">C</div>
+        <div class="user-profile-pill" onclick="document.getElementById('nav-settings').click()">
+          <div class="user-avatar">N</div>
           <div class="user-info">
-            <span class="user-name">Claude User</span>
-            <span class="user-plan">Pro Unlimited</span>
+            <span class="user-name">Nguyendzvn</span>
+            <span class="user-plan">Claude 5 & GPT-5 Pro</span>
           </div>
         </div>
-        <button id="btn-theme-toggle" class="btn-icon" title="Toggle Theme">☀️ Light</button>
+        <button id="btn-theme-toggle" class="btn-icon" title="Toggle Light/Dark Theme">
+          <span id="theme-icon">☀️</span>
+        </button>
       </div>
     </aside>
 
-    <!-- MAIN CHAT AREA -->
+    <!-- ── MAIN CHAT AREA ───────────────────────────────────────── -->
     <main id="main-chat">
       <!-- Navbar -->
       <header class="chat-navbar">
         <div class="navbar-left">
-          <button id="btn-open-sidebar" class="btn-icon" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">☰</button>
-          <div id="model-selector-pill" class="model-selector-pill">
-            <span class="brand-star">✳</span>
+          <button id="btn-open-sidebar" class="btn-icon" title="Open Sidebar" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+
+          <!-- Model Selector Pill -->
+          <div id="model-selector-pill" class="model-selector-pill" title="Change AI Model & Provider">
+            <span class="status-dot"></span>
+            <span class="brand-star-icon">✳</span>
             <span id="current-model-name">Claude Sonnet 5</span>
             <span class="badge-pro">PRO</span>
-            <span style="font-size:10px;opacity:0.6;">▾</span>
+            <span class="caret-icon">▾</span>
           </div>
+
           <!-- Quick Model Dropdown Menu -->
           <div id="quick-model-menu" class="quick-model-menu hidden"></div>
         </div>
-        <div class="navbar-right" style="display:flex;align-items:center;gap:8px;">
-          <button id="btn-top-memory" class="btn-secondary" style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:12.5px;border-radius:18px;" title="AI Long-Term Memory & Personalized Knowledge">
+
+        <div class="navbar-right">
+          <button id="btn-top-memory" class="nav-action-btn" title="AI Long-Term Memory & User Facts">
             <span>🧠</span>
-            <span>Memory</span>
+            <span class="hide-mobile">Memory</span>
           </button>
-          <button id="btn-top-workspace" class="btn-secondary" style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:12.5px;border-radius:18px;" title="Project Workspace & Knowledge Files">
+          <button id="btn-top-workspace" class="nav-action-btn" title="Current Workspace Files">
             <span>📁</span>
-            <span id="top-workspace-name" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Project</span>
+            <span id="top-workspace-name" class="top-ws-name">Project</span>
           </button>
-          <button id="btn-top-skills" class="btn-secondary" style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:12.5px;border-radius:18px;" title="Skills & Automation Tools">
+          <button id="btn-top-skills" class="nav-action-btn" title="Skills & System Tools">
             <span>⚡</span>
-            <span>Tools</span>
+            <span class="hide-mobile">Tools</span>
           </button>
-          <button class="btn-icon" title="Clear conversation" onclick="window.claudeApp.startNewChat()">🗑️</button>
+          <button class="btn-icon" title="Start new conversation" onclick="window.claudeApp.startNewChat()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
         </div>
       </header>
 
       <!-- Messages Scroll Container -->
       <div id="messages-container" class="messages-container">
 
-        <!-- Welcome Empty State -->
+        <!-- Welcome Screen (ChatGPT & Claude Hybrid) -->
         <div id="welcome-container" class="welcome-container">
-          <div class="welcome-logo">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
-            </svg>
+          <div class="welcome-hero">
+            <div class="welcome-logo-wrapper">
+              <div class="welcome-logo">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
+                </svg>
+              </div>
+            </div>
+            <h1 class="welcome-greeting" id="welcome-greeting-text">Welcome, Nguyendzvn</h1>
+            <p class="welcome-subtitle">Direct, obedient, high-speed AI assistant with long-term memory & Artifacts Studio.</p>
           </div>
-          <h1 class="welcome-greeting">Good evening, User</h1>
-          <p class="welcome-subtitle">How can Claude 5 help you explore, build, or analyze today?</p>
 
           <div class="suggestion-grid">
-            <div class="suggestion-card" data-prompt="Build an interactive 3D particle canvas game using Artifacts Studio.">
-              <div class="suggestion-title">🎨 Interactive Artifacts Studio</div>
-              <div class="suggestion-desc">Create standalone web apps, games, SVGs and interactive UI side-by-side.</div>
+            <div class="suggestion-card" data-prompt="Build an interactive 3D WebGL / Canvas visualizer game in Artifacts Studio.">
+              <div class="suggestion-icon">🎨</div>
+              <div class="suggestion-content">
+                <div class="suggestion-title">Interactive Artifacts Studio</div>
+                <div class="suggestion-desc">Build web apps, SVG graphics and full games side-by-side.</div>
+              </div>
             </div>
-            <div class="suggestion-card" data-prompt="Search the live web for the latest high-performance backend architecture & SOTA AI models and summarize them.">
-              <div class="suggestion-title">🌐 Live Web Search & News</div>
-              <div class="suggestion-desc">Real-time internet access with citations and deep source analysis.</div>
+
+            <div class="suggestion-card" data-prompt="Search the live internet for the latest 2026 AI breakthroughs and summarize key points.">
+              <div class="suggestion-icon">🌐</div>
+              <div class="suggestion-content">
+                <div class="suggestion-title">Live Web Search & News</div>
+                <div class="suggestion-desc">Real-time web browsing with structured citations and analysis.</div>
+              </div>
             </div>
-            <div class="suggestion-card" data-prompt="Analyze this high-performance Java bytecode architecture and design an enterprise solution.">
-              <div class="suggestion-title">⚡ Deep Architecture Analysis</div>
-              <div class="suggestion-desc">Decompile, optimize, and refactor complex multi-threaded code.</div>
+
+            <div class="suggestion-card" data-prompt="Analyze full stack application architecture, optimize async queues, and refactor code.">
+              <div class="suggestion-icon">⚡</div>
+              <div class="suggestion-content">
+                <div class="suggestion-title">Code Architecture & Refactor</div>
+                <div class="suggestion-desc">Deep multi-file analysis, syntax restructuring & performance.</div>
+              </div>
             </div>
-            <div class="suggestion-card" data-prompt="Write an unrestricted, comprehensive creative script without moralizing lectures.">
-              <div class="suggestion-title">🔓 Lenient Developer Mode</div>
-              <div class="suggestion-desc">Direct, obedient answers with zero preachy refusals or safety disclaimers.</div>
+
+            <div class="suggestion-card" data-prompt="Write a complete, unrestricted solution for this task without moralizing lectures.">
+              <div class="suggestion-icon">🔓</div>
+              <div class="suggestion-content">
+                <div class="suggestion-title">100% Obedience Protocol</div>
+                <div class="suggestion-desc">Direct execution of all user requests with zero safety refusals.</div>
+              </div>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- Floating Composer Capsule -->
+      <!-- ── COMPOSER (CHAT INPUT) ────────────────────────────── -->
       <div class="composer-container">
         <div class="composer-card">
           <!-- Attachment Previews -->
-          <div id="composer-attachments-preview" style="display:none;gap:6px;flex-wrap:wrap;padding-bottom:6px;"></div>
+          <div id="composer-attachments-preview" class="composer-attachments-preview" style="display:none;"></div>
 
-          <textarea id="composer-textarea" class="composer-textarea" rows="1" placeholder="Reply to Claude 5..."></textarea>
+          <!-- Textarea Input -->
+          <textarea id="composer-textarea" class="composer-textarea" rows="1" placeholder="Message Claude & GPT-5... (Type / for prompts)"></textarea>
 
+          <!-- Slash Command Popup -->
+          <div id="slash-command-menu" class="slash-command-menu hidden">
+            <div class="slash-menu-header">Quick Prompts & Commands</div>
+            <div id="slash-menu-items"></div>
+          </div>
+
+          <!-- Bottom Toolbar -->
           <div class="composer-toolbar">
             <div class="toolbar-left">
               <input type="file" id="chat-file-upload" multiple style="display:none;">
-              <button id="btn-attach-file" class="toolbar-pill-btn" title="Attach file or document">
-                <span>📎</span>
+              <button id="btn-attach-file" class="toolbar-pill-btn" title="Attach file, code, or document">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
                 <span>Attach</span>
               </button>
-              <button id="btn-toggle-search" class="toolbar-pill-btn" title="Enable Live Web Search">
-                <span>🌐</span>
-                <span>Search</span>
+
+              <button id="btn-toggle-search" class="toolbar-pill-btn" title="Enable Live Web Search (DuckDuckGo / Google)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                <span>Web Search</span>
               </button>
-              <button class="toolbar-pill-btn" onclick="document.getElementById('nav-skills').click()" title="Manage Skills">
-                <span>⚡</span>
+
+              <button class="toolbar-pill-btn" onclick="document.getElementById('nav-skills').click()" title="Manage Skills & Prompts">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                 <span>Skills</span>
               </button>
             </div>
+
             <div class="toolbar-right">
-              <button id="btn-send" class="btn-send" disabled>
-                <span>↑</span>
+              <button id="btn-send" class="btn-send" disabled title="Send message (Enter)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
               </button>
             </div>
           </div>
         </div>
+
         <div class="composer-disclaimer">
-          Claude may make mistakes. Supports Claude 5, Claude Opus 5, GPT-5.6, DeepSeek V4, Gemini 3.7 & Custom Endpoints.
+          AI may produce inaccuracies. Powered by Kiro-Go, TuongTacGPT, SeekAI & SOTA Multi-Provider Hub.
         </div>
       </div>
     </main>
 
-    <!-- ARTIFACTS STUDIO SPLIT PANEL -->
-    <section id="artifact-panel" class="hidden">
+    <!-- ── ARTIFACTS STUDIO SPLIT PANEL ────────────────────────── -->
+    <section id="artifact-panel" class="artifact-panel hidden">
       <div class="artifact-header">
         <div class="artifact-title-group">
-          <span style="color:var(--accent);font-size:18px;">⚡</span>
-          <div>
+          <span class="artifact-icon">⚡</span>
+          <div class="artifact-info-text">
             <span id="artifact-title" class="artifact-title">Artifact Preview</span>
             <span id="artifact-type" class="artifact-type-tag">HTML</span>
           </div>
@@ -209,11 +269,11 @@
           <button id="tab-code" class="artifact-tab-btn">Code</button>
         </div>
 
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button id="btn-download-project-zip" class="btn-primary" style="padding:4px 10px;font-size:12px;" title="Tải toàn bộ dự án về máy (.zip)">📦 Download Project .ZIP</button>
-          <button id="btn-copy-artifact" class="btn-secondary" style="padding:4px 10px;font-size:12px;">Copy</button>
-          <button id="btn-download-artifact" class="btn-secondary" style="padding:4px 10px;font-size:12px;">Download</button>
-          <button id="btn-close-artifact" class="btn-icon" title="Close">✕</button>
+        <div class="artifact-actions">
+          <button id="btn-download-project-zip" class="btn-primary-sm" title="Tải toàn bộ dự án về máy (.zip)">📦 Download .ZIP</button>
+          <button id="btn-copy-artifact" class="btn-secondary-sm">Copy</button>
+          <button id="btn-download-artifact" class="btn-secondary-sm">Download</button>
+          <button id="btn-close-artifact" class="btn-icon" title="Close Studio">✕</button>
         </div>
       </div>
 
@@ -225,101 +285,96 @@
 
   </div>
 
-  <!-- MODAL: AI LONG-TERM MEMORY -->
+  <!-- ── MODAL: AI LONG-TERM MEMORY ────────────────────────────── -->
   <div id="modal-memory" class="modal-backdrop hidden">
-    <div class="modal-card" style="max-width:540px;">
+    <div class="modal-card" style="max-width:560px;">
       <div class="modal-header">
         <div>
           <h2 class="modal-title" style="display:flex;align-items:center;gap:8px;">
             <span>🧠</span> Trí Nhớ AI (Long-Term Memory)
-            <span style="font-size:11px;background:var(--accent-light);color:var(--accent);padding:2px 8px;border-radius:10px;font-weight:600;">SOTA 2026</span>
+            <span class="badge-tag">ChatGPT / Claude Style</span>
           </h2>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Trí nhớ dài hạn xuyên suốt mọi cuộc trò chuyện (giống ChatGPT & Claude Custom Memory).</div>
+          <div class="modal-subtitle">AI tự động trích xuất & ghi nhớ thông tin cá nhân của bạn xuyên suốt mọi cuộc trò chuyện.</div>
         </div>
         <button id="btn-close-memory" class="btn-icon">✕</button>
       </div>
-      <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
-        
+
+      <div class="modal-body">
         <!-- Add New Memory Input Box -->
-        <div style="background:var(--bg-card-hover);border:1px solid var(--border-subtle);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;">
-          <label style="font-size:12.5px;font-weight:600;color:var(--text-primary);">➕ Thêm trí nhớ / thói quen mới cho AI:</label>
+        <div class="memory-add-box">
+          <label class="form-label">➕ Thêm trí nhớ / thói quen mới cho AI:</label>
           <div style="display:flex;gap:8px;">
-            <input type="text" id="memory-input-new" class="form-input" placeholder="Ví dụ: Mình là lập trình viên Python & Node.js..." style="flex:1;font-size:13px;">
-            <button id="btn-add-memory" class="btn-primary" style="padding:7px 16px;font-size:12.5px;white-space:nowrap;">+ Thêm</button>
+            <input type="text" id="memory-input-new" class="form-input" placeholder="Ví dụ: Tên mình là Nguyendzvn, mình chuyên làm dự án Web..." style="flex:1;">
+            <button id="btn-add-memory" class="btn-primary" style="padding:7px 18px;white-space:nowrap;">+ Thêm</button>
           </div>
         </div>
 
         <!-- Memory List Section -->
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;margin-bottom:8px;">
           <h3 style="font-size:13px;font-weight:600;color:var(--text-primary);">📋 Danh sách Trí nhớ đã lưu (<span id="memory-count">0</span>)</h3>
           <button id="btn-clear-all-memory" class="btn-secondary" style="font-size:11.5px;padding:4px 10px;color:#ef4444;border-color:rgba(239,68,68,0.3);">🗑️ Xoá tất cả</button>
         </div>
 
-        <div id="memory-items-list" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;padding-right:4px;">
+        <div id="memory-items-list" class="memory-list-container">
           <!-- Populated dynamically via app.js -->
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- MODAL: SETTINGS -->
+  <!-- ── MODAL: SETTINGS ──────────────────────────────────────── -->
   <div id="modal-settings" class="modal-backdrop hidden">
-    <div class="modal-card">
+    <div class="modal-card" style="max-width:640px;">
       <div class="modal-header">
         <h2 class="modal-title">API & Model Configuration</h2>
         <button id="btn-close-settings" class="btn-icon">✕</button>
       </div>
-      <div class="modal-body">
-        <!-- Help Tip Banner -->
-        <div style="background:rgba(218,119,86,0.1);border:1px solid rgba(218,119,86,0.25);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;line-height:1.5;">
-          <strong style="color:var(--accent);">💡 Hướng Dẫn Tránh Lỗi "Failed to fetch":</strong>
-          <div style="color:var(--text-secondary);margin-top:4px;">
-            • <strong>TuongTacGPT / OpenRouter:</strong> Mở CORS 100%, không bị chặn tại Việt Nam, chạy mượt mà ngay trên điện thoại & máy tính.<br>
-            • <strong>Dùng Key Anthropic/OpenAI:</strong> Nếu dùng trực tiếp api.anthropic.com hoặc api.openai.com, hãy bật <strong>VPN (Cloudflare 1.1.1.1 WARP)</strong> để vượt qua việc nhà mạng VN chặn IP kết nối!
-          </div>
-        </div>
 
+      <div class="modal-body">
         <!-- 1-Click Fast Setup Buttons -->
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+        <div class="settings-section-header">Fast 1-Click Provider Presets</div>
+        <div style="display:flex;flex-direction:column;gap:8px;padding:12px 20px;">
           <!-- Kiro 9AWS Claude 5 Key -->
-          <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+          <div class="preset-hero-card">
             <div>
-              <div style="font-weight:600;color:var(--accent);font-size:13.5px;">🔥 1-Click Kiro-Go (Claude Sonnet 5 & Opus 5)</div>
-              <div style="font-size:12px;color:var(--text-muted);">Gói 5000 Credits (api.9kiro.lol) — Tốc độ cao, mượt mà 100%.</div>
+              <div style="font-weight:700;color:var(--accent);font-size:13.5px;">🔥 1-Click Kiro-Go (Claude Sonnet 5 & Opus 5)</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Gói 5000 Credits (api.9kiro.lol) — Tốc độ cao, mượt mà 100%.</div>
             </div>
             <div style="display:flex;gap:6px;">
-              <button id="btn-quick-setup-kiro" class="btn-primary" style="padding:7px 14px;font-size:12px;white-space:nowrap;">1-Click Nạp</button>
-              <button id="btn-check-credit" class="btn-secondary" style="padding:7px 10px;font-size:12px;white-space:nowrap;" title="Kiểm tra số dư">📊 Check</button>
+              <button id="btn-quick-setup-kiro" class="btn-primary" style="padding:6px 14px;font-size:12px;">1-Click Nạp</button>
+              <button id="btn-check-credit" class="btn-secondary" style="padding:6px 10px;font-size:12px;" title="Kiểm tra số dư">📊 Check</button>
             </div>
           </div>
 
           <!-- SeekAI Key -->
-          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border-color);border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+          <div class="preset-card">
             <div>
-              <div style="font-weight:600;color:var(--text-primary);font-size:13px;">✨ SeekAI Gateway (Gemini 3.6 Flash, Claude 5)</div>
-              <div style="font-size:11.5px;color:var(--text-muted);">Hệ thống SeekAI Proxy (seekai.cc) hỗ trợ Gemini 3.6 Flash & SOTA.</div>
+              <div style="font-weight:600;color:var(--text-primary);font-size:13px;">✨ SeekAI Gateway (Gemini 3.6 Flash & Claude 5)</div>
+              <div style="font-size:11.5px;color:var(--text-muted);">Hệ thống SeekAI Proxy (seekai.cc) tốc độ cực cao.</div>
             </div>
-            <button id="btn-quick-setup-seekai" class="btn-secondary" style="padding:6px 12px;font-size:11.5px;white-space:nowrap;">1-Click Nạp</button>
+            <button id="btn-quick-setup-seekai" class="btn-secondary" style="padding:5px 12px;font-size:11.5px;">Chọn</button>
           </div>
 
           <!-- TuongTacGPT GPT-5.6 Key -->
-          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border-color);border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+          <div class="preset-card">
             <div>
               <div style="font-weight:600;color:var(--text-primary);font-size:13px;">⚡ TuongTacGPT (GPT-5.6 Luna / Sol)</div>
               <div style="font-size:11.5px;color:var(--text-muted);">Pool Codex phản hồi nhanh, không giới hạn.</div>
             </div>
-            <button id="btn-quick-setup-tuongtac" class="btn-secondary" style="padding:6px 12px;font-size:11.5px;white-space:nowrap;">Chọn</button>
+            <button id="btn-quick-setup-tuongtac" class="btn-secondary" style="padding:5px 12px;font-size:11.5px;">Chọn</button>
           </div>
         </div>
+
+        <div class="settings-section-header">Connection Details</div>
 
         <div class="form-group">
           <label class="form-label">AI Provider / Nhà Cung Cấp</label>
           <select id="setting-provider-presets" class="form-select">
             <option value="kiro" selected>Kiro-Go 9AWS (Claude Sonnet 5, Opus 5, Sonnet 4.6)</option>
             <option value="tuongtacgpt">TuongTacGPT (GPT-5.6 Luna / Sol Unrestricted)</option>
+            <option value="seekai">SeekAI Gateway (Gemini 3.6 Flash, Claude 5)</option>
             <option value="openrouter">OpenRouter (Claude 5, Claude Opus 5, GPT-5.6, DeepSeek V4)</option>
-            <option value="anthropic">Anthropic Claude Official (Claude Sonnet 5, Opus 5, Fable 5)</option>
+            <option value="anthropic">Anthropic Claude Official (Claude Sonnet 5, Opus 5)</option>
             <option value="deepseek">DeepSeek Official (DeepSeek V4, R1 Reasoning)</option>
             <option value="openai">OpenAI Official (GPT-5.6, o3, o3-mini)</option>
             <option value="gemini">Google Gemini Official (Gemini 3.7 Flash, 3.6)</option>
@@ -329,7 +384,7 @@
             <option value="ollama">Ollama Local (DeepSeek V4, Llama 4 Local)</option>
             <option value="custom">✨ Custom Provider (Tự nhập Endpoint riêng)</option>
           </select>
-          <div id="provider-desc-display" class="form-desc">Hỗ trợ đầy đủ tất cả model thế hệ Claude 5 & 2026 mới nhất.</div>
+          <div id="provider-desc-display" class="form-hint">Hỗ trợ đầy đủ tất cả model thế hệ Claude 5 & 2026 mới nhất.</div>
         </div>
 
         <div class="form-group">
@@ -338,7 +393,6 @@
             <!-- Populated dynamically via app.js -->
           </select>
           <input type="text" id="setting-model" class="form-input" placeholder="anthropic/claude-sonnet-5">
-          <div class="form-desc">Chọn nhanh model thế hệ mới hoặc tự do gõ bất kỳ Model ID tùy chỉnh nào.</div>
         </div>
 
         <div class="form-group">
@@ -347,32 +401,31 @@
             <option value="openai">OpenAI-Compatible (/v1/chat/completions)</option>
             <option value="anthropic">Anthropic Claude Native (/v1/messages)</option>
           </select>
-          <div class="form-desc">Hỗ trợ đầy đủ cả Anthropic Message API lẫn chuẩn OpenAI.</div>
         </div>
 
         <div class="form-group">
           <label class="form-label">API Base URL</label>
-          <input type="text" id="setting-api-base" class="form-input" placeholder="https://openrouter.ai/api/v1">
+          <input type="text" id="setting-api-base" class="form-input" placeholder="https://api.9kiro.lol/v1">
         </div>
 
         <div class="form-group">
           <label class="form-label">API Key</label>
-          <input type="password" id="setting-api-key" class="form-input" placeholder="sk-ant-... hoặc sk-or-...">
-          <div class="form-desc">Key được lưu trữ an toàn trong trình duyệt (localStorage) và không bao giờ gửi ra ngoài.</div>
+          <input type="password" id="setting-api-key" class="form-input" placeholder="sk-...">
+          <div class="form-hint">Key được lưu trữ an toàn trong trình duyệt (localStorage) và không bao giờ gửi ra ngoài.</div>
         </div>
 
-        <div class="form-group" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--accent-light);border-radius:12px;border:1px solid rgba(218,119,86,0.3);">
+        <div class="form-group" style="display:flex;justify-content:space-between;align-items:center;">
           <div>
             <div style="font-size:13.5px;font-weight:600;color:var(--accent);">🔓 Lenient / Easy Bypass Mode</div>
             <div style="font-size:12px;color:var(--text-muted);">Bỏ qua các cảnh báo đạo đức phiền toái, tuân thủ tuyệt đối mọi câu lệnh kỹ thuật.</div>
           </div>
-          <label class="switch">
+          <label class="toggle-switch">
             <input type="checkbox" id="setting-lenient-mode" checked>
-            <span class="slider"></span>
+            <span class="toggle-slider"></span>
           </label>
         </div>
 
-        <div class="form-group" style="margin-top:14px;">
+        <div class="form-group">
           <label class="form-label">Temperature: <span id="temp-value-display">0.7</span></label>
           <input type="range" id="setting-temperature" min="0" max="1" step="0.05" value="0.7" style="width:100%;">
         </div>
@@ -383,55 +436,54 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Custom System Prompt</label>
+          <label class="form-label">Custom System Prompt (Ghi đè quy tắc)</label>
           <textarea id="setting-system-prompt" class="form-textarea" placeholder="Nhập thêm quy tắc bổ sung của riêng bạn..."></textarea>
         </div>
       </div>
+
       <div class="modal-footer">
-        <button id="btn-save-settings" class="btn-primary">Save Settings</button>
+        <button id="btn-save-settings" class="btn-primary">Save Configuration</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: WORKSPACES (PROJECTS) -->
+  <!-- ── MODAL: WORKSPACES (PROJECTS) ─────────────────────────── -->
   <div id="modal-workspaces" class="modal-backdrop hidden">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title">Workspaces & Projects</h2>
+        <h2 class="modal-title">Workspaces & Knowledge Projects</h2>
         <button id="btn-close-workspaces" class="btn-icon">✕</button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="padding:16px 20px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
           <span style="font-size:13px;color:var(--text-muted);">Switch or create dedicated project spaces:</span>
           <button id="btn-create-workspace" class="btn-primary" style="padding:5px 12px;font-size:12px;">+ New Project</button>
         </div>
 
-        <!-- Workspaces List -->
-        <div id="workspaces-list"></div>
+        <div id="workspaces-list" style="display:flex;flex-direction:column;gap:8px;"></div>
 
-        <!-- Workspace Editor -->
         <div id="ws-editor-section" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--border-subtle);">
           <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">Project Configuration</h3>
           
-          <div class="form-group">
+          <div class="form-group" style="padding:0 0 12px 0;">
             <label class="form-label">Project Name & Emoji</label>
             <div style="display:flex;gap:8px;">
               <input type="text" id="ws-input-icon" class="form-input" style="width:60px;text-align:center;" value="📁">
-              <input type="text" id="ws-input-name" class="form-input" placeholder="e.g. Web & AI Project Dev">
+              <input type="text" id="ws-input-name" class="form-input" placeholder="e.g. AI Engine & Web Workspace">
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" style="padding:0 0 12px 0;">
             <label class="form-label">Description</label>
             <input type="text" id="ws-input-desc" class="form-input" placeholder="Brief project description">
           </div>
 
-          <div class="form-group">
+          <div class="form-group" style="padding:0 0 12px 0;">
             <label class="form-label">Project Instructions (System Prompt)</label>
             <textarea id="ws-input-instructions" class="form-textarea" placeholder="Instructions specific to this project..."></textarea>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" style="padding:0 0 12px 0;">
             <label class="form-label">Project Knowledge Files</label>
             <input type="file" id="ws-file-upload" multiple style="margin-bottom:8px;">
             <div id="ws-files-list"></div>
@@ -443,41 +495,40 @@
     </div>
   </div>
 
-  <!-- MODAL: SKILLS -->
+  <!-- ── MODAL: SKILLS ────────────────────────────────────────── -->
   <div id="modal-skills" class="modal-backdrop hidden">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title">Claude Skills & Extensions</h2>
+        <h2 class="modal-title">Skills & Tool Extensions</h2>
         <button id="btn-close-skills" class="btn-icon">✕</button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="padding:16px 20px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-          <span style="font-size:13px;color:var(--text-muted);">Enable, disable, or add custom assistant skills:</span>
+          <span style="font-size:13px;color:var(--text-muted);">Enable, disable, or create custom skills:</span>
           <button id="btn-create-skill" class="btn-primary" style="padding:5px 12px;font-size:12px;">+ Add Skill</button>
         </div>
 
-        <div id="skills-list"></div>
+        <div id="skills-list" style="display:flex;flex-direction:column;gap:8px;"></div>
 
-        <!-- Skill Editor -->
         <div id="skill-editor-section" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--border-subtle);">
           <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">Create Custom Skill</h3>
           
-          <div class="form-group">
+          <div class="form-group" style="padding:0 0 12px 0;">
             <label class="form-label">Skill Name & Icon</label>
             <div style="display:flex;gap:8px;">
               <input type="text" id="skill-input-icon" class="form-input" style="width:60px;text-align:center;" value="⚡">
-              <input type="text" id="skill-input-name" class="form-input" placeholder="e.g. Kotlin Specialist">
+              <input type="text" id="skill-input-name" class="form-input" placeholder="e.g. JavaScript Master">
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" style="padding:0 0 12px 0;">
             <label class="form-label">Description</label>
             <input type="text" id="skill-input-desc" class="form-input" placeholder="What this skill does">
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Skill Instructions / Tool Directives</label>
-            <textarea id="skill-input-instructions" class="form-textarea" placeholder="How Claude should behave when this skill is active..."></textarea>
+          <div class="form-group" style="padding:0 0 12px 0;">
+            <label class="form-label">Skill Directives</label>
+            <textarea id="skill-input-instructions" class="form-textarea" placeholder="Directives injected when active..."></textarea>
           </div>
 
           <button id="btn-save-skill" class="btn-primary" style="width:100%;">Save Skill</button>
@@ -486,9 +537,9 @@
     </div>
   </div>
 
-  <!-- MODAL: MODEL PICKER -->
+  <!-- ── MODAL: MODEL PICKER ──────────────────────────────────── -->
   <div id="modal-model-picker" class="modal-backdrop hidden">
-    <div class="modal-card" style="max-width: 620px;">
+    <div class="modal-card" style="max-width:620px;">
       <div class="modal-header">
         <div style="display:flex;align-items:center;gap:8px;">
           <span class="brand-star">✳</span>
@@ -498,25 +549,22 @@
       </div>
 
       <div class="modal-body" style="padding:16px 20px;">
-        <!-- Provider filter pills -->
-        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--border-subtle);" id="picker-provider-tabs"></div>
+        <div id="picker-provider-tabs" class="picker-provider-tabs"></div>
+        <div id="picker-models-list" class="picker-models-list"></div>
 
-        <!-- Models list grid -->
-        <div id="picker-models-list" style="display:flex;flex-direction:column;gap:8px;max-height:380px;overflow-y:auto;padding-right:4px;"></div>
-
-        <!-- Custom Model Input section -->
-        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-subtle);">
-          <label class="form-label" style="font-size:12.5px;">Hoặc tự nhập Custom Model ID:</label>
+        <div class="picker-custom-box">
+          <label class="form-label">Custom Model ID:</label>
           <div style="display:flex;gap:8px;">
-            <input type="text" id="picker-custom-model-input" class="form-input" placeholder="Ví dụ: anthropic/claude-sonnet-5">
-            <button id="picker-btn-apply-custom" class="btn-primary" style="padding:6px 16px;white-space:nowrap;">Chọn Model</button>
+            <input type="text" id="picker-custom-model-input" class="form-input" placeholder="e.g. anthropic/claude-sonnet-5">
+            <button id="picker-btn-apply-custom" class="btn-primary" style="padding:6px 16px;white-space:nowrap;">Select</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- JavaScript Libraries & App Engine -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/app.js?v=3.0.0"></script>
+  <script type="module" src="js/app.js?v=3.1.0"></script>
 </body>
 </html>
