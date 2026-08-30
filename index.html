@@ -93,6 +93,8 @@
             <span class="badge-pro">PRO</span>
             <span style="font-size:10px;opacity:0.6;">▾</span>
           </div>
+          <!-- Quick Model Dropdown Menu -->
+          <div id="quick-model-menu" class="quick-model-menu hidden"></div>
         </div>
         <div class="navbar-right">
           <button class="btn-icon" title="Clear conversation" onclick="window.claudeApp.startNewChat()">🗑️</button>
@@ -166,7 +168,7 @@
           </div>
         </div>
         <div class="composer-disclaimer">
-          Claude may make mistakes. Please verify important information. Supports Anthropic, OpenRouter, DeepSeek & OpenAI.
+          Claude may make mistakes. Supports Claude 3.7, DeepSeek-R1, o3-mini, Gemini 2.0 & Custom Endpoints.
         </div>
       </div>
     </main>
@@ -211,16 +213,29 @@
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label class="form-label">Provider Preset</label>
+          <label class="form-label">AI Provider / Nhà Cung Cấp</label>
           <select id="setting-provider-presets" class="form-select">
-            <option value="openrouter" selected>OpenRouter (Claude, DeepSeek, GPT-4o, Llama)</option>
+            <option value="openrouter" selected>OpenRouter (Claude 3.7, DeepSeek R1, o3-mini, Gemini 2.0)</option>
             <option value="anthropic">Anthropic Claude Official (Direct Browser API)</option>
-            <option value="deepseek">DeepSeek Official (deepseek-chat / deepseek-reasoner)</option>
-            <option value="groq">Groq High-Speed Cloud</option>
-            <option value="openai">OpenAI Official</option>
+            <option value="deepseek">DeepSeek Official (R1 Reasoning & V3 Chat)</option>
+            <option value="openai">OpenAI Official (o3-mini, o1, GPT-4o)</option>
+            <option value="gemini">Google Gemini Official (Gemini 2.0 Flash / Pro)</option>
+            <option value="groq">Groq High-Speed LPU (DeepSeek R1, Llama 3.3)</option>
+            <option value="together">Together AI (DeepSeek R1, Llama 3.3 Turbo)</option>
+            <option value="mistral">Mistral AI (Mistral Large, Codestral)</option>
             <option value="ollama">Ollama Local (http://localhost:11434/v1)</option>
+            <option value="custom">✨ Custom Provider (Tự nhập Endpoint riêng)</option>
           </select>
-          <div class="form-desc">Chọn nhanh nhà cung cấp AI để tự động điền Endpoint & Model.</div>
+          <div id="provider-desc-display" class="form-desc">Hỗ trợ đầy đủ tất cả model mới nhất 2025-2026.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Model Selection (Chọn Model)</label>
+          <select id="setting-model-select" class="form-select" style="margin-bottom:8px;">
+            <!-- Populated dynamically via app.js -->
+          </select>
+          <input type="text" id="setting-model" class="form-input" placeholder="Hoặc nhập tên Model ID tùy chỉnh...">
+          <div class="form-desc">Chọn nhanh model từ danh sách hoặc tự do nhập bất kỳ Model ID nào của bạn.</div>
         </div>
 
         <div class="form-group">
@@ -241,11 +256,6 @@
           <label class="form-label">API Key</label>
           <input type="password" id="setting-api-key" class="form-input" placeholder="sk-ant-... hoặc sk-or-...">
           <div class="form-desc">Key được lưu trữ an toàn trong trình duyệt (localStorage) và không bao giờ gửi ra ngoài.</div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Model ID</label>
-          <input type="text" id="setting-model" class="form-input" placeholder="anthropic/claude-3.7-sonnet">
         </div>
 
         <div class="form-group" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--accent-light);border-radius:12px;border:1px solid rgba(218,119,86,0.3);">

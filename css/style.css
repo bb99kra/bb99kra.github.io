@@ -1184,3 +1184,59 @@ input:checked + .slider:before {
     padding: 0 10px 14px;
   }
 }
+
+/* Quick Model Selector Dropdown */
+.quick-model-menu {
+  position: absolute;
+  top: 52px;
+  left: 70px;
+  background-color: var(--bg-modal);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  width: 320px;
+  max-height: 420px;
+  overflow-y: auto;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  animation: fadeIn 0.15s ease;
+}
+
+.quick-model-menu.hidden {
+  display: none;
+}
+
+.quick-model-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 10px 4px;
+}
+
+.quick-model-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: var(--transition);
+  margin-bottom: 2px;
+}
+
+.quick-model-item:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--accent);
+}
+
+.quick-model-item.active {
+  background-color: var(--accent-light);
+  color: var(--accent);
+  font-weight: 600;
+}

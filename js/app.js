@@ -2,7 +2,7 @@
  * CLAUDE AI - CORE APPLICATION CONTROLLER
  */
 
-import { Storage } from './storage.js';
+import { Storage, PROVIDER_PRESETS } from './storage.js';
 import { Api } from './api.js';
 import { Artifacts } from './artifacts.js';
 import { Workspaces } from './workspaces.js';
@@ -32,6 +32,7 @@ class ClaudeApp {
     this.btnNewChat = document.getElementById('btn-new-chat');
     this.btnWebSearch = document.getElementById('btn-toggle-search');
     this.btnModelPill = document.getElementById('model-selector-pill');
+    this.quickModelMenu = document.getElementById('quick-model-menu');
     this.btnSettings = document.getElementById('nav-settings');
     this.btnThemeToggle = document.getElementById('btn-theme-toggle');
     this.sidebar = document.getElementById('sidebar');
@@ -48,6 +49,8 @@ class ClaudeApp {
     this.settingApiBase = document.getElementById('setting-api-base');
     this.settingApiKey = document.getElementById('setting-api-key');
     this.settingModel = document.getElementById('setting-model');
+    this.settingModelSelect = document.getElementById('setting-model-select');
+    this.providerDescDisplay = document.getElementById('provider-desc-display');
     this.settingTemp = document.getElementById('setting-temperature');
     this.settingTempVal = document.getElementById('temp-value-display');
     this.settingMaxTokens = document.getElementById('setting-max-tokens');
@@ -135,8 +138,18 @@ class ClaudeApp {
       });
     }
 
-    // Model Pill Click -> Opens Settings
-    this.btnModelPill.addEventListener('click', () => this.openSettingsModal());
+    // Quick Model Pill Click -> Opens Quick Model Menu
+    this.btnModelPill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleQuickModelMenu();
+    });
+
+    // Close Quick Model Menu on Outside Click
+    document.addEventListener('click', (e) => {
+      if (this.quickModelMenu && !this.quickModelMenu.contains(e.target) && !this.btnModelPill.contains(e.target)) {
+        this.quickModelMenu.classList.add('hidden');
+      }
+    });
 
     // Settings Modal
     this.btnSettings.addEventListener('click', () => this.openSettingsModal());
@@ -145,6 +158,15 @@ class ClaudeApp {
 
     // Settings Provider Preset Change
     this.settingProviderPresets.addEventListener('change', (e) => this.handlePresetChange(e.target.value));
+
+    // Settings Model Dropdown Select Change
+    if (this.settingModelSelect) {
+      this.settingModelSelect.addEventListener('change', (e) => {
+        if (e.target.value) {
+          this.settingModel.value = e.target.value;
+        }
+      });
+    }
 
     // Temperature Display Sync
     this.settingTemp.addEventListener('input', () => {
@@ -182,6 +204,52 @@ class ClaudeApp {
     const s = Storage.getSettings();
     const modelName = s.model ? s.model.split('/').pop() : 'Claude 3.7';
     document.getElementById('current-model-name').textContent = modelName;
+  }
+
+  toggleQuickModelMenu() {
+    if (!this.quickModelMenu) return;
+    const isHidden = this.quickModelMenu.classList.contains('hidden');
+
+    if (isHidden) {
+      this.renderQuickModelMenu();
+      this.quickModelMenu.classList.remove('hidden');
+    } else {
+      this.quickModelMenu.classList.add('hidden');
+    }
+  }
+
+  renderQuickModelMenu() {
+    const s = Storage.getSettings();
+    const currentProvider = PROVIDER_PRESETS[s.provider] || PROVIDER_PRESETS.openrouter;
+    const models = currentProvider.models || PROVIDER_PRESETS.openrouter.models;
+
+    let html = `<div class="quick-model-header">${currentProvider.name} Models</div>`;
+
+    html += models.map(m => `
+      <div class="quick-model-item ${m.id === s.model ? 'active' : ''}" onclick="window.claudeApp.quickSwitchModel('${m.id}')">
+        <span>${m.name}</span>
+        ${m.id === s.model ? '<span style="color:var(--accent);">✓</span>' : ''}
+      </div>
+    `).join('');
+
+    html += `
+      <div style="border-top:1px solid var(--border-subtle);margin-top:6px;padding-top:6px;">
+        <div class="quick-model-item" onclick="window.claudeApp.openSettingsModal(); document.getElementById('quick-model-menu').classList.add('hidden');">
+          <span>⚙️ All Providers & Settings...</span>
+          <span style="font-size:11px;opacity:0.7;">Edit ↗</span>
+        </div>
+      </div>
+    `;
+
+    this.quickModelMenu.innerHTML = html;
+  }
+
+  quickSwitchModel(modelId) {
+    const s = Storage.getSettings();
+    s.model = modelId;
+    Storage.saveSettings(s);
+    this.updateModelPill();
+    if (this.quickModelMenu) this.quickModelMenu.classList.add('hidden');
   }
 
   updateSkillsBadge() {
@@ -239,7 +307,6 @@ class ClaudeApp {
     const activeWs = Storage.getActiveWorkspaceId();
     const activeChatId = Storage.getActiveChatId();
 
-    // Filter chats by active workspace
     const wsChats = chats.filter(c => !c.workspaceId || c.workspaceId === activeWs);
 
     if (wsChats.length === 0) {
@@ -311,7 +378,6 @@ class ClaudeApp {
     const text = this.textarea.value.trim();
     if (!text && this.pendingAttachments.length === 0) return;
 
-    // Combine attachments into prompt if present
     let fullUserContent = text;
     if (this.pendingAttachments.length > 0) {
       const attachBlock = this.pendingAttachments.map(a => `\n[Attached File: ${a.name}]\n${a.content}\n[End of ${a.name}]`).join('\n');
@@ -320,7 +386,6 @@ class ClaudeApp {
 
     this.hideWelcome();
 
-    // Create chat if doesn't exist
     if (!this.currentChat) {
       this.currentChat = {
         id: 'chat-' + Date.now(),
@@ -330,10 +395,8 @@ class ClaudeApp {
       };
     }
 
-    // Append User Message to UI
     this.appendMessageElement('user', fullUserContent, true);
 
-    // Save to currentChat
     this.currentChat.messages.push({
       role: 'user',
       content: fullUserContent,
@@ -343,27 +406,24 @@ class ClaudeApp {
     Storage.setActiveChatId(this.currentChat.id);
     this.renderChatHistory();
 
-    // Reset Composer
     this.textarea.value = '';
     this.textarea.style.height = 'auto';
     this.pendingAttachments = [];
     this.renderAttachmentPreviews();
     this.btnSend.disabled = true;
 
-    // Start Assistant Streaming Response
     await this.generateAssistantResponse(text);
   }
 
   async generateAssistantResponse(userPrompt) {
     this.isGenerating = true;
     this.btnSend.disabled = false;
-    this.btnSend.innerHTML = '<span>■</span>'; // Stop icon
+    this.btnSend.innerHTML = '<span>■</span>';
 
     const settings = Storage.getSettings();
     const workspace = Storage.getActiveWorkspace();
     const skills = Storage.getSkills();
 
-    // 1. Live Web Search Step (if toggled on)
     let searchResults = null;
     let searchStatusEl = null;
 
@@ -379,7 +439,6 @@ class ClaudeApp {
       }
     }
 
-    // 2. Create Assistant Placeholder Row
     const { row, bubble } = this.createAssistantMessageRow();
     this.messagesContainer.appendChild(row);
     this.scrollToBottom();
@@ -403,7 +462,6 @@ class ClaudeApp {
         this.btnSend.innerHTML = '<span>↑</span>';
         this.btnSend.disabled = false;
 
-        // Save assistant message to chat
         this.currentChat.messages.push({
           role: 'assistant',
           content: finalText,
@@ -412,7 +470,6 @@ class ClaudeApp {
         });
         Storage.saveChat(this.currentChat);
 
-        // Check if there are any artifacts and auto open the first one
         const artifacts = Artifacts.extractArtifacts(finalText);
         if (artifacts.length > 0) {
           Artifacts.open(artifacts[0]);
@@ -495,7 +552,6 @@ class ClaudeApp {
     if (artifacts.length === 0) return;
 
     artifacts.forEach(art => {
-      // Check if artifact card already exists
       const existing = bubbleElement.querySelector(`[data-artifact-id="${art.identifier}"]`);
       if (existing) return;
 
@@ -518,10 +574,8 @@ class ClaudeApp {
   }
 
   renderMarkdown(text) {
-    // Hide raw <antArtifact> tags in the chat stream display
     let cleaned = text.replace(/<antArtifact[\s\S]*?<\/antArtifact>/gi, '');
 
-    // Convert markdown code blocks
     cleaned = cleaned.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
       const safeCode = this.escapeHtml(code.trim());
       const safeLang = lang || 'code';
@@ -530,7 +584,6 @@ class ClaudeApp {
       `;
     });
 
-    // Inline formatting
     cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     cleaned = cleaned.replace(/\*(.*?)\*/g, '<em>$1</em>');
     cleaned = cleaned.replace(/`([^`]+)`/g, '<code style="background:var(--bg-code);padding:2px 5px;border-radius:4px;font-size:13px;">$1</code>');
@@ -558,10 +611,16 @@ class ClaudeApp {
   // ==========================================
   openSettingsModal() {
     const s = Storage.getSettings();
+    this.settingProviderPresets.value = s.provider || 'openrouter';
+    this.handlePresetChange(s.provider || 'openrouter', false);
+
     this.settingApiType.value = s.apiType || 'openai';
     this.settingApiBase.value = s.apiBase || 'https://openrouter.ai/api/v1';
     this.settingApiKey.value = s.apiKey || '';
     this.settingModel.value = s.model || 'anthropic/claude-3.7-sonnet';
+    if (this.settingModelSelect) {
+      this.settingModelSelect.value = s.model || '';
+    }
     this.settingTemp.value = s.temperature || 0.7;
     this.settingTempVal.textContent = s.temperature || 0.7;
     this.settingMaxTokens.value = s.maxTokens || 4096;
@@ -575,43 +634,42 @@ class ClaudeApp {
     this.modalSettings.classList.add('hidden');
   }
 
-  handlePresetChange(preset) {
-    switch (preset) {
-      case 'anthropic':
-        this.settingApiType.value = 'anthropic';
-        this.settingApiBase.value = 'https://api.anthropic.com/v1/messages';
-        this.settingModel.value = 'claude-3-7-sonnet-20250219';
-        break;
-      case 'openrouter':
-        this.settingApiType.value = 'openai';
-        this.settingApiBase.value = 'https://openrouter.ai/api/v1';
-        this.settingModel.value = 'anthropic/claude-3.7-sonnet';
-        break;
-      case 'deepseek':
-        this.settingApiType.value = 'openai';
-        this.settingApiBase.value = 'https://api.deepseek.com/v1';
-        this.settingModel.value = 'deepseek-chat';
-        break;
-      case 'groq':
-        this.settingApiType.value = 'openai';
-        this.settingApiBase.value = 'https://api.groq.com/openai/v1';
-        this.settingModel.value = 'llama-3.3-70b-versatile';
-        break;
-      case 'openai':
-        this.settingApiType.value = 'openai';
-        this.settingApiBase.value = 'https://api.openai.com/v1';
-        this.settingModel.value = 'gpt-4o';
-        break;
-      case 'ollama':
-        this.settingApiType.value = 'openai';
-        this.settingApiBase.value = 'http://localhost:11434/v1';
-        this.settingModel.value = 'llama3.2';
-        break;
+  handlePresetChange(presetKey, shouldResetModel = true) {
+    const preset = PROVIDER_PRESETS[presetKey];
+
+    if (preset) {
+      this.settingApiType.value = preset.apiType;
+      this.settingApiBase.value = preset.apiBase;
+      if (this.providerDescDisplay) {
+        this.providerDescDisplay.textContent = preset.description;
+      }
+      this.populateModelDropdown(preset.models, shouldResetModel);
+    } else if (presetKey === 'custom') {
+      if (this.providerDescDisplay) {
+        this.providerDescDisplay.textContent = '✨ Nhập Endpoint, API Key và Model tùy chỉnh của riêng bạn.';
+      }
+      if (this.settingModelSelect) {
+        this.settingModelSelect.innerHTML = '<option value="">-- Custom Model --</option>';
+      }
+    }
+  }
+
+  populateModelDropdown(models, shouldResetModel) {
+    if (!this.settingModelSelect || !models) return;
+
+    this.settingModelSelect.innerHTML = models.map(m => `
+      <option value="${m.id}">${m.name}</option>
+    `).join('');
+
+    if (shouldResetModel && models.length > 0) {
+      this.settingModelSelect.value = models[0].id;
+      this.settingModel.value = models[0].id;
     }
   }
 
   saveSettings() {
     const newSettings = {
+      provider: this.settingProviderPresets.value,
       apiType: this.settingApiType.value,
       apiBase: this.settingApiBase.value.trim(),
       apiKey: this.settingApiKey.value.trim(),
