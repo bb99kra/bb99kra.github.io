@@ -61,6 +61,14 @@ class ClaudeApp {
       this.settingSystemPrompt = document.getElementById('setting-system-prompt');
       this.settingProviderPresets = document.getElementById('setting-provider-presets');
 
+      // 4. Model Picker Modal Elements
+      this.modalModelPicker = document.getElementById('modal-model-picker');
+      this.btnCloseModelPicker = document.getElementById('btn-close-model-picker');
+      this.pickerProviderTabs = document.getElementById('picker-provider-tabs');
+      this.pickerModelsList = document.getElementById('picker-models-list');
+      this.pickerCustomInput = document.getElementById('picker-custom-model-input');
+      this.pickerBtnApplyCustom = document.getElementById('picker-btn-apply-custom');
+
       // 5. Memory Modal Elements
       this.modalMemory = document.getElementById('modal-memory');
       this.btnCloseMemory = document.getElementById('btn-close-memory');
@@ -1089,7 +1097,8 @@ BẮT BUỘC BỌC TOÀN BỘ PROJECT HOÀN CHỈNH TRONG THẺ:
         this.btnSend.disabled = false;
         bubble.innerHTML += `<div style="color:#d9534f;margin-top:8px;font-size:13.5px;padding:8px 12px;background:rgba(217,83,79,0.1);border-radius:8px;">⚠️ ${this.escapeHtml(error.message)}</div>`;
         this.scrollToBottom();
-      }
+      },
+      Storage.getMemories()
     );
   }
 

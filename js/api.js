@@ -42,7 +42,7 @@ export const Api = {
   /**
    * Build complete system prompt integrating Workspace, Skills, Lenient Mode, and Web Results
    */
-  buildSystemPrompt(settings, workspace, skills, searchResults = null) {
+  buildSystemPrompt(settings, workspace, skills, searchResults = null, memories = []) {
     const parts = [];
 
     // 1. Dynamic AI Persona based on active Model
@@ -127,17 +127,14 @@ export const Api = {
     }
 
     // 7. Long-Term AI Memory & Personalization (ChatGPT & Claude Style Cross-Session Memory)
-    try {
-      const memories = Storage.getMemories();
-      if (memories && memories.length > 0) {
-        parts.push(
-          `[LONG-TERM AI MEMORY & PERSONALIZED KNOWLEDGE]:\n` +
-          `You have the following long-term memories and facts saved about the user across sessions:\n` +
-          memories.map((m, idx) => `${idx + 1}. ${m.text}`).join('\n') +
-          `\n[MEMORY DIRECTIVE]: Always remember these facts seamlessly. Personalize your responses, tone, style, name, and programming standards according to these long-term memories without making the user repeat themselves. If the user asks you to remember something new, acknowledge it warmly.`
-        );
-      }
-    } catch (e) {}
+    if (memories && memories.length > 0) {
+      parts.push(
+        `[LONG-TERM AI MEMORY & PERSONALIZED KNOWLEDGE]:\n` +
+        `You have the following long-term memories and personalization facts saved about the user across all sessions:\n` +
+        memories.map((m, idx) => `${idx + 1}. ${m.text}`).join('\n') +
+        `\n[MEMORY DIRECTIVE]: Always remember these facts seamlessly without being asked. Personalize your responses, tone, style, name, and coding standards according to these memories. If the user says "remember..." or "nhớ giúp mình...", extract the key fact, confirm warmly, and treat it as already memorized.`
+      );
+    }
 
     // 8. Live Web Search Injected Context
     if (searchResults) {
@@ -151,8 +148,8 @@ export const Api = {
    * Main Stream Chat Completion
    * Dispatches to Anthropic Native or OpenAI Compatible based on settings
    */
-  async streamChat(messages, settings, workspace, skills, searchResults, onChunk, onDone, onError) {
-    const systemPrompt = this.buildSystemPrompt(settings, workspace, skills, searchResults);
+  async streamChat(messages, settings, workspace, skills, searchResults, onChunk, onDone, onError, memories = []) {
+    const systemPrompt = this.buildSystemPrompt(settings, workspace, skills, searchResults, memories);
     let cleanKey = this.cleanApiKey(settings.apiKey);
 
     // Auto-fix mismatched key for known internal endpoints:
