@@ -35,6 +35,23 @@ export const PROVIDER_PRESETS = {
       { id: 'auto', name: '⚡ Auto Route Model' }
     ]
   },
+  seekai: {
+    name: 'SeekAI Gateway (Gemini 3.6 Flash, Claude 5, Grok 4.6)',
+    apiType: 'openai',
+    apiBase: 'https://seekai.cc/v1',
+    defaultKey: 'sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr',
+    description: 'Proxy SeekAI hỗ trợ Gemini 3.6 Flash, Claude Sonnet 5, Opus 5, Grok 4.6, DeepSeek V4 (seekai.cc)',
+    models: [
+      { id: 'gemini-3-6-flash', name: '✨ Gemini 3.6 Flash (Siêu nhanh)' },
+      { id: 'claude-sonnet-5', name: '🔥 Claude Sonnet 5' },
+      { id: 'claude-opus-5', name: '🧠 Claude Opus 5' },
+      { id: 'claude-fable-5', name: '🎭 Claude Fable 5' },
+      { id: 'grok-4-6', name: '🚀 Grok 4.6' },
+      { id: 'deepseek-v4-pro', name: '🔮 DeepSeek V4 Pro' },
+      { id: 'glm-5-2', name: '💻 GLM 5.2' },
+      { id: 'gpt-5.6-sol', name: '⚡ GPT-5.6 Sol' }
+    ]
+  },
   tuongtacgpt: {
     name: 'TuongTacGPT Codex Pool (GPT-5.6 Luna / Sol)',
     apiType: 'openai',
@@ -268,6 +285,12 @@ export const Storage = {
         parsed.apiKey = 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8';
         parsed.provider = 'kiro';
         if (!parsed.model || parsed.model === 'gpt-5.6-luna') parsed.model = 'claude-sonnet-5';
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
+      } else if (parsed.apiBase?.includes('seekai.cc')) {
+        parsed.apiBase = 'https://seekai.cc/v1';
+        parsed.apiKey = 'sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr';
+        parsed.provider = 'seekai';
+        if (!parsed.model) parsed.model = 'gemini-3-6-flash';
         localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
       } else if (!parsed.apiKey || parsed.apiKey.startsWith('sk-dea') || parsed.apiKey.trim() === '') {
         parsed.apiKey = DEFAULT_SETTINGS.apiKey;

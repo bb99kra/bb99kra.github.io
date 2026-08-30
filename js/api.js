@@ -145,6 +145,10 @@ You are an elite Minecraft Java reverse engineer and plugin architect.
       if (!cleanKey || cleanKey.startsWith('sk-dea') || cleanKey.startsWith('sk-codex-')) {
         cleanKey = 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8';
       }
+    } else if (settings.apiBase && settings.apiBase.includes('seekai.cc')) {
+      if (!cleanKey || !cleanKey.startsWith('sk-lMee')) {
+        cleanKey = 'sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr';
+      }
     } else if (settings.apiBase && settings.apiBase.includes('tuongtacgpt.click') && (!cleanKey || cleanKey.startsWith('sk-dea') || cleanKey.startsWith('sk-762'))) {
       cleanKey = 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127';
     }

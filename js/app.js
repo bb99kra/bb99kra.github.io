@@ -278,6 +278,28 @@ class ClaudeApp {
       });
     }
 
+    // 1-Click Fast Setup SeekAI (Gemini 3.6 & Claude 5)
+    const btnSeekaiSetup = document.getElementById('btn-quick-setup-seekai');
+    if (btnSeekaiSetup) {
+      btnSeekaiSetup.addEventListener('click', () => {
+        const seekaiSettings = {
+          provider: 'seekai',
+          apiType: 'openai',
+          apiBase: 'https://seekai.cc/v1',
+          apiKey: 'sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr',
+          model: 'gemini-3-6-flash',
+          temperature: 0.7,
+          maxTokens: 4096,
+          lenientMode: true,
+          customSystemPrompt: ''
+        };
+        Storage.saveSettings(seekaiSettings);
+        this.openSettingsModal();
+        this.updateModelPill();
+        alert('Đã thiết lập thành công SeekAI Gateway với Model Gemini 3.6 Flash! Bạn có thể đóng cài đặt và bắt đầu chat!');
+      });
+    }
+
     // Check Credit Button
     const btnCheckCredit = document.getElementById('btn-check-credit');
     if (btnCheckCredit) {
@@ -325,6 +347,9 @@ class ClaudeApp {
         if ((val.startsWith('sk-762') || val.startsWith('sk-dea')) && this.settingProviderPresets.value !== 'kiro') {
           this.settingProviderPresets.value = 'kiro';
           this.handlePresetChange('kiro', true);
+        } else if (val.startsWith('sk-lMee') && this.settingProviderPresets.value !== 'seekai') {
+          this.settingProviderPresets.value = 'seekai';
+          this.handlePresetChange('seekai', true);
         } else if (val.startsWith('sk-codex-') && this.settingProviderPresets.value !== 'tuongtacgpt') {
           this.settingProviderPresets.value = 'tuongtacgpt';
           this.handlePresetChange('tuongtacgpt', true);
@@ -446,7 +471,8 @@ class ClaudeApp {
 
   renderPickerTabs() {
     const providers = [
-      { key: 'kiro', name: '🔥 Kiro 9AWS (Claude 5)' },
+      { key: 'kiro', name: '🔥 Kiro 9Kiro (Claude 5)' },
+      { key: 'seekai', name: '✨ SeekAI (Gemini 3.6 & Claude 5)' },
       { key: 'tuongtacgpt', name: '⚡ TuongTacGPT (GPT-5.6)' },
       { key: 'openrouter', name: 'OpenRouter (Tất cả SOTA)' },
       { key: 'anthropic', name: 'Anthropic Claude' },
