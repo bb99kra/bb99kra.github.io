@@ -174,6 +174,26 @@ class ClaudeApp {
     this.btnCloseSettings.addEventListener('click', () => this.closeSettingsModal());
     this.btnSaveSettings.addEventListener('click', () => this.saveSettings());
 
+    // Auto-detect provider when typing or pasting API Key
+    if (this.settingApiKey) {
+      this.settingApiKey.addEventListener('input', (e) => {
+        const val = e.target.value.trim().replace(/^Bearer\s+/i, '').replace(/["']/g, '');
+        if (val.startsWith('sk-ant-') && this.settingProviderPresets.value !== 'anthropic') {
+          this.settingProviderPresets.value = 'anthropic';
+          this.handlePresetChange('anthropic', true);
+        } else if (val.startsWith('sk-or-') && this.settingProviderPresets.value !== 'openrouter') {
+          this.settingProviderPresets.value = 'openrouter';
+          this.handlePresetChange('openrouter', true);
+        } else if (val.startsWith('gsk_') && this.settingProviderPresets.value !== 'groq') {
+          this.settingProviderPresets.value = 'groq';
+          this.handlePresetChange('groq', true);
+        } else if (val.startsWith('AIzaSy') && this.settingProviderPresets.value !== 'gemini') {
+          this.settingProviderPresets.value = 'gemini';
+          this.handlePresetChange('gemini', true);
+        }
+      });
+    }
+
     // Settings Provider Preset Change
     this.settingProviderPresets.addEventListener('change', (e) => this.handlePresetChange(e.target.value));
 
@@ -742,11 +762,14 @@ class ClaudeApp {
   }
 
   saveSettings() {
+    const rawKey = this.settingApiKey.value.trim();
+    const cleanKey = rawKey.replace(/^Bearer\s+/i, '').replace(/["']/g, '');
+
     const newSettings = {
       provider: this.settingProviderPresets.value,
       apiType: this.settingApiType.value,
       apiBase: this.settingApiBase.value.trim(),
-      apiKey: this.settingApiKey.value.trim(),
+      apiKey: cleanKey,
       model: this.settingModel.value.trim() || 'anthropic/claude-sonnet-5',
       temperature: parseFloat(this.settingTemp.value),
       maxTokens: parseInt(this.settingMaxTokens.value, 10) || 4096,
