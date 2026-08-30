@@ -89,7 +89,7 @@
           <button id="btn-open-sidebar" class="btn-icon" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">☰</button>
           <div id="model-selector-pill" class="model-selector-pill">
             <span class="brand-star">✳</span>
-            <span id="current-model-name">Claude 3.7 Sonnet</span>
+            <span id="current-model-name">Claude Sonnet 5</span>
             <span class="badge-pro">PRO</span>
             <span style="font-size:10px;opacity:0.6;">▾</span>
           </div>
@@ -112,7 +112,7 @@
             </svg>
           </div>
           <h1 class="welcome-greeting">Good evening, User</h1>
-          <p class="welcome-subtitle">How can Claude help you explore, build, or analyze today?</p>
+          <p class="welcome-subtitle">How can Claude 5 help you explore, build, or analyze today?</p>
 
           <div class="suggestion-grid">
             <div class="suggestion-card" data-prompt="Build an interactive 3D particle canvas game using Artifacts Studio.">
@@ -142,7 +142,7 @@
           <!-- Attachment Previews -->
           <div id="composer-attachments-preview" style="display:none;gap:6px;flex-wrap:wrap;padding-bottom:6px;"></div>
 
-          <textarea id="composer-textarea" class="composer-textarea" rows="1" placeholder="Reply to Claude..."></textarea>
+          <textarea id="composer-textarea" class="composer-textarea" rows="1" placeholder="Reply to Claude 5..."></textarea>
 
           <div class="composer-toolbar">
             <div class="toolbar-left">
@@ -168,7 +168,7 @@
           </div>
         </div>
         <div class="composer-disclaimer">
-          Claude may make mistakes. Supports Claude 3.7, DeepSeek-R1, o3-mini, Gemini 2.0 & Custom Endpoints.
+          Claude may make mistakes. Supports Claude 5, Claude Opus 5, GPT-5.6, DeepSeek V4, Gemini 3.7 & Custom Endpoints.
         </div>
       </div>
     </main>
@@ -215,18 +215,18 @@
         <div class="form-group">
           <label class="form-label">AI Provider / Nhà Cung Cấp</label>
           <select id="setting-provider-presets" class="form-select">
-            <option value="openrouter" selected>OpenRouter (Claude 3.7, DeepSeek R1, o3-mini, Gemini 2.0)</option>
-            <option value="anthropic">Anthropic Claude Official (Direct Browser API)</option>
-            <option value="deepseek">DeepSeek Official (R1 Reasoning & V3 Chat)</option>
-            <option value="openai">OpenAI Official (o3-mini, o1, GPT-4o)</option>
-            <option value="gemini">Google Gemini Official (Gemini 2.0 Flash / Pro)</option>
-            <option value="groq">Groq High-Speed LPU (DeepSeek R1, Llama 3.3)</option>
-            <option value="together">Together AI (DeepSeek R1, Llama 3.3 Turbo)</option>
-            <option value="mistral">Mistral AI (Mistral Large, Codestral)</option>
-            <option value="ollama">Ollama Local (http://localhost:11434/v1)</option>
+            <option value="openrouter" selected>OpenRouter (Claude 5, Claude Opus 5, GPT-5.6, DeepSeek V4)</option>
+            <option value="anthropic">Anthropic Claude Official (Claude Sonnet 5, Opus 5, Fable 5)</option>
+            <option value="deepseek">DeepSeek Official (DeepSeek V4, R1 Reasoning)</option>
+            <option value="openai">OpenAI Official (GPT-5.6, o3, o3-mini)</option>
+            <option value="gemini">Google Gemini Official (Gemini 3.7 Flash, 3.6)</option>
+            <option value="groq">Groq High-Speed LPU (DeepSeek V4, Llama 4)</option>
+            <option value="together">Together AI (DeepSeek V4, Llama 4 Turbo)</option>
+            <option value="mistral">Mistral AI (Mistral 2026, Codestral 2)</option>
+            <option value="ollama">Ollama Local (DeepSeek V4, Llama 4 Local)</option>
             <option value="custom">✨ Custom Provider (Tự nhập Endpoint riêng)</option>
           </select>
-          <div id="provider-desc-display" class="form-desc">Hỗ trợ đầy đủ tất cả model mới nhất 2025-2026.</div>
+          <div id="provider-desc-display" class="form-desc">Hỗ trợ đầy đủ tất cả model thế hệ Claude 5 & 2026 mới nhất.</div>
         </div>
 
         <div class="form-group">
@@ -234,8 +234,8 @@
           <select id="setting-model-select" class="form-select" style="margin-bottom:8px;">
             <!-- Populated dynamically via app.js -->
           </select>
-          <input type="text" id="setting-model" class="form-input" placeholder="Hoặc nhập tên Model ID tùy chỉnh...">
-          <div class="form-desc">Chọn nhanh model từ danh sách hoặc tự do nhập bất kỳ Model ID nào của bạn.</div>
+          <input type="text" id="setting-model" class="form-input" placeholder="anthropic/claude-sonnet-5">
+          <div class="form-desc">Chọn nhanh model thế hệ mới hoặc tự do gõ bất kỳ Model ID tùy chỉnh nào.</div>
         </div>
 
         <div class="form-group">

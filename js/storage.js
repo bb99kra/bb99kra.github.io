@@ -1,5 +1,6 @@
 /**
  * CLAUDE AI - LOCAL STORAGE & DATA PERSISTENCE
+ * Updated 2026 SOTA Generation (Claude 5, GPT-5.6, DeepSeek V4, Gemini 3.7)
  */
 
 const STORAGE_KEYS = {
@@ -13,90 +14,99 @@ const STORAGE_KEYS = {
   CUSTOM_PROVIDERS: 'claude_custom_providers'
 };
 
-// Official & Popular Providers with Latest 2025-2026 Models
+// Official & Popular Providers with 2026 Live Flagship Generation
 export const PROVIDER_PRESETS = {
   openrouter: {
-    name: 'OpenRouter (Multi-Model Gateway)',
+    name: 'OpenRouter (Flagship Gateway)',
     apiType: 'openai',
     apiBase: 'https://openrouter.ai/api/v1',
-    description: 'Hỗ trợ tất cả các model hàng đầu: Claude 3.7, DeepSeek R1, o3-mini, Gemini 2.0, Llama 3.3',
+    description: 'Truy cập đầy đủ thế hệ Claude 5, GPT-5.6, DeepSeek V4, Gemini 3.7',
     models: [
-      { id: 'anthropic/claude-3.7-sonnet', name: 'Claude 3.7 Sonnet (Latest Flagship Hybrid)' },
-      { id: 'anthropic/claude-3.7-sonnet:thinking', name: 'Claude 3.7 Sonnet (Extended Thinking)' },
-      { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet (Coding Specialist)' },
-      { id: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku (Lightning Fast)' },
-      { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (Open Reasoning SOTA)' },
-      { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (High Capability 671B)' },
-      { id: 'openai/o3-mini', name: 'OpenAI o3-mini (Advanced Reasoning)' },
-      { id: 'openai/o1', name: 'OpenAI o1 (Full Reasoning)' },
-      { id: 'openai/gpt-4o', name: 'OpenAI GPT-4o (Omni Multimodal)' },
-      { id: 'openai/gpt-4o-mini', name: 'OpenAI GPT-4o-mini (Cost Efficient)' },
-      { id: 'google/gemini-2.0-flash-001', name: 'Google Gemini 2.0 Flash (Next-Gen)' },
-      { id: 'google/gemini-2.0-pro-exp-02-05', name: 'Google Gemini 2.0 Pro Experimental' },
-      { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B Instruct' },
-      { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B' },
-      { id: 'mistralai/mistral-large-2411', name: 'Mistral Large 24.11' }
+      { id: 'anthropic/claude-sonnet-5', name: '🔥 Claude Sonnet 5 (2026 SOTA Hybrid Flagship)' },
+      { id: 'anthropic/claude-opus-5', name: '🧠 Claude Opus 5 (Extreme Intelligence & Reasoning)' },
+      { id: 'anthropic/claude-opus-5-fast', name: '⚡ Claude Opus 5 Fast (High Throughput)' },
+      { id: 'anthropic/claude-fable-5', name: '🎭 Claude Fable 5 (Creative & Uncensored SOTA)' },
+      { id: 'anthropic/claude-opus-4.8-fast', name: 'Claude Opus 4.8 Fast' },
+      { id: 'anthropic/claude-sonnet-4.6', name: 'Claude Sonnet 4.6' },
+      { id: 'anthropic/claude-haiku-4.5', name: 'Claude Haiku 4.5' },
+      { id: 'openai/gpt-5.6-luna-pro', name: '🚀 OpenAI GPT-5.6 Luna Pro' },
+      { id: 'openai/gpt-5.6-sol-pro', name: 'OpenAI GPT-5.6 Sol Pro' },
+      { id: 'openai/gpt-5.6-terra', name: 'OpenAI GPT-5.6 Terra' },
+      { id: 'openai/o3', name: 'OpenAI o3 (Full Reasoning Engine)' },
+      { id: 'openai/o3-mini', name: 'OpenAI o3-mini' },
+      { id: 'deepseek/deepseek-v4-pro-0813', name: '🔮 DeepSeek V4 Pro (671B MoE v4)' },
+      { id: 'deepseek/deepseek-v4-flash-latest', name: 'DeepSeek V4 Flash' },
+      { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1 Reasoning' },
+      { id: 'google/gemini-3.7-flash', name: '✨ Google Gemini 3.7 Flash' },
+      { id: 'google/gemini-3.6-flash', name: 'Google Gemini 3.6 Flash' },
+      { id: 'google/gemini-3.5-flash-lite', name: 'Google Gemini 3.5 Flash-Lite' }
     ]
   },
   anthropic: {
     name: 'Anthropic Claude Official',
     apiType: 'anthropic',
     apiBase: 'https://api.anthropic.com/v1/messages',
-    description: 'API chính thức từ Anthropic với native streaming',
+    description: 'API chính thức từ Anthropic với Claude 5 & Claude 4.8',
     models: [
-      { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet (Hybrid Reasoning - Newest)' },
-      { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet (v2)' },
-      { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' },
-      { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus' }
+      { id: 'claude-sonnet-5', name: '🔥 Claude Sonnet 5 (Thế hệ 5 mới nhất)' },
+      { id: 'claude-opus-5', name: '🧠 Claude Opus 5 (Trí tuệ suy luận đỉnh cao)' },
+      { id: 'claude-fable-5', name: '🎭 Claude Fable 5 (Sáng tạo văn phong mượt mà)' },
+      { id: 'claude-opus-4-8', name: 'Claude Opus 4.8' },
+      { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6' },
+      { id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5' },
+      { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet' },
+      { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet' }
     ]
   },
   deepseek: {
     name: 'DeepSeek Official',
     apiType: 'openai',
     apiBase: 'https://api.deepseek.com/v1',
-    description: 'API chính thức từ DeepSeek AI (R1 Reasoning & V3 Chat)',
+    description: 'API chính thức từ DeepSeek AI (Thế hệ V4 & R1)',
     models: [
-      { id: 'deepseek-chat', name: 'DeepSeek-V3 (deepseek-chat)' },
-      { id: 'deepseek-reasoner', name: 'DeepSeek-R1 (deepseek-reasoner)' }
+      { id: 'deepseek-v4', name: '🔮 DeepSeek V4 (New Generation MoE)' },
+      { id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro' },
+      { id: 'deepseek-reasoner', name: 'DeepSeek R1 (deepseek-reasoner)' },
+      { id: 'deepseek-chat', name: 'DeepSeek V3 (deepseek-chat)' }
     ]
   },
   openai: {
     name: 'OpenAI Official',
     apiType: 'openai',
     apiBase: 'https://api.openai.com/v1',
-    description: 'API chính thức từ OpenAI (o3-mini, o1, GPT-4o)',
+    description: 'API chính thức từ OpenAI (GPT-5.6, o3, o1)',
     models: [
+      { id: 'gpt-5.6', name: '🚀 GPT-5.6 (Flagship)' },
+      { id: 'gpt-5', name: 'GPT-5' },
+      { id: 'o3', name: 'OpenAI o3' },
       { id: 'o3-mini', name: 'OpenAI o3-mini' },
       { id: 'o1', name: 'OpenAI o1' },
-      { id: 'o1-mini', name: 'OpenAI o1-mini' },
-      { id: 'gpt-4o', name: 'GPT-4o (Omni)' },
-      { id: 'gpt-4o-mini', name: 'GPT-4o mini' },
-      { id: 'chatgpt-4o-latest', name: 'ChatGPT-4o Latest' }
+      { id: 'gpt-4o', name: 'GPT-4o' }
     ]
   },
   gemini: {
     name: 'Google Gemini (OpenAI Endpoint)',
     apiType: 'openai',
     apiBase: 'https://generativelanguage.googleapis.com/v1beta/openai',
-    description: 'Google Gemini thế hệ 2.0 qua giao thức OpenAI tương thích',
+    description: 'Google Gemini thế hệ 3.7 & 3.6',
     models: [
+      { id: 'gemini-3.7-flash', name: '✨ Gemini 3.7 Flash' },
+      { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash' },
+      { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite' },
       { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash' },
-      { id: 'gemini-2.0-pro-exp-02-05', name: 'Gemini 2.0 Pro Exp' },
-      { id: 'gemini-2.0-flash-thinking-exp-01-21', name: 'Gemini 2.0 Flash Thinking' },
-      { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
-      { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' }
+      { id: 'gemini-2.0-pro-exp-02-05', name: 'Gemini 2.0 Pro Exp' }
     ]
   },
   groq: {
     name: 'Groq High-Speed LPU',
     apiType: 'openai',
     apiBase: 'https://api.groq.com/openai/v1',
-    description: 'Tốc độ phản hồi cực nhanh (LPU Hardware)',
+    description: 'Tốc độ phản hồi cực nhanh trên phần cứng LPU',
     models: [
+      { id: 'deepseek-v4-distill', name: 'DeepSeek V4 Distill' },
       { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1 Distill Llama 70B' },
-      { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B Versatile' },
-      { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant' },
-      { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B' }
+      { id: 'llama-4-70b', name: 'Meta Llama 4 70B' },
+      { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B' }
     ]
   },
   together: {
@@ -105,21 +115,21 @@ export const PROVIDER_PRESETS = {
     apiBase: 'https://api.together.xyz/v1',
     description: 'Điện toán đám mây cho Open Source Models',
     models: [
-      { id: 'deepseek-ai/DeepSeek-R1', name: 'DeepSeek R1 (Full 671B)' },
-      { id: 'deepseek-ai/DeepSeek-V3', name: 'DeepSeek V3 (Full 671B)' },
-      { id: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', name: 'Llama 3.3 70B Turbo' },
-      { id: 'Qwen/Qwen2.5-Coder-32B-Instruct', name: 'Qwen 2.5 Coder 32B' }
+      { id: 'deepseek-ai/DeepSeek-V4', name: 'DeepSeek V4 (Full)' },
+      { id: 'deepseek-ai/DeepSeek-R1', name: 'DeepSeek R1 (Full)' },
+      { id: 'meta-llama/Llama-4-70B-Turbo', name: 'Llama 4 70B Turbo' },
+      { id: 'Qwen/Qwen3-Coder-32B', name: 'Qwen 3 Coder 32B' }
     ]
   },
   mistral: {
     name: 'Mistral AI Official',
     apiType: 'openai',
     apiBase: 'https://api.mistral.ai/v1',
-    description: 'Châu Âu SOTA AI (Mistral Large, Codestral)',
+    description: 'Châu Âu SOTA AI (Mistral 2, Codestral 2)',
     models: [
-      { id: 'mistral-large-latest', name: 'Mistral Large Latest' },
-      { id: 'codestral-latest', name: 'Codestral Latest (Code Specialist)' },
-      { id: 'pixtral-large-latest', name: 'Pixtral Large Latest (Vision)' }
+      { id: 'mistral-large-2026', name: 'Mistral Large 2026' },
+      { id: 'codestral-2', name: 'Codestral 2 (Code SOTA)' },
+      { id: 'pixtral-2', name: 'Pixtral 2 (Vision)' }
     ]
   },
   ollama: {
@@ -128,21 +138,21 @@ export const PROVIDER_PRESETS = {
     apiBase: 'http://localhost:11434/v1',
     description: 'Chạy AI nội bộ trên máy tính cá nhân qua Ollama',
     models: [
+      { id: 'deepseek-v4:latest', name: 'DeepSeek V4 Local' },
       { id: 'deepseek-r1:latest', name: 'DeepSeek R1 Local' },
-      { id: 'llama3.3:latest', name: 'Llama 3.3 Local' },
-      { id: 'qwen2.5-coder:latest', name: 'Qwen 2.5 Coder Local' },
-      { id: 'phi4:latest', name: 'Microsoft Phi-4 Local' }
+      { id: 'llama4:latest', name: 'Llama 4 Local' },
+      { id: 'qwen3-coder:latest', name: 'Qwen 3 Coder Local' }
     ]
   }
 };
 
-// Default Settings
+// Default Settings (Set default to Claude Sonnet 5!)
 const DEFAULT_SETTINGS = {
   provider: 'openrouter',
-  apiType: 'openai', // 'openai' or 'anthropic'
+  apiType: 'openai',
   apiBase: 'https://openrouter.ai/api/v1',
   apiKey: '',
-  model: 'anthropic/claude-3.7-sonnet',
+  model: 'anthropic/claude-sonnet-5',
   temperature: 0.7,
   maxTokens: 4096,
   stream: true,
@@ -204,7 +214,6 @@ const DEFAULT_SKILLS = [
 ];
 
 export const Storage = {
-  // Settings
   getSettings() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
@@ -218,7 +227,6 @@ export const Storage = {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   },
 
-  // Custom Providers
   getCustomProviders() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.CUSTOM_PROVIDERS);
@@ -232,23 +240,6 @@ export const Storage = {
     localStorage.setItem(STORAGE_KEYS.CUSTOM_PROVIDERS, JSON.stringify(providers));
   },
 
-  addCustomProvider(provider) {
-    const list = this.getCustomProviders();
-    const existing = list.findIndex(p => p.id === provider.id);
-    if (existing >= 0) {
-      list[existing] = provider;
-    } else {
-      list.push(provider);
-    }
-    this.saveCustomProviders(list);
-  },
-
-  deleteCustomProvider(id) {
-    let list = this.getCustomProviders().filter(p => p.id !== id);
-    this.saveCustomProviders(list);
-  },
-
-  // Theme
   getTheme() {
     return localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
   },
@@ -257,7 +248,6 @@ export const Storage = {
     localStorage.setItem(STORAGE_KEYS.THEME, theme);
   },
 
-  // Workspaces
   getWorkspaces() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.WORKSPACES);
@@ -285,7 +275,6 @@ export const Storage = {
     return list.find(w => w.id === activeId) || list[0] || DEFAULT_WORKSPACES[0];
   },
 
-  // Skills
   getSkills() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SKILLS);
@@ -299,7 +288,6 @@ export const Storage = {
     localStorage.setItem(STORAGE_KEYS.SKILLS, JSON.stringify(skills));
   },
 
-  // Chats
   getChats() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.CHATS);
