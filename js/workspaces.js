@@ -44,6 +44,11 @@ const Workspaces = {
       this.fileUploadInput.addEventListener('change', (e) => this.handleFileUpload(e));
     }
 
+    this.btnClearAllFiles = document.getElementById('btn-ws-clear-all-files');
+    if (this.btnClearAllFiles) {
+      this.btnClearAllFiles.addEventListener('click', () => this.clearAllFiles());
+    }
+
     const btnFetchUrl = document.getElementById('btn-ws-fetch-url');
     const inputUrl = document.getElementById('ws-url-input');
     if (btnFetchUrl && inputUrl) {
@@ -269,6 +274,16 @@ const Workspaces = {
       this.currentFiles.splice(index, 1);
       this.syncActiveWorkspaceFiles();
     }
+  },
+
+  clearAllFiles() {
+    if (!this.currentFiles || this.currentFiles.length === 0) {
+      return alert('Khung Workspace hiện tại chưa có file nào!');
+    }
+    if (!confirm('Bạn có chắc chắn muốn xóa TOÀN BỘ file trong Workspace này không?')) return;
+    this.currentFiles = [];
+    this.syncActiveWorkspaceFiles();
+    alert('✅ Đã xóa sạch toàn bộ file trong Workspace!');
   },
 
   saveCurrentEditor() {

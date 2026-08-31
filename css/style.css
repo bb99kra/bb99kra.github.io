@@ -1579,23 +1579,29 @@ button, input, textarea, select {
 /* ── RESPONSIVE MOBILE ───────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   #sidebar {
-    position: absolute;
-    z-index: 200;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 285px;
+    z-index: 9999;
     box-shadow: var(--shadow-xl);
   }
   .suggestion-grid { grid-template-columns: 1fr; }
-  .composer-container { padding: 10px 12px 14px; }
-  .message-row { padding: 8px 12px; }
+  .composer-container { padding: 8px 10px 12px; }
+  .message-row { padding: 8px 10px; }
   .user-bubble-container { max-width: 92%; }
 
   /* Navbar Layout Mobile Fixes */
   .chat-navbar {
-    padding: 0 10px;
-    display: flex;
+    padding: 6px 10px;
+    display: flex !important;
+    flex-wrap: wrap !important;
     align-items: center;
     justify-content: space-between;
     gap: 6px;
-    height: 52px;
+    height: auto !important;
+    min-height: 52px;
   }
   .navbar-left {
     display: flex !important;
@@ -1605,11 +1611,12 @@ button, input, textarea, select {
   }
   #btn-open-sidebar {
     display: flex !important;
-    padding: 8px;
+    padding: 8px 10px;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
     color: var(--text-primary);
+    font-size: 15px;
   }
   .navbar-center {
     display: flex !important;
@@ -1618,30 +1625,42 @@ button, input, textarea, select {
     min-width: 0;
   }
   .model-selector-pill {
-    padding: 4px 10px;
-    font-size: 12px;
-    max-width: 180px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    border-radius: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
     white-space: nowrap;
+    max-width: 100%;
   }
   .navbar-right {
     display: flex !important;
-    flex-shrink: 0;
-    gap: 4px;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 6px;
+    padding-top: 6px;
+    margin-top: 2px;
+    border-top: 1px solid var(--border-subtle);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    max-width: 45%;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .navbar-right::-webkit-scrollbar {
+    display: none;
   }
 
   /* Always show Copy Action Bar on Mobile Touchscreens */
   .message-action-bar {
     opacity: 1 !important;
     margin-top: 6px;
+    display: flex !important;
   }
   .btn-msg-action {
-    padding: 4px 10px;
+    padding: 5px 12px;
     font-size: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
   }
   .btn-code-copy {
     opacity: 1 !important;

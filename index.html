@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/xterm.min.css">
   
   <!-- Core Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=12.2.0">
+  <link rel="stylesheet" href="css/style.css?v=13.0.0">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -541,11 +541,14 @@
 
           <div class="form-group" style="padding:0 0 12px 0;">
             <label class="form-label">Project Knowledge Files & Free Storage</label>
-            <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+            <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap;">
               <input type="file" id="ws-file-upload" multiple style="flex:1;">
               <a href="https://superpool.namdev.online/free" target="_blank" class="btn-secondary" style="padding:6px 10px;font-size:12px;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
                 ☁️ SuperPool Cloud (5 GB)
               </a>
+              <button id="btn-ws-clear-all-files" class="btn-secondary" style="padding:6px 10px;font-size:12px;white-space:nowrap;color:#ef4444;border-color:rgba(239,68,68,0.3);">
+                🗑️ Xóa Tất Cả File
+              </button>
             </div>
             <div style="display:flex;gap:8px;margin-bottom:8px;">
               <input type="text" id="ws-url-input" class="form-input" placeholder="Dán URL file (Modrinth, GitHub, SuperPool link...)">
@@ -654,13 +657,13 @@
   <script src="https://unpkg.com/isomorphic-git/http/web/index.umd.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/xterm.min.js"></script>
   
-  <!-- Application Core Modules (Sequential Loading v12.2.0) -->
-  <script src="js/storage.js?v=12.2.0"></script>
-  <script src="js/api.js?v=12.2.0"></script>
-  <script src="js/artifacts.js?v=12.2.0"></script>
-  <script src="js/workspaces.js?v=12.2.0"></script>
-  <script src="js/skills.js?v=12.2.0"></script>
-  <script src="js/decompiler.js?v=12.2.0"></script>
-  <script src="js/app.js?v=12.2.0"></script>
+  <!-- Application Core Modules (Sequential Loading v13.0.0) -->
+  <script src="js/storage.js?v=13.0.0"></script>
+  <script src="js/api.js?v=13.0.0"></script>
+  <script src="js/artifacts.js?v=13.0.0"></script>
+  <script src="js/workspaces.js?v=13.0.0"></script>
+  <script src="js/skills.js?v=13.0.0"></script>
+  <script src="js/decompiler.js?v=13.0.0"></script>
+  <script src="js/app.js?v=13.0.0"></script>
 </body>
 </html>
