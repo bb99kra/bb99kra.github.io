@@ -794,7 +794,7 @@ class ClaudeApp {
   renderPickerTabs() {
     const providers = [
       { key: 'kiro', name: '🔥 Kiro 9Kiro (Claude 5)' },
-      { key: 'sryze', name: '🐻 Gấu con (Gemini 3.7 & Claude 5)' },
+      { key: 'sryze', name: '🐻 Gấu con (Gemini 3.7 & Claude 4.6)' },
       { key: 'seekai', name: '✨ SeekAI (Gemini 3.6 & Claude 5)' },
       { key: 'tuongtacgpt', name: '⚡ TuongTacGPT (GPT-5.6)' },
       { key: 'openrouter', name: 'OpenRouter (Tất cả SOTA)' },

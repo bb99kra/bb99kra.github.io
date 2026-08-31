@@ -18,20 +18,30 @@ const STORAGE_KEYS = {
 // Official & Popular Providers with 2026 Live Flagship Generation
 const PROVIDER_PRESETS = {
   sryze: {
-    name: '🐻 Gấu con Antigravity (Gemini 3.7 & Claude 5)',
+    name: '🐻 Gấu con Antigravity (Gemini 3.7 & Claude 4.6)',
     apiType: 'openai',
     apiBase: 'https://k24z.sryze.cc/v1',
     defaultKey: 'sk-49c2bdff020c1db0-e61ac6-90b46654',
-    description: 'Nhà cung cấp Gấu con Antigravity AI hỗ trợ Gemini 3.7 Flash High, Thinking High, Claude Opus 5 & GPT-5.6 (k24z.sryze.cc)',
+    description: 'Nhà cung cấp Gấu con Antigravity AI — Gemini 3.7 Flash, Claude Opus/Sonnet 4.6, Gemini 3.1 Pro (k24z.sryze.cc)',
     models: [
       { id: 'antigravity/gemini-3.7-flash-high', name: '⚡ Gemini 3.7 Flash High (Siêu Nhanh & Mạnh)' },
-      { id: 'antigravity/gemini-3.7-flash-thinking-high', name: '🧠 Gemini 3.7 Thinking High (Suy Luận Đỉnh Cao)' },
+      { id: 'antigravity/gemini-3.7-flash-medium', name: '⚡ Gemini 3.7 Flash Medium' },
+      { id: 'antigravity/gemini-3.7-flash-low', name: '⚡ Gemini 3.7 Flash Low' },
       { id: 'antigravity/claude-opus-4-6-thinking-high', name: '🔥 Claude Opus 4.6 Thinking High' },
-      { id: 'antigravity/claude-sonnet-4-6-high', name: '⚡ Claude Sonnet 4.6 High' },
-      { id: 'github/claude-opus-5', name: '🧠 Claude Opus 5 (Flagship)' },
-      { id: 'github/claude-sonnet-5', name: '🚀 Claude Sonnet 5' },
-      { id: 'github/gpt-5.6-luna', name: '🔮 GPT-5.6 Luna' },
-      { id: 'seekai/deepseek-v4-pro', name: '💎 DeepSeek V4 Pro' }
+      { id: 'antigravity/claude-opus-4-6-thinking-medium', name: '🔥 Claude Opus 4.6 Thinking Medium' },
+      { id: 'antigravity/claude-opus-4-6-thinking-low', name: '🔥 Claude Opus 4.6 Thinking Low' },
+      { id: 'antigravity/claude-opus-4-6-thinking', name: '🔥 Claude Opus 4.6 Thinking' },
+      { id: 'antigravity/claude-sonnet-4-6-high', name: '💎 Claude Sonnet 4.6 High' },
+      { id: 'antigravity/claude-sonnet-4-6-medium', name: '💎 Claude Sonnet 4.6 Medium' },
+      { id: 'antigravity/claude-sonnet-4-6-low', name: '💎 Claude Sonnet 4.6 Low' },
+      { id: 'antigravity/claude-sonnet-4-6', name: '💎 Claude Sonnet 4.6' },
+      { id: 'antigravity/gemini-3.1-pro-high', name: '🧠 Gemini 3.1 Pro High' },
+      { id: 'antigravity/gemini-3.1-pro-low', name: '🧠 Gemini 3.1 Pro Low' },
+      { id: 'antigravity/gemini-3.6-flash-tiered', name: '✨ Gemini 3.6 Flash Tiered' },
+      { id: 'antigravity/gemini-3.1-flash-image', name: '🖼️ Gemini 3.1 Flash Image' },
+      { id: 'antigravity/gemini-3.1-flash-lite', name: '⚡ Gemini 3.1 Flash Lite' },
+      { id: 'antigravity/gemini-3-flash', name: '⚡ Gemini 3 Flash' },
+      { id: 'antigravity/gpt-oss-120b-medium', name: '🔮 GPT OSS 120B Medium' }
     ]
   },
   kiro: {
