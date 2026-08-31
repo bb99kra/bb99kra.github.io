@@ -154,22 +154,81 @@ const Workspaces = {
     `).join('');
   },
 
-  handleFileUpload(event) {
+  isSourceFile(filename) {
+    const fn = (filename || '').toLowerCase();
+    if (fn.includes('.git/') || fn.includes('.idea/') || fn.includes('/target/') || fn.includes('/build/') || fn.includes('__macosx')) return false;
+    if (fn.endsWith('.class') || fn.endsWith('.png') || fn.endsWith('.jpg') || fn.endsWith('.jpeg') || 
+        fn.endsWith('.gif') || fn.endsWith('.ico') || fn.endsWith('.exe') || fn.endsWith('.dll') || 
+        fn.endsWith('.so') || fn.endsWith('.dylib') || fn.endsWith('.pdf')) return false;
+    return true;
+  },
+
+  syncActiveWorkspaceFiles() {
+    this.currentFiles = this.currentFiles || [];
+    this.renderFilesList(this.currentFiles);
+    const list = Storage.getWorkspaces();
+    const activeId = Storage.getActiveWorkspaceId();
+    let active = list.find(w => w.id === activeId) || list[0];
+    if (active) {
+      active.files = this.currentFiles;
+      Storage.saveWorkspaces(list);
+      if (this.onWorkspaceChanged) this.onWorkspaceChanged();
+    }
+  },
+
+  async handleFileUpload(event) {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
+    this.currentFiles = this.currentFiles || [];
+
     for (const file of files) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target.result;
-        this.currentFiles.push({
-          name: file.name,
-          content: content
+      const fn = file.name.toLowerCase();
+      if ((fn.endsWith('.zip') || fn.endsWith('.jar')) && window.JSZip) {
+        try {
+          const zip = await JSZip.loadAsync(file);
+          const entries = Object.keys(zip.files).filter(n => !zip.files[n].dir);
+          const textExts = ['.yml', '.yaml', '.json', '.xml', '.txt', '.md', '.properties', '.toml', '.conf', '.java', '.py', '.js', '.ts', '.kt', '.cs', '.gradle'];
+          let addedCount = 0;
+          for (const ePath of entries) {
+            if (addedCount >= 40) break;
+            if (this.isSourceFile(ePath) && textExts.some(ext => ePath.toLowerCase().endsWith(ext))) {
+              try {
+                const textContent = await zip.file(ePath).async('string');
+                const baseName = ePath.split('/').pop();
+                const existingIdx = this.currentFiles.findIndex(f => f.name === baseName);
+                if (existingIdx >= 0) {
+                  this.currentFiles[existingIdx].content = textContent;
+                } else {
+                  this.currentFiles.push({ name: baseName, content: textContent });
+                  addedCount++;
+                }
+              } catch (e) {}
+            }
+          }
+          alert(`✅ Đã giải nén tự động ${addedCount} file nguồn từ ${file.name} vào Workspace!`);
+        } catch (e) {
+          console.error('JSZip extraction error:', e);
+        }
+      } else {
+        await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const content = e.target.result;
+            const existingIdx = this.currentFiles.findIndex(f => f.name === file.name);
+            if (existingIdx >= 0) {
+              this.currentFiles[existingIdx].content = content;
+            } else {
+              this.currentFiles.push({ name: file.name, content: content });
+            }
+            resolve();
+          };
+          reader.readAsText(file);
         });
-        this.renderFilesList(this.currentFiles);
-      };
-      reader.readAsText(file);
+      }
     }
+    this.syncActiveWorkspaceFiles();
+    event.target.value = '';
   },
 
   async addFileFromUrl(url) {
@@ -179,12 +238,10 @@ const Workspaces = {
       const filename = cleanUrl.split('/').pop().split('?')[0] || 'remote_file.txt';
       let content = '';
 
-      // Direct fetch
       const res = await fetch(cleanUrl);
       if (res.ok) {
         content = await res.text();
       } else {
-        // Fallback to Jina Reader CORS fetcher
         const jinaRes = await fetch(`https://r.jina.ai/${cleanUrl}`);
         if (jinaRes.ok) {
           content = await jinaRes.text();
@@ -194,11 +251,13 @@ const Workspaces = {
       }
 
       this.currentFiles = this.currentFiles || [];
-      this.currentFiles.push({
-        name: filename,
-        content: content
-      });
-      this.renderFilesList(this.currentFiles);
+      const existingIdx = this.currentFiles.findIndex(f => f.name === filename);
+      if (existingIdx >= 0) {
+        this.currentFiles[existingIdx].content = content;
+      } else {
+        this.currentFiles.push({ name: filename, content: content });
+      }
+      this.syncActiveWorkspaceFiles();
       alert(`✅ Đã nạp thành công file [${filename}] từ URL vào Workspace!`);
     } catch (e) {
       alert(`❌ Không thể nạp file từ URL (${e.message}). Vui lòng tải file về máy và upload trực tiếp!`);
@@ -208,7 +267,7 @@ const Workspaces = {
   removeFile(index) {
     if (this.currentFiles && this.currentFiles[index]) {
       this.currentFiles.splice(index, 1);
-      this.renderFilesList(this.currentFiles);
+      this.syncActiveWorkspaceFiles();
     }
   },
 
