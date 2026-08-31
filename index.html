@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/xterm.min.css">
   
   <!-- Core Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=58.0.0">
+  <link rel="stylesheet" href="css/style.css?v=59.0.0">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -74,6 +74,11 @@
           <span class="nav-label">Presets System</span>
           <span class="badge">LibreChat</span>
         </div>
+        <div id="nav-quota" class="nav-item" title="Check Live API Quota & Usage">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Kiểm Tra Quota / Usage</span>
+          <span class="badge">Live</span>
+        </div>
         <div id="nav-memory" class="nav-item" title="Long-term AI Memory & Profile Facts">
           <span class="nav-icon">🧠</span>
           <span class="nav-label">Trí Nhớ AI (Memory)</span>
@@ -83,6 +88,11 @@
           <span class="nav-icon">⚡</span>
           <span class="nav-label">Skills & Extensions</span>
           <span id="skills-count-badge" class="badge">4 active</span>
+        </div>
+        <div id="nav-terminal" class="nav-item" title="Launch In-Browser WebVM Terminal (WebAssembly Linux Shell)">
+          <span class="nav-icon">💻</span>
+          <span class="nav-label">WebVM Linux Terminal</span>
+          <span class="badge">Wasm</span>
         </div>
         <div id="nav-settings" class="nav-item" title="Configure API Keys, Models & Endpoints">
           <span class="nav-icon">⚙️</span>
@@ -132,11 +142,11 @@
 
     <!-- ── MAIN CHAT AREA ───────────────────────────────────────── -->
     <main id="main-chat">
-      <!-- Navbar (Open WebUI Centered Selector Style) -->
+      <!-- Navbar (Open WebUI / ChatGPT Minimal Centered Style) -->
       <header class="chat-navbar">
         <div class="navbar-left">
-          <button id="btn-open-sidebar" class="btn-icon" title="Open Sidebar">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          <button id="btn-open-sidebar" class="btn-icon" title="Open Sidebar Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
           </button>
         </div>
 
@@ -154,32 +164,8 @@
         </div>
 
         <div class="navbar-right">
-          <button id="btn-top-settings" class="nav-action-btn" title="Cài đặt & Tùy chọn API, Model, Provider">
-            <span>⚙️</span>
-            <span class="hide-mobile">Tùy chọn</span>
-          </button>
-          <button id="btn-top-presets" class="nav-action-btn" title="LibreChat Presets">
-            <span>🔖</span>
-            <span class="hide-mobile">Presets</span>
-          </button>
-          <button id="btn-top-quota" class="nav-action-btn" title="Check Live API Quota & Usage">
-            <span>📊</span>
-            <span class="hide-mobile">Quota</span>
-          </button>
-          <button id="btn-top-memory" class="nav-action-btn" title="AI Memory Facts">
-            <span>🧠</span>
-            <span class="hide-mobile">Memory</span>
-          </button>
-          <button id="btn-top-terminal" class="nav-action-btn" title="Launch In-Browser WebVM Terminal (WebAssembly Linux Shell)">
-            <span>💻</span>
-            <span class="hide-mobile">Terminal</span>
-          </button>
-          <button id="btn-top-workspace" class="nav-action-btn" title="Current Workspace Files">
-            <span>📁</span>
-            <span id="top-workspace-name" class="top-ws-name">Project</span>
-          </button>
           <button id="btn-top-new-chat" class="btn-icon" title="Start new conversation">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
           </button>
         </div>
       </header>
@@ -665,13 +651,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/xterm.min.js"></script>
   
   <!-- Application Core Modules (Sequential Loading v46.0.0) -->
-  <script src="js/storage.js?v=58.0.0"></script>
-  <script src="js/vm.js?v=58.0.0"></script>
-  <script src="js/api.js?v=58.0.0"></script>
-  <script src="js/artifacts.js?v=58.0.0"></script>
-  <script src="js/workspaces.js?v=58.0.0"></script>
-  <script src="js/skills.js?v=58.0.0"></script>
-  <script src="js/decompiler.js?v=58.0.0"></script>
-  <script src="js/app.js?v=58.0.0"></script>
+  <script src="js/storage.js?v=59.0.0"></script>
+  <script src="js/vm.js?v=59.0.0"></script>
+  <script src="js/api.js?v=59.0.0"></script>
+  <script src="js/artifacts.js?v=59.0.0"></script>
+  <script src="js/workspaces.js?v=59.0.0"></script>
+  <script src="js/skills.js?v=59.0.0"></script>
+  <script src="js/decompiler.js?v=59.0.0"></script>
+  <script src="js/app.js?v=59.0.0"></script>
 </body>
 </html>

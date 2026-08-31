@@ -478,19 +478,7 @@ button, input, textarea, select {
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  white-space: nowrap;
-  scrollbar-width: none;
-  touch-action: pan-x;
-  flex-shrink: 1;
-}
-.navbar-right::-webkit-scrollbar {
-  display: none;
-}
-.nav-action-btn {
-  white-space: nowrap;
+  gap: 8px;
   flex-shrink: 0;
 }
 

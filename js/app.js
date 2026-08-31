@@ -455,8 +455,8 @@ class ClaudeApp {
         return;
       }
 
-      // 9. Quota Check Button (#btn-top-quota / #btn-check-credit)
-      const quotaBtn = target.closest('#btn-top-quota, #btn-check-credit');
+      // 9. Quota Check Button (#btn-top-quota / #btn-check-credit / #nav-quota)
+      const quotaBtn = target.closest('#btn-top-quota, #btn-check-credit, #nav-quota');
       if (quotaBtn) {
         e.preventDefault();
         this.checkModelUsage();
@@ -471,7 +471,7 @@ class ClaudeApp {
         return;
       }
 
-      // 11. Workspaces Button (#btn-top-workspace)
+      // 11. Workspaces Button (#btn-top-workspace / #btn-workspace-badge)
       const wsBtn = target.closest('#btn-top-workspace, #btn-workspace-badge');
       if (wsBtn) {
         e.preventDefault();
@@ -484,6 +484,14 @@ class ClaudeApp {
       if (skillsBtn) {
         e.preventDefault();
         Skills.openModal();
+        return;
+      }
+
+      // 13. Terminal Button (#btn-top-terminal / #nav-terminal)
+      const terminalBtn = target.closest('#btn-top-terminal, #nav-terminal');
+      if (terminalBtn) {
+        e.preventDefault();
+        this.openTerminalModal();
         return;
       }
     }, true);
