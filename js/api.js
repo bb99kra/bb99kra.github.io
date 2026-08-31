@@ -518,7 +518,7 @@ OPERATIONAL GUIDELINES:
         try {
           const parsed = JSON.parse(dataStr);
           const delta = parsed.choices?.[0]?.delta;
-          const reasoning = delta?.reasoning_content || delta?.reasoning;
+          const reasoning = delta?.reasoning_content || delta?.reasoning || delta?.thought || delta?.thinking || delta?.reasoning_text || delta?.parts?.[0]?.thought || parsed.candidates?.[0]?.content?.parts?.[0]?.thought;
           const content = delta?.content;
 
           if (reasoning) {
