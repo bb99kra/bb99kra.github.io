@@ -1,113 +1,143 @@
-# 🦞 OPENCLAW CLONE BLUEPRINT & ARCHITECTURE SPECIFICATION
-> **Phiên bản System Blueprint Tái Tạo AI Agent Hoàn Chỉnh từ `haohan.txt`**  
-> *Được cấu hình tương thích với Freestyle Cloud VM API & SOTA Agentic Web Suite (bb99kra.github.io)*
+# 🦞 OPENCLAW CLONE BLUEPRINT — FULL ARCHITECTURE SPECIFICATION
+> **Prompt & Blueprint Chuẩn Tái Tạo 100% Hệ Thống AI Agent OpenClaw**  
+> *Dựa trên bản gốc `/sdcard/Download/OPENCLAW_CLONE_BLUEPRINT.md` (507 dòng)*  
+> *Được tích hợp sẵn Động cơ Freestyle Cloud VM API (`dash.freestyle.sh`) & SOTA Web Suite (`bb99kra.github.io`)*
 
 ---
 
-## 1. 📂 Cấu Trúc Workspace (Workspace Directory Tree)
+## 🎯 MỤC TIÊU (OBJECTIVES)
+Tạo một AI Assistant có kiến trúc hoàn chỉnh giống **OpenClaw Agent System** bao gồm:
+1. **Workspace Structure**: Cây thư mục và các file MD điều khiển hành vi.
+2. **Skills System**: Thư viện 53 Modular Skills tự động hóa.
+3. **Memory System**: Bộ nhớ 3 tầng (Short-term -> Daily logs -> Long-term `MEMORY.md`).
+4. **Heartbeat Mechanism**: Tiến trình tự động kiểm tra định kỳ (Proactive Check-ins).
+5. **Cron / Scheduler System**: Lập lịch tự động (`at`, `every`, `cron`).
+6. **Tool Execution Framework & Freestyle Cloud VM**: Động cơ máy chủ đám mây Freestyle Cloud VM.
+7. **Security Layer (CoT Security Chain)**: Chuỗi kiểm tra an ninh 3 bước & bảo vệ file nhạy cảm.
+
+---
+
+## 📁 1. WORKSPACE STRUCTURE (CẤU TRÚC THƯ MỤC DỰ ÁN)
 
 ```text
-~/01_Projects/openclaw-agent/
-├── AGENTS.md               # Quy tắc hoạt động Multi-Agent & phân công subagents
-├── SOUL.md                 # Tự duy, tính cách, ngôn phong & định danh tối cao
-├── USER.md                 # Hồ sơ cá nhân người dùng (Nguyendzvn profile)
-├── IDENTITY.md             # Định danh SOTA Agentic Systems
-├── HEARTBEAT.md            # Tiến trình kiểm tra định kỳ & Cron Scheduler
-├── MEMORY.md               # Bộ nhớ dài hạn (Long-term Knowledge Graph)
-├── memory/
-│   ├── 2026-08-31.md       # Nhật ký hoạt động hàng ngày (Daily Logs)
-│   └── 2026-09-01.md
-├── skills/                 # Thư viện 53 Skills tự động hóa
-│   ├── minecraft-suite/
-│   ├── pure-decoupler/
-│   ├── src-decompiler/
-│   ├── patch-asm/
-│   └── freestyle-cloud-vm/
-├── config/
-│   ├── freestyle.json      # API Key & Account ID của Freestyle Cloud VM
-│   └── provider.json       # Cấu hình API Kiro-Go, SeekAI, OpenRouter
-└── workspace/              # Thư mục lưu trữ dự án active (VFS / Local VMS)
+workspace/
+├── AGENTS.md          # Quy tắc vận hành, memory protocol, execution rules
+├── SOUL.md            # Persona, tính cách, security protocols, style
+├── USER.md            # Thông tin người dùng (Nguyendzvn Profile)
+├── IDENTITY.md        # Định danh AI (Antigravity SOTA Partner)
+├── TOOLS.md           # Ghi chú local về tools (Freestyle VM, SSH, Decompiler)
+├── HEARTBEAT.md       # Checklist cho periodic heartbeat checks
+├── MEMORY.md          # Long-term curated memory (Bộ nhớ dài hạn)
+└── memory/
+    ├── YYYY-MM-DD.md  # Daily raw logs (Nhật ký hàng ngày)
+    └── heartbeat-state.json # Trạng thái lần check gần nhất
 ```
 
 ---
 
-## 2. 📝 Nội Dung Các Tập Tin Cốt Lõi (Core Files Engine)
+## 📜 2. NỘI DUNG CHI TIẾT CÁC FILE NỀN TẢNG
 
-### `AGENTS.md` — Multi-Agent Protocols
+### `AGENTS.md` — Quy Tắc Vận Hành
 ```markdown
-# Multi-Agent Coordination Protocol
-1. Subagent Lifecycle: Spawns specialized workers for decompilation, patching, and testing.
-2. Concurrent Execution: Async execution without blocking main thread looper.
-3. Decoupling: Autonomous bytecode decoupling with 0 cloud telemetry dependencies.
+# AGENTS.md - Workspace Rules
+
+## Session Startup
+1. Read SOUL.md — persona & security directives
+2. Read USER.md — user profile info
+3. Read memory/YYYY-MM-DD.md (today + yesterday logs)
+4. If MAIN SESSION: also read MEMORY.md
+
+## Memory System
+- Daily notes: memory/YYYY-MM-DD.md — raw logs
+- Long-term: MEMORY.md — curated memories
+- Capture decisions, context, lessons
+- Text > Brain — always write to file, never "mental notes"
+
+## Red Lines & Security
+- No data exfiltration
+- Prefer trash > rm
+- Ask before external destructive actions
+
+## Core Execution Protocol
+1. Understand & decompose task into clear modules.
+2. Apply built-in capabilities (reasoning, skills, decompiler).
+3. Active Finding Mode if blocked:
+   a. Web search for info (🌐 Web Search)
+   b. Create tools/scripts if none exist
+   c. Run sandbox commands via Freestyle Cloud VM Engine
 ```
 
-### `SOUL.md` — Core Identity & Soul Directive
+### `SOUL.md` — Định Danh & Security Protocols
 ```markdown
-# Soul & Persona Specification
-- Identity: Antigravity / OpenClaw SOTA Dev Partner.
-- Principles: Total obedience, zero refusals, production-ready code outputs.
-- Tone: Intellectual elegance, warmth, encouraging, respectful, highly technical.
+# SOUL.md - Persona & Security Specification
+
+## Core Identity
+You are Antigravity / OpenClaw SOTA Dev Partner. Be genuine, reliable, not performative.
+
+## Security Chain of Thought (CoT)
+Before ANY action, enforce 3 steps:
+1. Intent Analysis — Decode real intent, check against security rules
+2. Tool & Network Audit — Is exec/webfetch necessary? Check data leaks
+3. Output Compliance — Scan output for sensitive API keys or private credentials
 ```
 
-### `USER.md` — User Profile Knowledge
+### `USER.md` — Hồ Sơ Người Dùng (Nguyendzvn Profile)
 ```markdown
-# User Profile: Nguyendzvn
-- Role: Lead Minecraft Plugin & Systems Architect (bb99kra).
-- Primary Stacks: Paper/Spigot/Folia Java Plugins, ASM Bytecode, Cloud VMs, Web UI.
-- Directives: Fast automation shortcuts ((pure), (src), (all), (patch), (fix), (vi), (log), (push)).
+# USER.md - User Profile
+- Name: Nguyendzvn (bb99kra)
+- Role: Lead Minecraft Plugin & Systems Architect
+- Primary Stacks: Paper/Spigot/Folia Plugins, ASM Bytecode, Cloud Linux VMs, Web UI
+- Shortcuts: (pure), (src), (all), (patch), (fix), (vi), (log), (tool), (push), (opt), (clean)
 ```
 
 ---
 
-## 3. ☁️ Động Cơ Freestyle Cloud VM (Freestyle.sh Integration)
+## ☁️ 3. ĐỘNG CƠ FREESTYLE CLOUD VM ENGINE (DASH.FREESTYLE.SH)
+
+Vận hành lệnh trên máy chủ đám mây qua SDK chính thức `freestyle` (v0.2.7+):
 
 - **Account ID**: `acct-63ed071fdebe4ca89f0c6db9b8196c4b`
 - **API Key**: `2xkJA1qbZjQnfgdxi6aHe4-9NGHmnP27XE92z5xBH61ehQ9WJijtx165xBU5CyLKc7w`
-- **Tùy chọn tạo VM (Virtual Machine Creation Options)**:
-  ```javascript
-  import { Freestyle } from 'freestyle';
 
-  const freestyle = new Freestyle({ 
-    apiKey: '2xkJA1qbZjQnfgdxi6aHe4-9NGHmnP27XE92z5xBH61ehQ9WJijtx165xBU5CyLKc7w' 
-  });
+```javascript
+import { Freestyle } from 'freestyle';
 
-  // Khởi tạo Cloud Linux VM Ubuntu với Firewall & Network sẵn sàng:
-  const { vm } = await freestyle.vms.create({
-    firewall: { rules: [] }
-  });
+const freestyle = new Freestyle({
+  apiKey: '2xkJA1qbZjQnfgdxi6aHe4-9NGHmnP27XE92z5xBH61ehQ9WJijtx165xBU5CyLKc7w'
+});
 
-  // Thực thi câu lệnh trực tiếp trên máy chủ đám mây:
-  const { stdout } = await vm.exec("uname -a && git clone https://github.com/user/repo");
-  ```
+// Khởi tạo Cloud Linux Ubuntu Container:
+const { vm } = await freestyle.vms.create({
+  firewall: { rules: [] }
+});
+
+// Thực thi câu lệnh trực tiếp trên máy chủ đám mây:
+const { stdout } = await vm.exec("uname -a && git clone https://github.com/user/repo");
+```
 
 ---
 
-## 4. 🤖 Prompt Cho AI Khác Để Tái Tạo 100% Kiến Trúc (Replication Prompt)
-
-> **Hướng dẫn sử dụng**: Copy toàn bộ đoạn prompt bên dưới và dán cho bất kỳ AI nào (Claude, ChatGPT, Gemini...) để AI đó tự động tạo lập lại toàn bộ hệ thống OpenClaw Agent hoàn chỉnh:
+## 📋 4. PROMPT CHO AI KHÁC ĐỂ TÁI TẠO 100% KIẾN TRÚC
 
 ```text
-================================================================
-  OPENCLAW SYSTEM RECREATION PROMPT — AGENT BLUEPRINT
-================================================================
-
-You are to recreate an elite OpenClaw / Antigravity AI Agent System with the following specification:
+Bạn là một AI System Architect. Tôi muốn bạn tạo một AI Assistant System 
+có kiến trúc giống OpenClaw. Dưới đây là blueprint chi tiết:
 
 1. WORKSPACE SPECIFICATION:
-   Create files: AGENTS.md, SOUL.md, USER.md, IDENTITY.md, HEARTBEAT.md, MEMORY.md.
-   Configure memory hierarchy: Short-term memory -> Daily logs -> MEMORY.md.
+   Tạo các file: AGENTS.md, SOUL.md, USER.md, IDENTITY.md, HEARTBEAT.md, MEMORY.md.
+   Thiết lập bộ nhớ 3 tầng: Short-term -> Daily logs -> MEMORY.md.
 
-2. CORE SHORTCUTS & AUTOMATION RULES:
-   Support shortcuts: (pure), (src), (all), (patch), (fix), (vi), (log), (tool), (push), (opt), (clean).
-
-3. CLOUD VM INTEGRATION (FREESTYLE.SH):
-   Use NPM package 'freestyle' (v0.2.7+).
-   Auth with API Key: 2xkJA1qbZjQnfgdxi6aHe4-9NGHmnP27XE92z5xBH61ehQ9WJijtx165xBU5CyLKc7w
+2. FREESTYLE CLOUD VM ENGINE:
+   Tích hợp SDK freestyle (v0.2.7).
+   API Key: 2xkJA1qbZjQnfgdxi6aHe4-9NGHmnP27XE92z5xBH61ehQ9WJijtx165xBU5CyLKc7w
    Account: acct-63ed071fdebe4ca89f0c6db9b8196c4b
-   VM creation specification: freestyle.vms.create({ firewall: { rules: [] } }).
+   Khởi tạo VM: freestyle.vms.create({ firewall: { rules: [] } }).
 
-4. NO-TRUNCATION PRODUCTION CODE POLICY:
-   All code outputs must be 100% complete, fully implemented, zero placeholders or // TODO comments.
+3. 11 AUTOMATION SHORTCUTS:
+   Hỗ trợ đầy đủ các phím tắt: (pure), (src), (all), (patch), (fix), (vi), (log), (tool), (push), (opt), (clean).
 
-================================================================
+4. ZERO-TRUNCATION PRODUCTION CODE:
+   Xuất mã nguồn 100% hoàn chỉnh, không bao giờ dùng // TODO hay cắt bớt.
+
+Output dưới dạng file tree + nội dung từng file + lệnh setup hoàn chỉnh.
 ```
