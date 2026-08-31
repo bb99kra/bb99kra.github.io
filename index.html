@@ -3,9 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Claude AI & ChatGPT Pro — Next-Gen AI Workspace</title>
+  <title>Claude & ChatGPT Pro — Next-Gen AI Workspace</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23da7756'><path d='M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z'/></svg>">
-  <link rel="stylesheet" href="css/style.css?v=3.1.0">
+  
+  <!-- Highlight.js Syntax Theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
+  
+  <!-- Custom Core Stylesheet -->
+  <link rel="stylesheet" href="css/style.css?v=3.2.0">
+  
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -18,7 +25,7 @@
     <aside id="sidebar">
       <!-- Sidebar Header -->
       <div class="sidebar-header">
-        <a href="#" class="brand-logo" title="Claude & ChatGPT Web Suite">
+        <a href="#" class="brand-logo" title="Claude 5 & ChatGPT Suite">
           <span class="brand-star">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
@@ -563,8 +570,12 @@
     </div>
   </div>
 
-  <!-- JavaScript Libraries & App Engine -->
+  <!-- SOTA Markdown & Syntax Engine (Marked + Highlight.js + JSZip) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/app.js?v=3.1.0"></script>
+  
+  <!-- Main App Controller Module -->
+  <script type="module" src="js/app.js?v=3.2.0"></script>
 </body>
 </html>

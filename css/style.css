@@ -1,6 +1,6 @@
 /* ==========================================================================
-   AI WORKSPACE PRO — NEXT-GEN UI v3.1 (ChatGPT × Claude × LobeChat)
-   Engineered for SOTA Experience & Maximum Aesthetic Fidelity
+   AI WORKSPACE PRO — PERFECT CHATGPT × CLAUDE UI v3.2
+   Designed for Maximum Aesthetic Fidelity, Crisp Typography & Zero Layout Bugs
    ========================================================================== */
 
 /* ── COLOR SYSTEM & DESIGN TOKENS ──────────────────────────────────────── */
@@ -131,10 +131,6 @@ button, input, textarea, select {
   from { opacity: 0; transform: scale(0.96) translateY(6px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 var(--accent-light); }
-  50%      { box-shadow: 0 0 0 8px var(--accent-glow); }
-}
 @keyframes dotBounce {
   0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
   40%           { transform: scale(1); opacity: 1; }
@@ -142,9 +138,6 @@ button, input, textarea, select {
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0; }
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 /* ── MAIN APP CONTAINER ─────────────────────────────────────────────────── */
@@ -662,51 +655,68 @@ button, input, textarea, select {
 .suggestion-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
 .suggestion-desc { font-size: 12px; color: var(--text-muted); line-height: 1.45; }
 
-/* ── MESSAGE ROWS & BUBBLES ──────────────────────────────────────────────── */
+/* ── MESSAGE ROWS & BUBBLES (PIXEL-PERFECT CHATGPT/CLAUDE ALIGNMENT) ────── */
 .message-row {
+  width: 100%;
   max-width: 820px;
   margin: 0 auto;
-  padding: 10px 24px;
+  padding: 12px 20px;
   display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  animation: slideUp 0.22s var(--ease-smooth) both;
+  gap: 16px;
+  box-sizing: border-box;
+  animation: slideUp 0.2s var(--ease-smooth) both;
 }
 
-/* User Message */
-.message-row.user-row {
+/* User Message Row: Flush Right Pill Bubble */
+.message-row.user-message-row {
   justify-content: flex-end;
+  padding: 8px 20px;
 }
-.user-bubble {
+
+.user-bubble-container {
+  margin-left: auto;
+  max-width: 75%;
   background: var(--bg-user-msg);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg) var(--radius-lg) 4px var(--radius-lg);
+  border-radius: 20px;
   padding: 12px 18px;
+  color: var(--text-primary);
   font-size: 15px;
   line-height: 1.6;
-  color: var(--text-primary);
-  max-width: 85%;
   word-break: break-word;
   box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* Assistant Message */
+/* Assistant Message Row: Pure Reading View from Left */
+.message-row.assistant-message-row {
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 12px 20px;
+}
+
 .assistant-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: linear-gradient(135deg, var(--accent), #f59e6b);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
   flex-shrink: 0;
   margin-top: 2px;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px var(--accent-glow);
 }
-.message-bubble.markdown-body {
+
+.assistant-content-wrapper {
   flex: 1;
-  font-size: 15px;
+  min-width: 0;
+  font-size: 15.5px;
   line-height: 1.75;
   color: var(--text-primary);
   word-break: break-word;
@@ -717,7 +727,6 @@ button, input, textarea, select {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 8px;
 }
 .user-attachment-card {
   display: flex;
@@ -732,9 +741,8 @@ button, input, textarea, select {
 .user-attachment-icon { font-size: 18px; flex-shrink: 0; }
 .user-attachment-name { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-attachment-meta { font-size: 10.5px; color: var(--text-muted); }
-.user-attachment-badge { background: var(--accent-light); color: var(--accent); padding: 1px 6px; border-radius: 99px; font-size: 9.5px; font-weight: 700; }
 
-/* ── MARKDOWN CONTENT STYLING ────────────────────────────────────────────── */
+/* ── MARKDOWN & CODE HIGHLIGHTING ───────────────────────────────────────── */
 .markdown-body p { margin-bottom: 12px; }
 .markdown-body p:last-child { margin-bottom: 0; }
 .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
@@ -761,8 +769,8 @@ button, input, textarea, select {
 }
 .markdown-body hr { border: none; border-top: 1px solid var(--border-subtle); margin: 18px 0; }
 
-/* Code Blocks */
-.markdown-body pre {
+/* Code Blocks with Header & Copy Button */
+.code-block-wrapper {
   margin: 14px 0;
   border-radius: var(--radius-md);
   background: var(--bg-code);
@@ -777,27 +785,39 @@ button, input, textarea, select {
   padding: 8px 14px;
   background: var(--bg-code-header);
   border-bottom: 1px solid var(--border-subtle);
+}
+.code-lang-label {
   font-size: 11.5px;
   font-family: var(--font-mono);
   color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 .btn-code-copy {
   background: transparent;
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 4px;
+  padding: 3px 9px;
+  border-radius: 5px;
   cursor: pointer;
   transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 .btn-code-copy:hover {
   background: var(--bg-card);
   color: var(--text-primary);
 }
-.markdown-body pre code {
+.code-block-wrapper pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+.code-block-wrapper pre code.hljs {
   display: block;
   padding: 14px 16px;
   overflow-x: auto;
@@ -805,6 +825,18 @@ button, input, textarea, select {
   font-size: 13.5px;
   line-height: 1.65;
   color: var(--text-code);
+  background: transparent;
+}
+
+/* Inline Code */
+.markdown-body code:not(.hljs) {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--bg-code);
+  border: 1px solid var(--border-subtle);
+  padding: 2px 6px;
+  border-radius: 5px;
+  color: var(--accent);
 }
 
 /* Tables */
@@ -832,15 +864,18 @@ button, input, textarea, select {
 .markdown-body tr:last-child td { border-bottom: none; }
 .markdown-body tr:hover td { background: var(--bg-card-hover); }
 
-/* ── THINKING PROCESS ACCORDION (CLAUDE 3.7 / DEEPSEEK R1) ───────────────── */
+/* ── SOTA THINKING / REASONING ACCORDION (CLAUDE 3.7 & DEEPSEEK R1) ──────── */
 .claude-thinking-container {
+  background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  margin-bottom: 14px;
+  margin: 10px 0 16px 0;
   overflow: hidden;
-  background: var(--bg-code);
+  box-shadow: var(--shadow-sm);
   transition: var(--transition);
 }
+.claude-thinking-container:hover { border-color: var(--border-strong); }
+
 .claude-thinking-header {
   display: flex;
   align-items: center;
@@ -848,35 +883,62 @@ button, input, textarea, select {
   padding: 9px 14px;
   cursor: pointer;
   user-select: none;
+  background: rgba(218, 119, 86, 0.05);
   transition: var(--transition);
 }
-.claude-thinking-header:hover { background: var(--bg-card-hover); }
+.claude-thinking-header:hover { background: rgba(218, 119, 86, 0.1); }
+
 .claude-thinking-title {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12.5px;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
-.thinking-sparkle { font-size: 14px; }
+.thinking-sparkle { font-size: 14px; color: var(--accent); }
+
 .claude-thinking-arrow {
   font-size: 12px;
   color: var(--text-muted);
-  transition: transform 0.2s ease;
+  transition: transform 0.25s var(--ease-smooth);
 }
+.claude-thinking-container.collapsed .claude-thinking-arrow { transform: rotate(0deg); }
 .claude-thinking-container:not(.collapsed) .claude-thinking-arrow { transform: rotate(180deg); }
+
 .claude-thinking-content {
-  padding: 10px 14px 12px;
-  font-size: 13px;
+  padding: 12px 16px 14px 16px;
+  font-size: 13.5px;
   color: var(--text-muted);
-  line-height: 1.6;
-  font-style: italic;
+  line-height: 1.65;
   border-top: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
+  margin: 8px 12px 12px 12px;
+  border-radius: 0 8px 8px 0;
+  background: var(--bg-code);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .claude-thinking-container.collapsed .claude-thinking-content { display: none; }
 
-/* Streaming cursor */
+/* Typing indicator & Streaming cursor */
+.typing-indicator {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 8px 0;
+}
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: dotBounce 1.2s infinite ease-in-out;
+}
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
 .streaming-cursor {
   display: inline-block;
   width: 7px;
@@ -1453,6 +1515,7 @@ button, input, textarea, select {
   .suggestion-grid { grid-template-columns: 1fr; }
   .composer-container { padding: 10px 12px 14px; }
   .message-row { padding: 8px 12px; }
+  .user-bubble-container { max-width: 88%; }
   .hide-mobile { display: none; }
   .modal-card { max-width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; align-self: flex-end; }
   .modal-backdrop { align-items: flex-end; padding: 0; }

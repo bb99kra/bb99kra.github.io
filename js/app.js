@@ -21,8 +21,8 @@ class ClaudeApp {
   }
 
   init() {
-    try {
-      // 1. Initialize Sub-modules
+      // 1. Initialize Sub-modules & Markdown Engine
+      this.setupMarked();
       Artifacts.init();
       Workspaces.init(() => this.onWorkspaceChanged());
       Skills.init(() => this.updateSkillsBadge());
@@ -1009,22 +1009,16 @@ class ClaudeApp {
 
     const startTime = Date.now();
 
-    // 1. Immediately show live Thinking accordion upon send like Claude.ai
+    // Show initial typing indicator
     bubble.innerHTML = `
-      <div class="claude-thinking-container">
-        <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <div class="claude-thinking-title">
-            <span class="thinking-sparkle">💭</span>
-            <span>Thinking...</span>
-          </div>
-          <span class="claude-thinking-arrow">▾</span>
-        </div>
-        <div class="claude-thinking-content">Đang phân tích dữ liệu, bóc tách cấu trúc và lập luận...<span class="streaming-cursor"></span></div>
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
       </div>
     `;
 
     let fullAssistantText = '';
-
     let lastRender = 0;
 
     await Api.streamChat(
@@ -1036,28 +1030,11 @@ class ClaudeApp {
       (chunk, accumulated) => {
         fullAssistantText = accumulated;
         const now = Date.now();
-        // Throttle UI re-render to 60ms to prevent browser memory lockup on large outputs
-        if (now - lastRender < 60) return;
+        if (now - lastRender < 50) return;
         lastRender = now;
         const elapsedSec = ((now - startTime) / 1000).toFixed(1);
 
-        if (accumulated.includes('<thinking>')) {
-          bubble.innerHTML = this.renderMarkdown(accumulated, elapsedSec);
-        } else {
-          const thinkingBox = `
-            <div class="claude-thinking-container collapsed">
-              <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
-                <div class="claude-thinking-title">
-                  <span class="thinking-sparkle" style="animation:none;opacity:0.8;">💭</span>
-                  <span>Thought for ${elapsedSec}s</span>
-                </div>
-                <span class="claude-thinking-arrow">▾</span>
-              </div>
-              <div class="claude-thinking-content">✓ Đã phân tích kiến trúc, đối chiếu tập tin dự án và hoàn tất xử lý logic trong ${elapsedSec} giây.</div>
-            </div>
-          `;
-          bubble.innerHTML = thinkingBox + this.renderMarkdown(accumulated, elapsedSec);
-        }
+        bubble.innerHTML = this.renderMarkdown(accumulated, elapsedSec);
         this.detectAndRenderArtifactCards(bubble, accumulated);
         this.scrollToBottom();
       },
@@ -1067,16 +1044,12 @@ class ClaudeApp {
         this.btnSend.disabled = false;
 
         const totalSec = ((Date.now() - startTime) / 1000).toFixed(1);
-        let storedText = finalText;
-        if (!finalText.includes('<thinking>')) {
-          storedText = `<thinking>\n✓ Đã phân tích cấu trúc, đối chiếu dữ liệu dự án và hoàn tất xử lý trong ${totalSec}s.\n</thinking>\n\n` + finalText;
-        }
-
-        bubble.innerHTML = this.renderMarkdown(storedText, totalSec);
+        bubble.innerHTML = this.renderMarkdown(finalText, totalSec);
+        this.detectAndRenderArtifactCards(bubble, finalText);
 
         this.currentChat.messages.push({
           role: 'assistant',
-          content: storedText,
+          content: finalText,
           searchResults: searchResults ? true : false,
           timestamp: Date.now()
         });
@@ -1091,7 +1064,7 @@ class ClaudeApp {
         this.isGenerating = false;
         this.btnSend.innerHTML = '<span>↑</span>';
         this.btnSend.disabled = false;
-        bubble.innerHTML += `<div style="color:#d9534f;margin-top:8px;font-size:13.5px;padding:8px 12px;background:rgba(217,83,79,0.1);border-radius:8px;">⚠️ ${this.escapeHtml(error.message)}</div>`;
+        bubble.innerHTML += `<div style="color:#ef4444;margin-top:8px;font-size:13.5px;padding:8px 12px;background:rgba(239,68,68,0.1);border-radius:8px;border:1px solid rgba(239,68,68,0.2);">⚠️ ${this.escapeHtml(error.message)}</div>`;
         this.scrollToBottom();
       },
       Storage.getMemories()
@@ -1105,11 +1078,11 @@ class ClaudeApp {
 
   createSearchStatusElement(query) {
     const el = document.createElement('div');
-    el.className = 'message-row';
-    el.style.padding = '6px 24px';
+    el.className = 'message-row assistant-message-row';
+    el.style.padding = '4px 20px';
     el.innerHTML = `
-      <div class="search-badge">
-        <span class="brand-star">✳</span>
+      <div style="font-size:12.5px;color:var(--text-muted);display:flex;align-items:center;gap:6px;background:var(--bg-card);padding:6px 12px;border-radius:14px;border:1px solid var(--border-subtle);">
+        <span class="status-dot" style="background:var(--accent);box-shadow:0 0 6px var(--accent);"></span>
         <span>Searching live web for: <strong>${this.escapeHtml(query.slice(0, 50))}</strong>...</span>
       </div>
     `;
@@ -1118,15 +1091,14 @@ class ClaudeApp {
 
   createAssistantMessageRow() {
     const row = document.createElement('div');
-    row.className = 'message-row assistant';
+    row.className = 'message-row assistant-message-row';
 
     const avatar = document.createElement('div');
     avatar.className = 'assistant-avatar';
-    avatar.innerHTML = `<span style="font-size:18px;line-height:1;">✳</span>`;
+    avatar.innerHTML = `<span>✳</span>`;
 
     const bubble = document.createElement('div');
-    bubble.className = 'message-bubble markdown-body';
-    bubble.innerHTML = '<span style="opacity:0.5;">Claude is thinking...</span>';
+    bubble.className = 'assistant-content-wrapper message-bubble markdown-body';
 
     row.appendChild(avatar);
     row.appendChild(bubble);
@@ -1139,16 +1111,16 @@ class ClaudeApp {
       content = typeof content === 'string' ? content : (content != null ? String(content) : '');
 
       const row = document.createElement('div');
-      row.className = `message-row ${role}`;
 
       if (role === 'user') {
-        const bubble = document.createElement('div');
-        bubble.className = 'message-bubble';
+        row.className = 'message-row user-message-row';
+
+        const bubbleContainer = document.createElement('div');
+        bubbleContainer.className = 'user-bubble-container';
 
         let displayContent = content || '';
         let fileChips = Array.isArray(attachments) ? [...attachments] : [];
 
-        // If loaded from history without explicit attachments array, extract attached file names
         if (fileChips.length === 0 && displayContent.includes('[Attached File:')) {
           const matches = [...displayContent.matchAll(/\[Attached File:\s*([^\]]+)\]/g)];
           if (matches.length > 0) {
@@ -1156,7 +1128,7 @@ class ClaudeApp {
               const fname = m[1].trim();
               return {
                 name: fname,
-                sizeStr: fname.endsWith('.jar') ? 'Java Archive (Decompiled)' : 'Document',
+                sizeStr: fname.endsWith('.jar') ? 'Java Archive' : 'Document',
                 type: fname.endsWith('.jar') ? 'jar' : 'text'
               };
             });
@@ -1164,13 +1136,11 @@ class ClaudeApp {
           }
         }
 
-        // Render sleek attachment chips like Claude.ai
         if (fileChips.length > 0) {
           const container = document.createElement('div');
           container.className = 'user-attachment-container';
           container.innerHTML = fileChips.map(f => {
             const icon = f.name.endsWith('.jar') ? '📦' : f.name.endsWith('.zip') ? '🗂️' : '📄';
-            const badge = f.name.endsWith('.jar') ? '<span class="user-attachment-badge">Decompiled</span>' : '';
             return `
               <div class="user-attachment-card">
                 <div class="user-attachment-icon">${icon}</div>
@@ -1178,31 +1148,31 @@ class ClaudeApp {
                   <div class="user-attachment-name" title="${f.name}">${this.escapeHtml(f.name)}</div>
                   <div class="user-attachment-meta">
                     <span>${f.sizeStr || 'File'}</span>
-                    ${badge}
                   </div>
                 </div>
               </div>
             `;
           }).join('');
-          bubble.appendChild(container);
+          bubbleContainer.appendChild(container);
         }
 
-        // Render the prompt text
         if (displayContent) {
           const textNode = document.createElement('div');
           textNode.style.whiteSpace = 'pre-wrap';
           textNode.textContent = displayContent;
-          bubble.appendChild(textNode);
+          bubbleContainer.appendChild(textNode);
         }
 
-        row.appendChild(bubble);
+        row.appendChild(bubbleContainer);
       } else {
+        row.className = 'message-row assistant-message-row';
+
         const avatar = document.createElement('div');
         avatar.className = 'assistant-avatar';
-        avatar.innerHTML = `<span style="font-size:18px;line-height:1;">✳</span>`;
+        avatar.innerHTML = `<span>✳</span>`;
 
         const bubble = document.createElement('div');
-        bubble.className = 'message-bubble markdown-body';
+        bubble.className = 'assistant-content-wrapper message-bubble markdown-body';
         bubble.innerHTML = this.renderMarkdown(content);
         this.detectAndRenderArtifactCards(bubble, content);
 
@@ -1237,91 +1207,136 @@ class ClaudeApp {
             <div class="artifact-card-subtitle">${Artifacts.formatTypeLabel(art.type)} • Click to open in Studio</div>
           </div>
         </div>
-        <button class="btn-primary" style="padding:6px 12px;font-size:12px;">Open Studio ↗</button>
+        <button class="btn-primary-sm" style="padding:6px 14px;">Open Studio ↗</button>
       `;
       card.addEventListener('click', () => Artifacts.open(art));
       bubbleElement.appendChild(card);
     });
   }
 
+  setupMarked() {
+    if (!window.marked) return;
+
+    const renderer = new window.marked.Renderer();
+
+    renderer.code = (code, infostring) => {
+      const lang = (infostring || '').match(/^\S*/)?.[0] || 'text';
+      let highlighted = '';
+      if (window.hljs && window.hljs.getLanguage(lang)) {
+        try {
+          highlighted = window.hljs.highlight(code, { language: lang }).value;
+        } catch (e) {
+          highlighted = this.escapeHtml(code);
+        }
+      } else {
+        highlighted = this.escapeHtml(code);
+      }
+
+      return `
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang-label">${lang}</span>
+            <button class="btn-code-copy" onclick="window.claudeApp.copyCode(this)">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <pre><code class="hljs language-${lang}">${highlighted}</code></pre>
+        </div>
+      `;
+    };
+
+    window.marked.setOptions({
+      renderer: renderer,
+      gfm: true,
+      breaks: true
+    });
+  }
+
+  copyCode(btn) {
+    const codeBlock = btn.closest('.code-block-wrapper').querySelector('code');
+    if (!codeBlock) return;
+    navigator.clipboard.writeText(codeBlock.textContent || '');
+    const span = btn.querySelector('span');
+    if (span) {
+      const old = span.textContent;
+      span.textContent = 'Copied! ✓';
+      btn.style.color = '#22c55e';
+      setTimeout(() => {
+        span.textContent = old;
+        btn.style.color = '';
+      }, 2000);
+    }
+  }
+
   renderMarkdown(text, elapsedSec = null) {
     if (!text || typeof text !== 'string') return '';
-    let cleaned = text.replace(/<antArtifact[\s\S]*?<\/antArtifact>/gi, '');
 
+    let mainContent = text;
+    let thinkingHtml = '';
     const timeLabel = elapsedSec ? ` (${elapsedSec}s)` : '';
 
-    // Claude Thinking Accordion Container (Closed tag - collapsed by default like Claude.ai)
-    cleaned = cleaned.replace(/<thinking>([\s\S]*?)<\/thinking>/gi, (match, thought) => {
-      return `
+    // Extract thinking blocks
+    const thinkingMatch = mainContent.match(/<(?:thinking|thought)>([\s\S]*?)<\/(?:thinking|thought)>/i);
+    const streamingThinkingMatch = mainContent.match(/<(?:thinking|thought)>([\s\S]*)$/i);
+
+    if (thinkingMatch) {
+      const thoughtText = thinkingMatch[1].trim();
+      mainContent = mainContent.replace(/<(?:thinking|thought)>[\s\S]*?<\/(?:thinking|thought)>/gi, '').trim();
+      thinkingHtml = `
         <div class="claude-thinking-container collapsed">
           <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
             <div class="claude-thinking-title">
-              <span class="thinking-sparkle" style="animation:none;opacity:0.8;">💭</span>
+              <span class="thinking-sparkle">🧠</span>
               <span>Thinking Process${timeLabel}</span>
             </div>
             <span class="claude-thinking-arrow">▾</span>
           </div>
-          <div class="claude-thinking-content">${this.escapeHtml(thought.trim())}</div>
+          <div class="claude-thinking-content">${this.escapeHtml(thoughtText)}</div>
         </div>
       `;
-    });
-
-    // Claude Thinking while actively streaming (Unclosed tag - open while streaming)
-    cleaned = cleaned.replace(/<thinking>([\s\S]*)$/gi, (match, thought) => {
-      return `
+    } else if (streamingThinkingMatch) {
+      const thoughtText = streamingThinkingMatch[1].trim();
+      mainContent = mainContent.replace(/<(?:thinking|thought)>[\s\S]*$/gi, '').trim();
+      thinkingHtml = `
         <div class="claude-thinking-container">
           <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
             <div class="claude-thinking-title">
-              <span class="thinking-sparkle">💭</span>
+              <span class="thinking-sparkle">✨</span>
               <span>Thinking...${timeLabel}</span>
             </div>
             <span class="claude-thinking-arrow">▾</span>
           </div>
-          <div class="claude-thinking-content">${this.escapeHtml(thought.trim())}<span class="streaming-cursor"></span></div>
+          <div class="claude-thinking-content">${this.escapeHtml(thoughtText)}<span class="streaming-cursor"></span></div>
         </div>
       `;
-    });
+    }
 
-    // Also support <thought>...</thought>
-    cleaned = cleaned.replace(/<thought>([\s\S]*?)<\/thought>/gi, (match, thought) => {
-      return `
-        <div class="claude-thinking-container collapsed">
-          <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
-            <div class="claude-thinking-title">
-              <span class="thinking-sparkle" style="animation:none;opacity:0.8;">💭</span>
-              <span>Thought${timeLabel}</span>
-            </div>
-            <span class="claude-thinking-arrow">▾</span>
-          </div>
-          <div class="claude-thinking-content">${this.escapeHtml(thought.trim())}</div>
-        </div>
-      `;
-    });
+    // Clean out <antArtifact> tags
+    mainContent = mainContent.replace(/<antArtifact[\s\S]*?<\/antArtifact>/gi, '').trim();
 
-    // Code blocks with syntax copy button
-    cleaned = cleaned.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
-      const safeCode = this.escapeHtml(code.trim());
-      const safeLang = lang || 'code';
-      return `
-        <pre><div class="code-header"><span>${safeLang}</span><button class="btn-code-copy" onclick="navigator.clipboard.writeText(this.closest('pre').querySelector('code').textContent)">Copy</button></div><code>${safeCode}</code></pre>
-      `;
-    });
-
-    // Links and direct download triggers
-    cleaned = cleaned.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
-      const isFile = url.endsWith('.jar') || url.endsWith('.zip') || label.toLowerCase().includes('tải') || label.toLowerCase().includes('download');
-      if (isFile) {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--accent-light);color:var(--accent);border-radius:6px;font-weight:500;text-decoration:none;">📥 ${this.escapeHtml(label)}</a>`;
+    let html = '';
+    if (window.marked && typeof window.marked.parse === 'function') {
+      try {
+        html = window.marked.parse(mainContent);
+      } catch (e) {
+        html = this.fallbackMarkdown(mainContent);
       }
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;">${this.escapeHtml(label)}</a>`;
-    });
+    } else {
+      html = this.fallbackMarkdown(mainContent);
+    }
 
+    return thinkingHtml + html;
+  }
+
+  fallbackMarkdown(text) {
+    if (!text) return '';
+    let cleaned = this.escapeHtml(text);
     cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     cleaned = cleaned.replace(/\*(.*?)\*/g, '<em>$1</em>');
     cleaned = cleaned.replace(/`([^`]+)`/g, '<code style="background:var(--bg-code);padding:2px 5px;border-radius:4px;font-size:13px;">$1</code>');
     cleaned = cleaned.replace(/\n\n/g, '<br><br>');
     cleaned = cleaned.replace(/\n/g, '<br>');
-
     return cleaned;
   }
 
