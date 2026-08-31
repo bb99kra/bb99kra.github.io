@@ -978,6 +978,29 @@ class ClaudeApp {
     Workspaces.removeFile(index);
   }
 
+  async saveToLocalDirectory(filename, content) {
+    if ('showDirectoryPicker' in window) {
+      try {
+        const dirHandle = await window.showDirectoryPicker();
+        const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(content);
+        await writable.close();
+        alert(`✅ Đã ghi thành công [${filename}] trực tiếp vào thư mục trên máy!`);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          alert(`⚠️ Lỗi ghi file: ${err.message}`);
+        }
+      }
+    } else {
+      const blob = new Blob([content], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+  }
+
   async handleAttachmentUpload(e) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
