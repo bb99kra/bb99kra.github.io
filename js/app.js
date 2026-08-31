@@ -301,29 +301,120 @@ class ClaudeApp {
       this.btnSaveSettings.addEventListener('click', () => this.saveSettings());
     }
 
-    // Universal Fail-Proof Delegated Modal Close Handler ('✕' button, backdrop, escape)
-    // Uses capture phase (true) so click is caught BEFORE any inner element can block it!
+    // ── UNIVERSAL UNSTOPPABLE MASTER CLICK ROUTER ──────────────────────────────
+    // Catches ALL clicks across the entire DOM during capture phase!
+    // Guarantees 100% responsiveness on mobile devices, tablets, and webviews.
     document.addEventListener('click', (e) => {
-      const targetEl = (e.target && e.target.nodeType === 3) ? e.target.parentElement : e.target;
-      if (!targetEl) return;
+      const target = (e.target && e.target.nodeType === 3) ? e.target.parentElement : e.target;
+      if (!target || typeof target.closest !== 'function') return;
 
-      const closeBtn = targetEl.closest('[id^="btn-close-"], .btn-close-modal, .btn-close-sidebar');
+      // 1. Close Buttons (✕, .btn-close-modal, .btn-close-sidebar)
+      const closeBtn = target.closest('[id^="btn-close-"], .btn-close-modal, .btn-close-sidebar');
       if (closeBtn) {
         e.preventDefault();
         e.stopPropagation();
         const modal = closeBtn.closest('.modal-backdrop');
         if (modal) {
           modal.classList.add('hidden');
-        } else if (closeBtn.classList.contains('btn-close-sidebar') && this.sidebar) {
-          this.sidebar.classList.add('collapsed');
+        } else if (closeBtn.classList.contains('btn-close-sidebar')) {
+          const sb = document.getElementById('sidebar');
+          if (sb) sb.classList.add('collapsed');
         } else {
           document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.add('hidden'));
         }
         return;
       }
 
-      if (targetEl.classList && targetEl.classList.contains('modal-backdrop')) {
-        targetEl.classList.add('hidden');
+      // 2. Direct Modal Backdrop Click -> Close Modal
+      if (target.classList && target.classList.contains('modal-backdrop')) {
+        e.preventDefault();
+        target.classList.add('hidden');
+        return;
+      }
+
+      // 3. Open Sidebar Button (#btn-open-sidebar / #btn-toggle-sidebar)
+      const sbToggle = target.closest('#btn-open-sidebar, #btn-toggle-sidebar');
+      if (sbToggle) {
+        e.preventDefault();
+        const sb = document.getElementById('sidebar');
+        if (sb) sb.classList.toggle('collapsed');
+        return;
+      }
+
+      // 4. New Chat Button (#btn-new-chat / .btn-new-chat)
+      const newChatBtn = target.closest('#btn-new-chat, .btn-new-chat');
+      if (newChatBtn) {
+        e.preventDefault();
+        this.startNewChat();
+        if (window.innerWidth <= 768) {
+          const sb = document.getElementById('sidebar');
+          if (sb) sb.classList.add('collapsed');
+        }
+        return;
+      }
+
+      // 5. Model Selector Pill (#model-selector-pill)
+      const modelPill = target.closest('#model-selector-pill');
+      if (modelPill) {
+        e.preventDefault();
+        this.openModelPickerModal();
+        return;
+      }
+
+      // 6. Settings Modal Button (#nav-settings / .user-profile-pill)
+      const settingsBtn = target.closest('#nav-settings, .user-profile-pill');
+      if (settingsBtn) {
+        e.preventDefault();
+        this.openSettingsModal();
+        return;
+      }
+
+      // 7. Save Settings Button (#btn-save-settings)
+      const saveSettingsBtn = target.closest('#btn-save-settings');
+      if (saveSettingsBtn) {
+        e.preventDefault();
+        this.saveSettings();
+        return;
+      }
+
+      // 8. Presets Button (#btn-top-presets / #nav-presets)
+      const presetsBtn = target.closest('#btn-top-presets, #nav-presets');
+      if (presetsBtn) {
+        e.preventDefault();
+        this.openPresetsModal();
+        return;
+      }
+
+      // 9. Quota Check Button (#btn-top-quota / #btn-check-credit)
+      const quotaBtn = target.closest('#btn-top-quota, #btn-check-credit');
+      if (quotaBtn) {
+        e.preventDefault();
+        this.checkModelUsage();
+        return;
+      }
+
+      // 10. Memory Button (#btn-top-memory / #nav-memory)
+      const memoryBtn = target.closest('#btn-top-memory, #nav-memory');
+      if (memoryBtn) {
+        e.preventDefault();
+        this.openMemoryModal();
+        return;
+      }
+
+      // 11. Workspaces Button (#btn-top-workspace)
+      const wsBtn = target.closest('#btn-top-workspace, #btn-workspace-badge');
+      if (wsBtn) {
+        e.preventDefault();
+        Workspaces.openModal();
+        return;
+      }
+
+      // 12. Skills Button (#btn-top-skills / #nav-skills)
+      const skillsBtn = target.closest('#btn-top-skills, #nav-skills');
+      if (skillsBtn) {
+        e.preventDefault();
+        Skills.openModal();
+        return;
       }
     }, true);
 
