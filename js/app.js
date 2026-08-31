@@ -1953,32 +1953,45 @@ class ClaudeApp {
     if (thinkingMatch) {
       let thoughtText = thinkingMatch[1].replace(/<summary>[\s\S]*?<\/summary>/gi, '').trim();
       mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>[\s\S]*?<\/(?:thinking|thought|think|reasoning|details)>/gi, '').trim();
+      const charCount = thoughtText.length.toLocaleString();
       thinkingHtml = `
-        <div class="claude-thinking-container">
-          <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
-            <div class="claude-thinking-title">
-              <span class="thinking-sparkle brain-pulse">🧠</span>
-              <span class="shimmer-text">Thought for ${timeLabel || 'a few seconds'}</span>
+        <div class="thinking-panel mb-4 rounded-xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-card)]">
+          <div class="thinking-panel-header w-full flex items-center justify-between gap-2.5 px-4 py-3 cursor-pointer select-none" onclick="this.parentElement.classList.toggle('collapsed')">
+            <div class="flex items-center gap-2.5">
+              <span class="claude-thinking-arrow text-[var(--accent)] transition-transform duration-200">▾</span>
+              <span class="thinking-sparkle brain-pulse text-[var(--accent)] font-bold">🧠</span>
+              <span class="text-sm font-medium shimmer-text">Thought for ${timeLabel || 'a few seconds'}</span>
             </div>
-            <span class="claude-thinking-arrow">▾</span>
+            <div class="thinking-badges-row flex items-center gap-2 text-xs">
+              <span class="thinking-badge px-2 py-0.5 rounded-md bg-[var(--bg-code)] text-[var(--text-muted)]">claude-5</span>
+              <span class="thinking-badge px-2 py-0.5 rounded-md bg-[var(--bg-code)] text-[var(--accent)] font-semibold">⚡ ${charCount} chars</span>
+              ${elapsedSec ? `<span class="thinking-badge px-2 py-0.5 rounded-md bg-[var(--bg-code)] text-[var(--text-muted)]">🕒 ${elapsedSec}s</span>` : ''}
+            </div>
           </div>
-          <div class="claude-thinking-content">${this.escapeHtml(thoughtText)}</div>
+          <div class="claude-thinking-content p-4 text-xs text-[var(--text-secondary)] border-t border-[var(--border-subtle)] bg-[var(--bg-code)] leading-relaxed">${this.escapeHtml(thoughtText)}</div>
         </div>
       `;
     } else if (streamingThinkingMatch) {
       let thoughtText = streamingThinkingMatch[1].replace(/<summary>[\s\S]*?<\/summary>/gi, '').trim();
       mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>[\s\S]*$/gi, '').trim();
+      const charCount = thoughtText.length.toLocaleString();
       thinkingHtml = `
-        <div class="claude-thinking-container streaming">
-          <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
-            <div class="claude-thinking-title">
-              <span class="thinking-sparkle brain-pulse">🧠</span>
-              <span class="shimmer-text">Thinking...${timeLabel}</span>
+        <div class="thinking-panel streaming mb-4 rounded-xl overflow-hidden border border-[var(--accent)] bg-[var(--bg-card)]">
+          <div class="thinking-panel-header w-full flex items-center justify-between gap-2.5 px-4 py-3 cursor-pointer select-none" onclick="this.parentElement.classList.toggle('collapsed')">
+            <div class="flex items-center gap-2.5">
+              <span class="claude-thinking-arrow text-[var(--accent)] transition-transform duration-200">▾</span>
+              <span class="thinking-sparkle brain-pulse text-[var(--accent)] font-bold">🧠</span>
+              <span class="text-sm font-medium shimmer-text">Thinking...${timeLabel}</span>
             </div>
-            <span class="claude-thinking-arrow">▾</span>
+            <div class="thinking-badges-row flex items-center gap-2 text-xs">
+              <span class="thinking-badge px-2 py-0.5 rounded-md bg-[var(--accent)] text-white font-semibold flex items-center gap-1">
+                <span class="thinking-live-dot animate-pulse">🔴</span> Live
+              </span>
+              <span class="thinking-badge px-2 py-0.5 rounded-md bg-[var(--bg-code)] text-[var(--accent)] font-semibold">⚡ ${charCount} chars</span>
+            </div>
           </div>
           <div class="thinking-progress"></div>
-          <div class="claude-thinking-content">${this.escapeHtml(thoughtText)}<span class="streaming-cursor"></span></div>
+          <div class="claude-thinking-content p-4 text-xs text-[var(--text-secondary)] border-t border-[var(--border-subtle)] bg-[var(--bg-code)] leading-relaxed">${this.escapeHtml(thoughtText)}<span class="streaming-cursor"></span></div>
         </div>
       `;
     }

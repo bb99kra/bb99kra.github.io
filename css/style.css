@@ -5,34 +5,34 @@
 
 /* ── COLOR SYSTEM & DESIGN TOKENS ──────────────────────────────────────── */
 :root {
-  /* Signature Theme (Warm Ivory & Terracotta Accent) */
-  --bg-app:             #fbfaf7;
-  --bg-main:            #fcfbf9;
-  --bg-sidebar:         #f4f1ea;
+  /* Damienchakma Open-Claude Exact Color Tokens */
+  --bg-app:             #fdf8f5;
+  --bg-main:            #fdf8f5;
+  --bg-sidebar:         #f7f3ef;
   --bg-card:            #ffffff;
-  --bg-card-hover:      #f5f2eb;
+  --bg-card-hover:      #f2ede9;
   --bg-input:           #ffffff;
-  --bg-user-msg:        #f3efe6;
+  --bg-user-msg:        #f7f3ef;
   --bg-assistant-msg:   transparent;
   --bg-modal:           #ffffff;
   --bg-modal-backdrop:  rgba(15, 15, 15, 0.45);
-  --bg-artifact:        #faf9f5;
-  --bg-code:            #f5f2eb;
-  --bg-code-header:     #eae5db;
+  --bg-artifact:        #fdf8f5;
+  --bg-code:            #f7f3ef;
+  --bg-code-header:     #e6e2de;
 
-  --text-primary:    #1f1e1d;
-  --text-secondary:  #53504b;
-  --text-muted:      #86827a;
-  --text-code:       #242220;
+  --text-primary:    #1c1b19;
+  --text-secondary:  #55433d;
+  --text-muted:      #88726c;
+  --text-code:       #1c1b19;
 
-  --border-subtle:  #e7e2d7;
-  --border-strong:  #d6cfc1;
-  --border-focus:   #c96442;
+  --border-subtle:  #e6e2de;
+  --border-strong:  #dbc1b9;
+  --border-focus:   #d97757;
 
-  --accent:         #c96442;
-  --accent-hover:   #b65535;
-  --accent-light:   rgba(201, 100, 66, 0.12);
-  --accent-glow:    rgba(201, 100, 66, 0.25);
+  --accent:         #d97757;
+  --accent-hover:   #99462a;
+  --accent-light:   rgba(217, 119, 87, 0.12);
+  --accent-glow:    rgba(217, 119, 87, 0.25);
   --accent-text:    #ffffff;
 
   --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.04);
@@ -54,34 +54,34 @@
 }
 
 [data-theme="dark"] {
-  /* Obsidian Charcoal Theme (ChatGPT Dark / Claude Obsidian) */
-  --bg-app:             #18181b;
-  --bg-main:            #202023;
-  --bg-sidebar:         #151518;
-  --bg-card:            #28282c;
-  --bg-card-hover:      #323238;
-  --bg-input:           #2a2a2f;
-  --bg-user-msg:        #2d2d33;
+  /* Warm Noir - Damienchakma Open-Claude Exact Dark Mode Tokens */
+  --bg-app:             #141311;
+  --bg-main:            #141311;
+  --bg-sidebar:         #1a1917;
+  --bg-card:            #2a2825;
+  --bg-card-hover:      #3a3733;
+  --bg-input:           #2a2825;
+  --bg-user-msg:        #1a1917;
   --bg-assistant-msg:   transparent;
-  --bg-modal:           #242429;
+  --bg-modal:           #2a2825;
   --bg-modal-backdrop:  rgba(0, 0, 0, 0.7);
-  --bg-artifact:        #1b1b1e;
-  --bg-code:            #18181b;
-  --bg-code-header:     #131316;
+  --bg-artifact:        #141311;
+  --bg-code:            #1a1917;
+  --bg-code-header:     #2a2825;
 
-  --text-primary:    #f4f4f5;
-  --text-secondary:  #a1a1aa;
-  --text-muted:      #71717a;
-  --text-code:       #f4f4f5;
+  --text-primary:    #ffffff;
+  --text-secondary:  #e2ded7;
+  --text-muted:      #c4b8a8;
+  --text-code:       #ffffff;
 
-  --border-subtle:  #33333a;
-  --border-strong:  #44444e;
-  --border-focus:   #da7756;
+  --border-subtle:  #3d3a36;
+  --border-strong:  #524d45;
+  --border-focus:   #d97757;
 
-  --accent:         #da7756;
-  --accent-hover:   #e6896b;
-  --accent-light:   rgba(218, 119, 86, 0.16);
-  --accent-glow:    rgba(218, 119, 86, 0.35);
+  --accent:         #d97757;
+  --accent-hover:   #e6c364;
+  --accent-light:   rgba(217, 119, 87, 0.16);
+  --accent-glow:    rgba(217, 119, 87, 0.35);
   --accent-text:    #ffffff;
 
   --shadow-sm:  0 1px 4px rgba(0, 0, 0, 0.3);
