@@ -43,6 +43,18 @@ const Workspaces = {
       this.fileUploadInput.addEventListener('change', (e) => this.handleFileUpload(e));
     }
 
+    const btnFetchUrl = document.getElementById('btn-ws-fetch-url');
+    const inputUrl = document.getElementById('ws-url-input');
+    if (btnFetchUrl && inputUrl) {
+      btnFetchUrl.addEventListener('click', () => {
+        const url = inputUrl.value.trim();
+        if (url) {
+          this.addFileFromUrl(url);
+          inputUrl.value = '';
+        }
+      });
+    }
+
     this.updateBadge();
   },
 
@@ -156,6 +168,39 @@ const Workspaces = {
         this.renderFilesList(this.currentFiles);
       };
       reader.readAsText(file);
+    }
+  },
+
+  async addFileFromUrl(url) {
+    if (!url) return;
+    try {
+      const cleanUrl = url.trim();
+      const filename = cleanUrl.split('/').pop().split('?')[0] || 'remote_file.txt';
+      let content = '';
+
+      // Direct fetch
+      const res = await fetch(cleanUrl);
+      if (res.ok) {
+        content = await res.text();
+      } else {
+        // Fallback to Jina Reader CORS fetcher
+        const jinaRes = await fetch(`https://r.jina.ai/${cleanUrl}`);
+        if (jinaRes.ok) {
+          content = await jinaRes.text();
+        } else {
+          throw new Error(`HTTP ${res.status}`);
+        }
+      }
+
+      this.currentFiles = this.currentFiles || [];
+      this.currentFiles.push({
+        name: filename,
+        content: content.slice(0, 100000)
+      });
+      this.renderFilesList(this.currentFiles);
+      alert(`✅ Đã nạp thành công file [${filename}] từ URL vào Workspace!`);
+    } catch (e) {
+      alert(`❌ Không thể nạp file từ URL (${e.message}). Vui lòng tải file về máy và upload trực tiếp!`);
     }
   },
 
