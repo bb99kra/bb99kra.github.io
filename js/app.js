@@ -519,46 +519,6 @@ class ClaudeApp {
       });
     }
 
-    // Check Credit Button
-    const btnCheckCredit = document.getElementById('btn-check-credit');
-    if (btnCheckCredit) {
-      btnCheckCredit.addEventListener('click', async () => {
-        const s = Storage.getSettings();
-        const key = s.apiKey || 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8';
-        btnCheckCredit.textContent = '⏳...';
-        try {
-          const res = await fetch('https://api.9kiro.lol/check/api/usage', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key })
-          });
-          if (res.ok) {
-            const result = await res.json();
-            if (result.ok && result.key) {
-              const k = result.key;
-              const remain = (k.creditsRemaining != null ? k.creditsRemaining : (k.creditLimit - (k.creditsUsed || 0))).toFixed(1);
-              const used = Number(k.creditsUsed || 0).toFixed(1);
-              alert(
-                `📊 THÔNG TIN TÀI KHOẢN KIRO-GO (api.9kiro.lol):\n\n` +
-                `• Tên Key: ${k.name || 'tg-pool'}\n` +
-                `• Key: ${k.keyMasked || key.slice(0, 10) + '...'}\n` +
-                `• Trạng thái: ${k.enabled ? '✅ Hợp lệ (Active)' : '❌ Đã vô hiệu'}\n` +
-                `• Số Credits Còn Lại: ${remain} / ${k.creditLimit} Credits\n` +
-                `• Số Credits Đã Dùng: ${used} Credits\n\n` +
-                `💡 Kiểm tra chi tiết trực tiếp tại: https://api.9kiro.lol/check`
-              );
-              return;
-            }
-          }
-          window.open('https://api.9kiro.lol/check', '_blank');
-        } catch (e) {
-          window.open('https://api.9kiro.lol/check', '_blank');
-        } finally {
-          btnCheckCredit.textContent = '📊 Check';
-        }
-      });
-    }
-
     // Auto-detect provider when typing or pasting API Key
     if (this.settingApiKey) {
       this.settingApiKey.addEventListener('input', (e) => {
