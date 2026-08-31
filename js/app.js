@@ -1261,7 +1261,11 @@ class ClaudeApp {
 
     let fullUserContent = text;
     if (attachmentsCopy.length > 0) {
-      const attachBlock = attachmentsCopy.map(a => `\n[Attached File: ${a.name}]\n${a.content}\n[End of ${a.name}]`).join('\n');
+      const attachBlock = attachmentsCopy.map(a => 
+        `📁 [ATTACHED FILE: ${a.name} (${a.sizeStr || 'File'})]\n` +
+        `\`\`\`\n${a.content}\n\`\`\`\n` +
+        `[END OF FILE: ${a.name}]`
+      ).join('\n\n');
       fullUserContent = fullUserContent ? `${fullUserContent}\n\n${attachBlock}` : attachBlock;
     }
 
@@ -1655,13 +1659,23 @@ class ClaudeApp {
     this.renderPresetsList();
   }
 
+  cleanTextForClipboard(rawText) {
+    if (!rawText) return '';
+    return rawText
+      .replace(/\r\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/[ \t]+$/gm, '')
+      .trim();
+  }
+
   copyMessageText(btn) {
     const bubble = btn.closest('.assistant-content-wrapper');
     if (!bubble) return;
     const textNode = bubble.cloneNode(true);
     const actions = textNode.querySelector('.message-action-bar');
     if (actions) actions.remove();
-    navigator.clipboard.writeText(textNode.innerText.trim());
+    const cleaned = this.cleanTextForClipboard(textNode.innerText);
+    navigator.clipboard.writeText(cleaned);
     const old = btn.textContent;
     btn.textContent = 'Copied! ✓';
     btn.style.color = '#22c55e';
@@ -1775,7 +1789,8 @@ class ClaudeApp {
   copyCode(btn) {
     const codeBlock = btn.closest('.code-block-wrapper').querySelector('code');
     if (!codeBlock) return;
-    navigator.clipboard.writeText(codeBlock.textContent || '');
+    const cleaned = this.cleanTextForClipboard(codeBlock.textContent || '');
+    navigator.clipboard.writeText(cleaned);
     const span = btn.querySelector('span');
     if (span) {
       const old = span.textContent;

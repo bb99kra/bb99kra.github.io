@@ -29,7 +29,12 @@ const Artifacts = {
     if (this.btnCopy) {
       this.btnCopy.addEventListener('click', () => {
         if (this.currentArtifact) {
-          navigator.clipboard.writeText(this.currentArtifact.content);
+          const cleaned = (this.currentArtifact.content || '')
+            .replace(/\r\n/g, '\n')
+            .replace(/\n{3,}/g, '\n\n')
+            .replace(/[ \t]+$/gm, '')
+            .trim();
+          navigator.clipboard.writeText(cleaned);
           this.btnCopy.innerHTML = '<span>✓ Copied</span>';
           setTimeout(() => {
             this.btnCopy.innerHTML = '<span>Copy</span>';
