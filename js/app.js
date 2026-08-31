@@ -1778,29 +1778,51 @@ class ClaudeApp {
 
   detectAndRenderArtifactCards(bubbleElement, rawText) {
     if (!rawText) return;
+
+    // 1. Render Artifact Studio cards if <antArtifact> tags are found
     const artifacts = Artifacts.extractArtifacts(rawText);
-    if (artifacts.length === 0) return;
+    if (artifacts.length > 0) {
+      artifacts.forEach(art => {
+        const existing = bubbleElement.querySelector(`[data-artifact-id="${art.identifier}"]`);
+        if (existing) return;
 
-    artifacts.forEach(art => {
-      const existing = bubbleElement.querySelector(`[data-artifact-id="${art.identifier}"]`);
-      if (existing) return;
-
-      const card = document.createElement('div');
-      card.className = 'artifact-card';
-      card.setAttribute('data-artifact-id', art.identifier);
-      card.innerHTML = `
-        <div class="artifact-card-info">
-          <div class="artifact-card-icon">⚡</div>
-          <div>
-            <div class="artifact-card-title">${this.escapeHtml(art.title)}</div>
-            <div class="artifact-card-subtitle">${Artifacts.formatTypeLabel(art.type)} • Click to open in Studio</div>
+        const card = document.createElement('div');
+        card.className = 'artifact-card';
+        card.setAttribute('data-artifact-id', art.identifier);
+        card.innerHTML = `
+          <div class="artifact-card-info">
+            <div class="artifact-card-icon">⚡</div>
+            <div>
+              <div class="artifact-card-title">${this.escapeHtml(art.title)}</div>
+              <div class="artifact-card-subtitle">${Artifacts.formatTypeLabel(art.type)} • Built & Standalone Ready</div>
+            </div>
           </div>
-        </div>
-        <button class="btn-primary-sm" style="padding:6px 14px;">Open Studio ↗</button>
-      `;
-      card.addEventListener('click', () => Artifacts.open(art));
-      bubbleElement.appendChild(card);
-    });
+          <div style="display:flex;gap:6px;align-items:center;">
+            <button class="btn-primary-sm" style="padding:6px 12px;background:var(--accent);color:white;" onclick="event.stopPropagation(); window.Artifacts.downloadProjectAsJar('${art.identifier}.jar')">📥 Tải .jar (pure)</button>
+            <button class="btn-secondary-sm" style="padding:6px 12px;" onclick="event.stopPropagation(); window.Artifacts.open(window.Artifacts.extractArtifacts('${this.escapeHtml(rawText)}')[0])">Studio ↗</button>
+          </div>
+        `;
+        card.addEventListener('click', () => Artifacts.open(art));
+        bubbleElement.appendChild(card);
+      });
+    }
+
+    // 2. AUTO DETECT JAVA / MINECRAFT CODE & RENDER ONE-CLICK DOWNLOAD BUTTONS
+    if (/```(?:java|xml|groovy|properties)/i.test(rawText) || /plugin\.yml|pom\.xml|PureSpeed/i.test(rawText)) {
+      if (!bubbleElement.querySelector('.auto-download-bar')) {
+        const dlBar = document.createElement('div');
+        dlBar.className = 'auto-download-bar';
+        dlBar.style.cssText = 'display:flex;gap:8px;margin-top:12px;padding:10px 14px;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);border-radius:10px;align-items:center;flex-wrap:wrap;';
+        dlBar.innerHTML = `
+          <span style="font-weight:600;font-size:13px;color:var(--accent);display:flex;align-items:center;gap:6px;">
+            ⚡ Rebuild Success! Tải file thành phẩm:
+          </span>
+          <button class="btn-primary-sm" style="padding:5px 14px;background:var(--accent);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;" onclick="window.Artifacts.downloadProjectAsJar()">📥 Tải .jar (pure)</button>
+          <button class="btn-secondary-sm" style="padding:5px 14px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);border-radius:6px;cursor:pointer;" onclick="if(window.Artifacts.btnDownloadZip) window.Artifacts.btnDownloadZip.click();">📦 Tải Source .zip</button>
+        `;
+        bubbleElement.appendChild(dlBar);
+      }
+    }
   }
 
   setupMarked() {
