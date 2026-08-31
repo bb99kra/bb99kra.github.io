@@ -541,6 +541,48 @@ button, input, textarea, select {
   font-weight: 600;
 }
 
+.navbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.message-action-bar {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-subtle);
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+
+.message-action-bar:hover {
+  opacity: 1;
+}
+
+.btn-msg-action {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition);
+}
+
+.btn-msg-action:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
 /* Nav Action Buttons */
 .nav-action-btn {
   display: inline-flex;

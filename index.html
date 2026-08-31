@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Claude & ChatGPT Pro — Next-Gen AI Workspace</title>
+  <title>Open WebUI & LibreChat Suite — SOTA AI Workspace</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23da7756'><path d='M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z'/></svg>">
   
   <!-- Highlight.js Syntax Theme -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
   
-  <!-- Custom Core Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=3.2.0">
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="css/style.css?v=3.3.0">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,19 +21,19 @@
 
   <div id="app-container">
 
-    <!-- ── SIDEBAR ─────────────────────────────────────────────── -->
+    <!-- ── SIDEBAR (OPEN WEBUI STYLE) ─────────────────────────── -->
     <aside id="sidebar">
       <!-- Sidebar Header -->
       <div class="sidebar-header">
-        <a href="#" class="brand-logo" title="Claude 5 & ChatGPT Suite">
+        <a href="#" class="brand-logo" title="Open WebUI & LibreChat AI Workspace">
           <span class="brand-star">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
             </svg>
           </span>
-          <span class="brand-title">Claude 5 Pro</span>
+          <span class="brand-title">Claude & GPT-5</span>
         </a>
-        <button id="btn-toggle-sidebar" class="btn-icon" title="Close Sidebar">
+        <button id="btn-toggle-sidebar" class="btn-icon btn-close-sidebar" title="Close Sidebar">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
@@ -62,6 +62,11 @@
 
       <!-- Sidebar Quick Navigation -->
       <div class="sidebar-nav">
+        <div id="nav-presets" class="nav-item" title="LibreChat Presets System">
+          <span class="nav-icon">🎨</span>
+          <span class="nav-label">Presets System</span>
+          <span class="badge">LibreChat</span>
+        </div>
         <div id="nav-memory" class="nav-item" title="Long-term AI Memory & Profile Facts">
           <span class="nav-icon">🧠</span>
           <span class="nav-label">Trí Nhớ AI (Memory)</span>
@@ -93,7 +98,7 @@
       <!-- Chat History List -->
       <div class="sidebar-history-container">
         <div class="history-section-header">
-          <span>Recent Chats</span>
+          <span>Recent Conversations</span>
           <button id="btn-export-all-chats" class="btn-icon-xs" title="Export all chats as JSON">📥 Export</button>
         </div>
         <div id="sidebar-history">
@@ -118,14 +123,16 @@
 
     <!-- ── MAIN CHAT AREA ───────────────────────────────────────── -->
     <main id="main-chat">
-      <!-- Navbar -->
+      <!-- Navbar (Open WebUI Centered Selector Style) -->
       <header class="chat-navbar">
         <div class="navbar-left">
           <button id="btn-open-sidebar" class="btn-icon" title="Open Sidebar" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
           </button>
+        </div>
 
-          <!-- Model Selector Pill -->
+        <!-- Center Model Picker Pill -->
+        <div class="navbar-center">
           <div id="model-selector-pill" class="model-selector-pill" title="Change AI Model & Provider">
             <span class="status-dot"></span>
             <span class="brand-star-icon">✳</span>
@@ -133,23 +140,22 @@
             <span class="badge-pro">PRO</span>
             <span class="caret-icon">▾</span>
           </div>
-
           <!-- Quick Model Dropdown Menu -->
           <div id="quick-model-menu" class="quick-model-menu hidden"></div>
         </div>
 
         <div class="navbar-right">
-          <button id="btn-top-memory" class="nav-action-btn" title="AI Long-Term Memory & User Facts">
+          <button id="btn-top-presets" class="nav-action-btn" title="LibreChat Presets">
+            <span>🎨</span>
+            <span class="hide-mobile">Presets</span>
+          </button>
+          <button id="btn-top-memory" class="nav-action-btn" title="AI Memory Facts">
             <span>🧠</span>
             <span class="hide-mobile">Memory</span>
           </button>
           <button id="btn-top-workspace" class="nav-action-btn" title="Current Workspace Files">
             <span>📁</span>
             <span id="top-workspace-name" class="top-ws-name">Project</span>
-          </button>
-          <button id="btn-top-skills" class="nav-action-btn" title="Skills & System Tools">
-            <span>⚡</span>
-            <span class="hide-mobile">Tools</span>
           </button>
           <button class="btn-icon" title="Start new conversation" onclick="window.claudeApp.startNewChat()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
@@ -160,7 +166,7 @@
       <!-- Messages Scroll Container -->
       <div id="messages-container" class="messages-container">
 
-        <!-- Welcome Screen (ChatGPT & Claude Hybrid) -->
+        <!-- Welcome Screen (Open WebUI & Claude Hybrid) -->
         <div id="welcome-container" class="welcome-container">
           <div class="welcome-hero">
             <div class="welcome-logo-wrapper">
@@ -171,7 +177,7 @@
               </div>
             </div>
             <h1 class="welcome-greeting" id="welcome-greeting-text">Welcome, Nguyendzvn</h1>
-            <p class="welcome-subtitle">Direct, obedient, high-speed AI assistant with long-term memory & Artifacts Studio.</p>
+            <p class="welcome-subtitle">Open WebUI Layout • LibreChat Presets & Forking • 100% Unrestricted Obedience.</p>
           </div>
 
           <div class="suggestion-grid">
@@ -235,14 +241,14 @@
                 <span>Attach</span>
               </button>
 
-              <button id="btn-toggle-search" class="toolbar-pill-btn" title="Enable Live Web Search (DuckDuckGo / Google)">
+              <button id="btn-toggle-search" class="toolbar-pill-btn" title="Enable Live Web Search">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
                 <span>Web Search</span>
               </button>
 
-              <button class="toolbar-pill-btn" onclick="document.getElementById('nav-skills').click()" title="Manage Skills & Prompts">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                <span>Skills</span>
+              <button class="toolbar-pill-btn" onclick="document.getElementById('nav-presets').click()" title="LibreChat Presets">
+                <span>🎨</span>
+                <span>Presets</span>
               </button>
             </div>
 
@@ -255,7 +261,7 @@
         </div>
 
         <div class="composer-disclaimer">
-          AI may produce inaccuracies. Powered by Kiro-Go, TuongTacGPT, SeekAI & SOTA Multi-Provider Hub.
+          AI may produce inaccuracies. Powered by Open WebUI Interface & LibreChat Engine.
         </div>
       </div>
     </main>
@@ -280,7 +286,7 @@
           <button id="btn-download-project-zip" class="btn-primary-sm" title="Tải toàn bộ dự án về máy (.zip)">📦 Download .ZIP</button>
           <button id="btn-copy-artifact" class="btn-secondary-sm">Copy</button>
           <button id="btn-download-artifact" class="btn-secondary-sm">Download</button>
-          <button id="btn-close-artifact" class="btn-icon" title="Close Studio">✕</button>
+          <button id="btn-close-artifact" class="btn-icon btn-close-modal" title="Close Studio">✕</button>
         </div>
       </div>
 
@@ -292,6 +298,34 @@
 
   </div>
 
+  <!-- ── MODAL: LIBRECHAT PRESETS ──────────────────────────────── -->
+  <div id="modal-presets" class="modal-backdrop hidden">
+    <div class="modal-card" style="max-width:580px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" style="display:flex;align-items:center;gap:8px;">
+            <span>🎨</span> LibreChat Presets System
+            <span class="badge-tag">1-Click Config</span>
+          </h2>
+          <div class="modal-subtitle">Lưu & chuyển đổi toàn bộ cấu hình AI (Provider, Model, Prompt, Temp) trong 1 giây.</div>
+        </div>
+        <button id="btn-close-presets" class="btn-icon btn-close-modal">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding:16px 20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <span style="font-size:13px;color:var(--text-muted);">Saved Persona & Model Configurations:</span>
+          <div style="display:flex;gap:6px;">
+            <button id="btn-export-presets" class="btn-secondary-sm">📥 Export JSON</button>
+            <button id="btn-save-current-preset" class="btn-primary-sm">+ Save Current Setup</button>
+          </div>
+        </div>
+
+        <div id="presets-items-list" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── MODAL: AI LONG-TERM MEMORY ────────────────────────────── -->
   <div id="modal-memory" class="modal-backdrop hidden">
     <div class="modal-card" style="max-width:560px;">
@@ -299,11 +333,11 @@
         <div>
           <h2 class="modal-title" style="display:flex;align-items:center;gap:8px;">
             <span>🧠</span> Trí Nhớ AI (Long-Term Memory)
-            <span class="badge-tag">ChatGPT / Claude Style</span>
+            <span class="badge-tag">LibreChat & ChatGPT Facts</span>
           </h2>
           <div class="modal-subtitle">AI tự động trích xuất & ghi nhớ thông tin cá nhân của bạn xuyên suốt mọi cuộc trò chuyện.</div>
         </div>
-        <button id="btn-close-memory" class="btn-icon">✕</button>
+        <button id="btn-close-memory" class="btn-icon btn-close-modal">✕</button>
       </div>
 
       <div class="modal-body">
@@ -334,14 +368,13 @@
     <div class="modal-card" style="max-width:640px;">
       <div class="modal-header">
         <h2 class="modal-title">API & Model Configuration</h2>
-        <button id="btn-close-settings" class="btn-icon">✕</button>
+        <button id="btn-close-settings" class="btn-icon btn-close-modal">✕</button>
       </div>
 
       <div class="modal-body">
         <!-- 1-Click Fast Setup Buttons -->
         <div class="settings-section-header">Fast 1-Click Provider Presets</div>
         <div style="display:flex;flex-direction:column;gap:8px;padding:12px 20px;">
-          <!-- Kiro 9AWS Claude 5 Key -->
           <div class="preset-hero-card">
             <div>
               <div style="font-weight:700;color:var(--accent);font-size:13.5px;">🔥 1-Click Kiro-Go (Claude Sonnet 5 & Opus 5)</div>
@@ -353,7 +386,6 @@
             </div>
           </div>
 
-          <!-- SeekAI Key -->
           <div class="preset-card">
             <div>
               <div style="font-weight:600;color:var(--text-primary);font-size:13px;">✨ SeekAI Gateway (Gemini 3.6 Flash & Claude 5)</div>
@@ -362,7 +394,6 @@
             <button id="btn-quick-setup-seekai" class="btn-secondary" style="padding:5px 12px;font-size:11.5px;">Chọn</button>
           </div>
 
-          <!-- TuongTacGPT GPT-5.6 Key -->
           <div class="preset-card">
             <div>
               <div style="font-weight:600;color:var(--text-primary);font-size:13px;">⚡ TuongTacGPT (GPT-5.6 Luna / Sol)</div>
@@ -459,7 +490,7 @@
     <div class="modal-card">
       <div class="modal-header">
         <h2 class="modal-title">Workspaces & Knowledge Projects</h2>
-        <button id="btn-close-workspaces" class="btn-icon">✕</button>
+        <button id="btn-close-workspaces" class="btn-icon btn-close-modal">✕</button>
       </div>
       <div class="modal-body" style="padding:16px 20px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
@@ -507,7 +538,7 @@
     <div class="modal-card">
       <div class="modal-header">
         <h2 class="modal-title">Skills & Tool Extensions</h2>
-        <button id="btn-close-skills" class="btn-icon">✕</button>
+        <button id="btn-close-skills" class="btn-icon btn-close-modal">✕</button>
       </div>
       <div class="modal-body" style="padding:16px 20px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
@@ -552,7 +583,7 @@
           <span class="brand-star">✳</span>
           <h2 class="modal-title">Select Model (Chọn Mô Hình AI)</h2>
         </div>
-        <button id="btn-close-model-picker" class="btn-icon">✕</button>
+        <button id="btn-close-model-picker" class="btn-icon btn-close-modal">✕</button>
       </div>
 
       <div class="modal-body" style="padding:16px 20px;">
@@ -576,6 +607,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   
   <!-- Main App Controller Module -->
-  <script type="module" src="js/app.js?v=3.2.0"></script>
+  <script type="module" src="js/app.js?v=3.3.0"></script>
 </body>
 </html>

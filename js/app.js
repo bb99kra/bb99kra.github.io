@@ -249,27 +249,51 @@ class ClaudeApp {
       });
     }
 
+    // Top Navbar & Sidebar Presets Buttons (LibreChat)
+    const btnTopPresets = document.getElementById('btn-top-presets');
+    if (btnTopPresets) {
+      btnTopPresets.addEventListener('click', () => this.openPresetsModal());
+    }
+
+    const navPresets = document.getElementById('nav-presets');
+    if (navPresets) {
+      navPresets.addEventListener('click', () => this.openPresetsModal());
+    }
+
+    const btnExportPresets = document.getElementById('btn-export-presets');
+    if (btnExportPresets) {
+      btnExportPresets.addEventListener('click', () => this.exportPresets());
+    }
+
+    const btnSaveCurrentPreset = document.getElementById('btn-save-current-preset');
+    if (btnSaveCurrentPreset) {
+      btnSaveCurrentPreset.addEventListener('click', () => this.saveCurrentAsPreset());
+    }
+
     // Settings Modal
     this.btnSettings.addEventListener('click', () => this.openSettingsModal());
-    this.btnCloseSettings.addEventListener('click', () => this.closeSettingsModal());
     this.btnSaveSettings.addEventListener('click', () => this.saveSettings());
 
-    // Universal Modal Backdrop Click to Close
-    document.querySelectorAll('.modal-backdrop').forEach(modal => {
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.classList.add('hidden');
-        }
-      });
-    });
-
-    // Universal Close Buttons ('✕') on All Modals
-    document.querySelectorAll('[id^="btn-close-"]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+    // Universal Fail-Proof Delegated Modal Close Handler ('✕' button, backdrop, escape)
+    document.addEventListener('click', (e) => {
+      const closeBtn = e.target.closest('[id^="btn-close-"]') || e.target.closest('.btn-close-modal') || e.target.closest('.btn-close-sidebar');
+      if (closeBtn) {
+        e.preventDefault();
         e.stopPropagation();
-        const modal = btn.closest('.modal-backdrop');
-        if (modal) modal.classList.add('hidden');
-      });
+        const modal = closeBtn.closest('.modal-backdrop');
+        if (modal) {
+          modal.classList.add('hidden');
+        } else if (closeBtn.classList.contains('btn-close-sidebar')) {
+          this.sidebar.classList.add('collapsed');
+        } else {
+          document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.add('hidden'));
+        }
+        return;
+      }
+
+      if (e.target.classList && e.target.classList.contains('modal-backdrop')) {
+        e.target.classList.add('hidden');
+      }
     });
 
     // Universal Escape Key Handler
@@ -1176,6 +1200,16 @@ class ClaudeApp {
         bubble.innerHTML = this.renderMarkdown(content);
         this.detectAndRenderArtifactCards(bubble, content);
 
+        const msgIdx = (this.currentChat && this.currentChat.messages) ? this.currentChat.messages.length - 1 : 0;
+        const actionBar = document.createElement('div');
+        actionBar.className = 'message-action-bar';
+        actionBar.innerHTML = `
+          <button class="btn-msg-action" title="Copy message text" onclick="window.claudeApp.copyMessageText(this)">📋 Copy</button>
+          <button class="btn-msg-action" title="Fork conversation from this point (LibreChat)" onclick="window.claudeApp.forkChatFromMessage(${msgIdx})">🌿 Fork Chat</button>
+          <button class="btn-msg-action" title="Regenerate response" onclick="window.claudeApp.regenerateResponse(${msgIdx})">🔄 Regenerate</button>
+        `;
+        bubble.appendChild(actionBar);
+
         row.appendChild(avatar);
         row.appendChild(bubble);
       }
@@ -1185,6 +1219,147 @@ class ClaudeApp {
     } catch (msgErr) {
       console.error('Error rendering message:', msgErr);
     }
+  }
+
+  // ==========================================
+  // LIBRECHAT PRESETS & FORKING SYSTEM
+  // ==========================================
+  openPresetsModal() {
+    this.renderPresetsList();
+    const modal = document.getElementById('modal-presets');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  closePresetsModal() {
+    const modal = document.getElementById('modal-presets');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  renderPresetsList() {
+    const container = document.getElementById('presets-items-list');
+    if (!container) return;
+    const presets = Storage.getPresets();
+
+    container.innerHTML = presets.map(p => `
+      <div class="preset-card">
+        <div>
+          <div class="preset-name">${this.escapeHtml(p.name)}</div>
+          <div class="preset-desc">${(p.provider || 'AI').toUpperCase()} • ${p.model} • Temp: ${p.temperature || 0.7}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-primary-sm" onclick="window.claudeApp.applyPreset('${p.id}')">Apply ⚡</button>
+          ${!p.id.startsWith('preset-default') ? `<button class="btn-secondary-sm" onclick="window.claudeApp.deletePreset('${p.id}')">🗑️</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  applyPreset(presetId) {
+    const presets = Storage.getPresets();
+    const p = presets.find(item => item.id === presetId);
+    if (!p) return;
+
+    const s = Storage.getSettings();
+    if (p.provider) s.provider = p.provider;
+    if (p.model) s.model = p.model;
+    if (p.temperature != null) s.temperature = p.temperature;
+    if (p.systemPrompt) s.customSystemPrompt = p.systemPrompt;
+
+    if (PROVIDER_PRESETS[p.provider]) {
+      s.apiType = PROVIDER_PRESETS[p.provider].apiType;
+      s.apiBase = PROVIDER_PRESETS[p.provider].apiBase;
+      if (PROVIDER_PRESETS[p.provider].defaultKey) {
+        s.apiKey = PROVIDER_PRESETS[p.provider].defaultKey;
+      }
+    }
+
+    Storage.saveSettings(s);
+    this.updateModelPill();
+    this.closePresetsModal();
+    alert(`Đã áp dụng Preset: ${p.name}!`);
+  }
+
+  saveCurrentAsPreset() {
+    const s = Storage.getSettings();
+    const name = prompt('Nhập tên cho Preset mới:', `Preset ${s.model}`);
+    if (!name || !name.trim()) return;
+
+    Storage.addPreset({
+      name: name.trim(),
+      provider: s.provider || 'kiro',
+      model: s.model || 'claude-sonnet-5',
+      temperature: s.temperature || 0.7,
+      systemPrompt: s.customSystemPrompt || ''
+    });
+
+    this.renderPresetsList();
+  }
+
+  exportPresets() {
+    const presets = Storage.getPresets();
+    const blob = new Blob([JSON.stringify(presets, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `librechat-presets-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  deletePreset(presetId) {
+    Storage.deletePreset(presetId);
+    this.renderPresetsList();
+  }
+
+  copyMessageText(btn) {
+    const bubble = btn.closest('.assistant-content-wrapper');
+    if (!bubble) return;
+    const textNode = bubble.cloneNode(true);
+    const actions = textNode.querySelector('.message-action-bar');
+    if (actions) actions.remove();
+    navigator.clipboard.writeText(textNode.innerText.trim());
+    const old = btn.textContent;
+    btn.textContent = 'Copied! ✓';
+    btn.style.color = '#22c55e';
+    setTimeout(() => {
+      btn.textContent = old;
+      btn.style.color = '';
+    }, 2000);
+  }
+
+  // Conversation Forking (LibreChat Feature)
+  forkChatFromMessage(msgIndex) {
+    if (!this.currentChat || !this.currentChat.messages) return;
+    const idx = parseInt(msgIndex, 10);
+    if (isNaN(idx) || idx < 0) return;
+
+    const sliced = JSON.parse(JSON.stringify(this.currentChat.messages.slice(0, idx + 1)));
+    const newChat = {
+      id: 'chat-' + Date.now(),
+      workspaceId: Storage.getActiveWorkspaceId(),
+      title: `🌿 Fork: ${(this.currentChat.title || 'Chat').slice(0, 24)}`,
+      messages: sliced
+    };
+
+    Storage.saveChat(newChat);
+    this.loadChat(newChat.id);
+  }
+
+  async regenerateResponse(msgIndex) {
+    if (this.isGenerating || !this.currentChat || !this.currentChat.messages) return;
+    const idx = parseInt(msgIndex, 10);
+    if (isNaN(idx) || idx < 0) return;
+
+    if (this.currentChat.messages[idx] && this.currentChat.messages[idx].role === 'assistant') {
+      this.currentChat.messages = this.currentChat.messages.slice(0, idx);
+    }
+
+    const lastUserMsg = [...this.currentChat.messages].reverse().find(m => m.role === 'user');
+    if (!lastUserMsg) return;
+
+    Storage.saveChat(this.currentChat);
+    this.loadChat(this.currentChat.id);
+    await this.generateAssistantResponse(lastUserMsg.displayText || lastUserMsg.content);
   }
 
   detectAndRenderArtifactCards(bubbleElement, rawText) {
