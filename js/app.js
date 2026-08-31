@@ -1419,12 +1419,11 @@ class ClaudeApp {
 
     const startTime = Date.now();
 
-    // Show initial typing indicator
+    // Show initial typing indicator (Open-Claude Generating Response Pill)
     bubble.innerHTML = `
-      <div class="typing-indicator">
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
+      <div class="generating-pill">
+        <div class="generating-dot-ping"></div>
+        <span style="font-weight:500;color:var(--text-primary);">Generating response...</span>
       </div>
     `;
 
