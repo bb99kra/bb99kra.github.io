@@ -3,9 +3,7 @@
  * Manage built-in and custom skills that inject specialized tools and prompts
  */
 
-import { Storage } from './storage.js';
-
-export const Skills = {
+const Skills = {
   currentEditSkillId: null,
 
   init(onSkillsChanged) {
@@ -153,3 +151,5 @@ export const Skills = {
     if (this.onSkillsChanged) this.onSkillsChanged();
   }
 };
+
+window.Skills = Skills;

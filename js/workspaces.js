@@ -3,9 +3,7 @@
  * Allows creating projects with custom system prompts and uploaded knowledge files
  */
 
-import { Storage } from './storage.js';
-
-export const Workspaces = {
+const Workspaces = {
   currentModalWorkspaceId: null,
 
   init(onWorkspaceChanged) {
@@ -220,3 +218,5 @@ export const Workspaces = {
     if (this.onWorkspaceChanged) this.onWorkspaceChanged();
   }
 };
+
+window.Workspaces = Workspaces;

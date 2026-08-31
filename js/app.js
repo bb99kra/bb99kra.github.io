@@ -3,13 +3,6 @@
  * Full 2026 Generation (Claude 5, GPT-5.6, DeepSeek V4, Gemini 3.7)
  */
 
-import { Storage, PROVIDER_PRESETS } from './storage.js';
-import { Api } from './api.js';
-import { Artifacts } from './artifacts.js';
-import { Workspaces } from './workspaces.js';
-import { Skills } from './skills.js';
-import { JavaClassDisassembler } from './decompiler.js';
-
 class ClaudeApp {
   constructor() {
     window.claudeApp = this;
@@ -1855,11 +1848,12 @@ class ClaudeApp {
   }
 }
 
-// Robust instant initialization for type="module" (prevents missing DOMContentLoaded on cached reloads)
+window.ClaudeApp = ClaudeApp;
+
 function initClaudeApp() {
   if (!window.claudeApp) {
-    window.claudeApp = new ClaudeApp();
-    window.claudeApp.init();
+    const app = new ClaudeApp();
+    app.init();
   }
 }
 

@@ -5,7 +5,7 @@
  * and generates readable decompiled Java source code.
  */
 
-export class JavaClassDisassembler {
+class JavaClassDisassembler {
   static parse(arrayBuffer) {
     try {
       const view = new DataView(arrayBuffer);
@@ -360,3 +360,5 @@ export class JavaClassDisassembler {
     return `public ${retType} ${name}(${paramList})`;
   }
 }
+
+window.JavaClassDisassembler = JavaClassDisassembler;

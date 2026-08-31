@@ -3,7 +3,7 @@
  * Parses <antArtifact> tags, renders split-screen live preview & code views
  */
 
-export const Artifacts = {
+const Artifacts = {
   currentArtifact: null,
 
   init() {
@@ -268,3 +268,5 @@ export const Artifacts = {
     this.currentArtifact = null;
   }
 };
+
+window.Artifacts = Artifacts;

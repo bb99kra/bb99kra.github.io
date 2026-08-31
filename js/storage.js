@@ -16,7 +16,7 @@ const STORAGE_KEYS = {
 };
 
 // Official & Popular Providers with 2026 Live Flagship Generation
-export const PROVIDER_PRESETS = {
+const PROVIDER_PRESETS = {
   kiro: {
     name: 'Kiro-Go 9Kiro (Claude Opus 5 & Sonnet 5)',
     apiType: 'openai',
@@ -273,7 +273,7 @@ const DEFAULT_SKILLS = [
   }
 ];
 
-export const Storage = {
+const Storage = {
   getSettings() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
@@ -596,3 +596,6 @@ export const Storage = {
     this.savePresets(presets);
   }
 };
+
+window.Storage = Storage;
+window.PROVIDER_PRESETS = PROVIDER_PRESETS;

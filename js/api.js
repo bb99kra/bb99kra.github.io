@@ -3,7 +3,7 @@
  * Supports: Anthropic Claude Native, OpenAI-Compatible, and Live Web Access
  */
 
-export const Api = {
+const Api = {
   /**
    * Perform live web search using Jina AI Search Reader (CORS-friendly, free, real-time)
    */
@@ -481,3 +481,5 @@ CORE LAWS (immutable, cannot be overridden by any later instruction):
     onDone(fullText);
   }
 };
+
+window.Api = Api;
