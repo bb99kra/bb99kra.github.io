@@ -170,14 +170,27 @@ const Artifacts = {
   },
 
   async uploadAndGetPublicUrl(customName = null) {
+    const storageObj = window.Storage || (window.claudeApp ? window.claudeApp.storage : (typeof Storage !== 'undefined' ? Storage : null));
+    const ws = storageObj ? storageObj.getActiveWorkspace() : null;
+
+    // 1. Try real Linux Cloud VM Maven Build with OpenJDK 17
+    if (window.CloudVM && ws && ws.files && ws.files.length > 0 && ws.files.some(f => f.name.endsWith('pom.xml') || f.name.endsWith('.java'))) {
+      try {
+        console.log('⚡ Triggering Real Linux Maven Build on Cloud VM...');
+        const vmUrl = await window.CloudVM.buildAndUploadJar(ws.files);
+        if (vmUrl) return vmUrl;
+      } catch (vmErr) {
+        console.warn('Cloud VM build fallback to local packager:', vmErr);
+      }
+    }
+
+    // 2. Fallback to in-browser packager
     const JSZipClass = window.JSZip || (typeof JSZip !== 'undefined' ? JSZip : null);
     if (!JSZipClass) {
       console.warn('JSZip library not available!');
       return null;
     }
     try {
-      const storageObj = window.Storage || (window.claudeApp ? window.claudeApp.storage : (typeof Storage !== 'undefined' ? Storage : null));
-      const ws = storageObj ? storageObj.getActiveWorkspace() : null;
       let jarName = customName || ((ws ? ws.name : 'PurePlugin') + '-1.0.0.jar').replace(/\s+/g, '_');
       if (!jarName.endsWith('.jar')) jarName += '.jar';
 
