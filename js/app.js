@@ -828,10 +828,12 @@ class ClaudeApp {
   showWelcome() {
     this.welcomeContainer.style.display = 'flex';
     const hour = new Date().getHours();
-    let greet = 'Welcome';
-    if (hour >= 5 && hour < 12) greet = 'Good morning';
-    else if (hour >= 12 && hour < 18) greet = 'Good afternoon';
-    else greet = 'Good evening';
+    let greet = 'Good morning';
+    if (hour >= 4 && hour < 8) greet = 'Good early morning';
+    else if (hour >= 8 && hour < 12) greet = 'Good morning';
+    else if (hour >= 12 && hour < 17) greet = 'Good afternoon';
+    else if (hour >= 17 && hour < 22) greet = 'Good evening';
+    else greet = 'Burning the midnight oil?';
     
     const greetEl = document.getElementById('welcome-greeting-text');
     if (greetEl) {
