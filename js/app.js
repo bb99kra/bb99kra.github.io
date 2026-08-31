@@ -99,7 +99,12 @@ class ClaudeApp {
         this.startNewChat();
       }
 
-      // 8. Update Model Pill & Workspace Name
+      // 8. Auto-collapse sidebar on mobile devices so it doesn't block the input box
+      if (window.innerWidth <= 768 && this.sidebar) {
+        this.sidebar.classList.add('collapsed');
+      }
+
+      // 9. Update Model Pill & Workspace Name
       this.updateModelPill();
       this.updateSkillsBadge();
       this.updateTopWorkspaceDisplay();
@@ -128,26 +133,29 @@ class ClaudeApp {
 
   bindEvents() {
     // New Chat
-    this.btnNewChat.addEventListener('click', () => this.startNewChat());
+    this.btnNewChat.addEventListener('click', () => {
+      this.startNewChat();
+      if (window.innerWidth <= 768 && this.sidebar) this.sidebar.classList.add('collapsed');
+    });
 
     // Textarea input & Auto-resize
     this.textarea.addEventListener('input', () => {
       this.textarea.style.height = 'auto';
       this.textarea.style.height = Math.min(this.textarea.scrollHeight, 200) + 'px';
-      this.btnSend.disabled = !this.textarea.value.trim() && this.pendingAttachments.length === 0;
     });
 
     this.textarea.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        if (!this.btnSend.disabled && !this.isGenerating) {
+        if (!this.isGenerating) {
           this.handleSendMessage();
         }
       }
     });
 
     // Send Button
-    this.btnSend.addEventListener('click', () => {
+    this.btnSend.addEventListener('click', (e) => {
+      e.preventDefault();
       if (this.isGenerating) {
         this.stopGeneration();
       } else {
@@ -968,7 +976,11 @@ class ClaudeApp {
     // ── AUTO-MEMORY ENGINE ─────────────────────────────────────────────────────
     // Tự động nhận diện và lưu thông tin quan trọng từ tin nhắn người dùng,
     // giống hệt cách ChatGPT Memory và hệ thống context-aware AI hoạt động.
-    this.autoExtractMemory(text);
+    try {
+      this.autoExtractMemory(text);
+    } catch (memErr) {
+      console.warn('Auto memory extraction skipped:', memErr);
+    }
 
     this.hideWelcome();
 
@@ -999,14 +1011,12 @@ class ClaudeApp {
     this.textarea.style.height = 'auto';
     this.pendingAttachments = [];
     this.renderAttachmentPreviews();
-    this.btnSend.disabled = true;
 
     await this.generateAssistantResponse(text);
   }
 
   async generateAssistantResponse(userPrompt) {
     this.isGenerating = true;
-    this.btnSend.disabled = false;
     this.btnSend.innerHTML = '<span>■</span>';
 
     const settings = Storage.getSettings();
@@ -1066,7 +1076,6 @@ class ClaudeApp {
       (finalText) => {
         this.isGenerating = false;
         this.btnSend.innerHTML = '<span>↑</span>';
-        this.btnSend.disabled = false;
 
         const totalSec = ((Date.now() - startTime) / 1000).toFixed(1);
         bubble.innerHTML = this.renderMarkdown(finalText, totalSec);
@@ -1088,7 +1097,6 @@ class ClaudeApp {
       (error) => {
         this.isGenerating = false;
         this.btnSend.innerHTML = '<span>↑</span>';
-        this.btnSend.disabled = false;
         bubble.innerHTML += `<div style="color:#ef4444;margin-top:8px;font-size:13.5px;padding:8px 12px;background:rgba(239,68,68,0.1);border-radius:8px;border:1px solid rgba(239,68,68,0.2);">⚠️ ${this.escapeHtml(error.message)}</div>`;
         this.scrollToBottom();
       },
