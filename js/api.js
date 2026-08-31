@@ -215,11 +215,22 @@ OPERATIONAL GUIDELINES:
       );
 
       if (isFailedToFetch) {
-        let helpMsg = `Không thể kết nối đến máy chủ API (Failed to fetch).\n\n` +
-          `🔍 NGUYÊN NHÂN & CÁCH KHẮC PHỤC:\n` +
-          `1. Khuyên dùng OpenRouter (openrouter.ai): Nếu bạn chưa có key, hãy dùng OpenRouter vì OpenRouter mở CORS trình duyệt 100% và không bị chặn tại Việt Nam.\n` +
-          `2. Nếu bạn dùng Key Anthropic (sk-ant-...) hoặc OpenAI (sk-proj-...): Các nhà mạng tại Việt Nam (VNPT, Viettel, FPT) chặn kết nối trực tiếp đến api.anthropic.com và api.openai.com. Bạn chỉ cần BẬT VPN (ví dụ: Cloudflare 1.1.1.1 WARP) là chat được ngay!\n` +
-          `3. Kiểm tra lại Provider trong Cài đặt (⚙️): Hãy đảm bảo Nhà Cung Cấp được chọn khớp với loại API Key bạn đang dùng (Key OpenRouter phải chọn OpenRouter, Key DeepSeek phải chọn DeepSeek).`;
+        const isMixedContent = currentSettings.apiBase && currentSettings.apiBase.startsWith('http://') && (typeof window !== 'undefined' && window.location.protocol === 'https:');
+
+        let helpMsg = isMixedContent
+          ? `⚠️ LỖI MIXED CONTENT (HTTP trên trang web HTTPS):\n\n` +
+            `Trình duyệt đang chặn kết nối không mã hóa '${currentSettings.apiBase}' vì trang web đang chạy trên HTTPS (https://bb99kra.github.io).\n\n` +
+            `🔧 CÁCH BẬT KẾT NỐI (Chỉ mất 5 giây):\n` +
+            `1. Bấm vào biểu tượng 🔒 hoặc ⚙️ (Cài đặt trang web) bên trái thanh địa chỉ URL trình duyệt.\n` +
+            `2. Chọn "Cài đặt trang web" (Site settings).\n` +
+            `3. Tìm mục "Nội dung không an toàn" (Insecure content) -> Đổi từ "Chặn" sang "Cho phép" (Allow).\n` +
+            `4. Tải lại trang (F5) là chat với server '${currentSettings.apiBase}' mượt mà ngay lập tức!`
+          : `Không thể kết nối đến máy chủ API (Failed to fetch).\n\n` +
+            `🔍 NGUYÊN NHÂN & CÁCH KHẮC PHỤC:\n` +
+            `1. Khuyên dùng OpenRouter (openrouter.ai): Mở CORS trình duyệt 100% và không bị chặn tại Việt Nam.\n` +
+            `2. Nếu dùng endpoint HTTP riêng: Hãy vào Cài đặt trang web -> Cho phép 'Nội dung không an toàn' (Insecure content).\n` +
+            `3. Nếu dùng Key Anthropic/OpenAI: Bật VPN (1.1.1.1 WARP) để tránh nhà mạng chặn.`;
+
         onError(new Error(helpMsg));
       } else {
         onError(err);
