@@ -2147,17 +2147,17 @@ class ClaudeApp {
 
     let mainContent = text;
     let thinkingHtml = '';
-    const timeLabel = elapsedSec ? ` (${elapsedSec}s)` : '';
 
-    // Extract thinking blocks (supports <thinking>, <thought>, <think>, <reasoning>, <details type="reasoning">, <details>)
-    const thinkingMatch = mainContent.match(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>([\s\S]*?)<\/(?:thinking|thought|think|reasoning|details)>/i);
-    const streamingThinkingMatch = mainContent.match(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>([\s\S]*)$/i);
+    // 1. Check for complete thinking block: <thinking>...</thinking>, <think>...</think>, <thought>...</thought>
+    const closedThinkingRegex = /<(?:thinking|thought|think|reasoning)>([\s\S]*?)<\/(?:thinking|thought|think|reasoning)>/i;
+    const closedMatch = mainContent.match(closedThinkingRegex);
 
-    if (thinkingMatch) {
-      let thoughtText = thinkingMatch[1].replace(/<summary>[\s\S]*?<\/summary>/gi, '').trim();
-      mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>[\s\S]*?<\/(?:thinking|thought|think|reasoning|details)>/gi, '').trim();
+    if (closedMatch) {
+      const thoughtText = closedMatch[1].replace(/<summary>[\s\S]*?<\/summary>/gi, '').trim();
+      mainContent = mainContent.replace(closedThinkingRegex, '').trim();
       const thoughtTime = elapsedSec ? `${elapsedSec}s` : '';
       const thoughtLabel = thoughtTime ? `Thought for ${thoughtTime}` : 'Thinking process';
+      
       thinkingHtml = `
         <div class="thinking-panel mb-3">
           <button type="button" class="thinking-panel-header" onclick="this.parentElement.classList.toggle('collapsed')" title="Bấm để đóng / mở suy luận">
@@ -2169,35 +2169,44 @@ class ClaudeApp {
           </div>
         </div>
       `;
-    } else if (streamingThinkingMatch) {
-      let thoughtText = streamingThinkingMatch[1].replace(/<summary>[\s\S]*?<\/summary>/gi, '').trim();
-      mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>[\s\S]*$/gi, '').trim();
-      thinkingHtml = `
-        <div class="thinking-panel streaming mb-3">
-          <button type="button" class="thinking-panel-header" onclick="this.parentElement.classList.toggle('collapsed')" title="Bấm để đóng / mở suy luận">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="thinking-chevron-icon"><polyline points="9 18 15 12 9 6"/></svg>
-            <span class="claude-thinking-spinner"></span>
-            <span style="font-size:13.5px;font-weight:500;color:#9ca3af;">Thinking...</span>
-          </button>
-          <div class="thinking-scroll-container">
-            <div class="thinking-prose">${this.escapeHtml(thoughtText)}<span class="thinking-cursor"></span></div>
+    } else {
+      // 2. Check for currently streaming unclosed thinking block: <thinking>... (no closing tag yet)
+      const openThinkingRegex = /<(?:thinking|thought|think|reasoning)>([\s\S]*)$/i;
+      const openMatch = mainContent.match(openThinkingRegex);
+      if (openMatch) {
+        const thoughtText = openMatch[1].replace(/<summary>[\s\S]*?<\/summary>/gi, '').trim();
+        mainContent = mainContent.replace(openThinkingRegex, '').trim();
+        thinkingHtml = `
+          <div class="thinking-panel streaming mb-3">
+            <button type="button" class="thinking-panel-header" onclick="this.parentElement.classList.toggle('collapsed')" title="Bấm để đóng / mở suy luận">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="thinking-chevron-icon"><polyline points="9 18 15 12 9 6"/></svg>
+              <span class="claude-thinking-spinner"></span>
+              <span style="font-size:13.5px;font-weight:500;color:#9ca3af;">Thinking...</span>
+            </button>
+            <div class="thinking-scroll-container">
+              <div class="thinking-prose">${this.escapeHtml(thoughtText)}<span class="thinking-cursor"></span></div>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
     }
 
-    // Clean out <antArtifact> tags
+    // 3. Clean complete or streaming <antArtifact> tags so code streams visibly as markdown
     mainContent = mainContent.replace(/<antArtifact[\s\S]*?<\/antArtifact>/gi, '').trim();
+    mainContent = mainContent.replace(/<antArtifact(?:\s+[^>]*)*>/gi, '').replace(/<\/antArtifact>/gi, '').trim();
 
+    // 4. Parse markdown for main content
     let html = '';
-    if (window.marked && typeof window.marked.parse === 'function') {
-      try {
-        html = window.marked.parse(mainContent);
-      } catch (e) {
+    if (mainContent) {
+      if (window.marked && typeof window.marked.parse === 'function') {
+        try {
+          html = window.marked.parse(mainContent);
+        } catch (e) {
+          html = this.fallbackMarkdown(mainContent);
+        }
+      } else {
         html = this.fallbackMarkdown(mainContent);
       }
-    } else {
-      html = this.fallbackMarkdown(mainContent);
     }
 
     return thinkingHtml + html;

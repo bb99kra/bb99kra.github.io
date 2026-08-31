@@ -355,8 +355,9 @@ const Artifacts = {
     let match;
 
     while ((match = regex.exec(text)) !== null) {
+      const artId = match[1] || ('artifact-' + (match[3] || 'interactive').replace(/\W+/g, '_').toLowerCase());
       artifacts.push({
-        identifier: match[1] || 'artifact-' + Date.now(),
+        identifier: artId,
         type: match[2] || 'application/vnd.ant.code',
         title: match[3] || 'Interactive Artifact',
         content: match[4].trim()
@@ -367,9 +368,11 @@ const Artifacts = {
     if (artifacts.length === 0) {
       const fallbackRegex = /<antArtifact[^>]*>([\s\S]*?)<\/antArtifact>/gi;
       let fbMatch;
+      let fbIdx = 0;
       while ((fbMatch = fallbackRegex.exec(text)) !== null) {
+        fbIdx++;
         artifacts.push({
-          identifier: 'artifact-' + Date.now(),
+          identifier: 'artifact-fallback-' + fbIdx,
           type: 'application/vnd.ant.code',
           title: 'Project Artifact',
           content: fbMatch[1].trim()
@@ -382,7 +385,7 @@ const Artifacts = {
       const codeBlockMatch = text.match(/```(?:java|xml|yml)?\n([\s\S]{300,})```/);
       if (codeBlockMatch) {
         artifacts.push({
-          identifier: 'auto-code-' + Date.now(),
+          identifier: 'auto-code-main-project',
           type: 'application/vnd.ant.code',
           title: text.includes('<project') ? 'Maven pom.xml' : 'Rebuilt Source Code',
           content: codeBlockMatch[1].trim()
