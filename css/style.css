@@ -1586,10 +1586,67 @@ button, input, textarea, select {
   .suggestion-grid { grid-template-columns: 1fr; }
   .composer-container { padding: 10px 12px 14px; }
   .message-row { padding: 8px 12px; }
-  .user-bubble-container { max-width: 88%; }
-  .chat-navbar { padding: 0 8px; justify-content: flex-start; gap: 8px; }
-  .navbar-center { flex-shrink: 0; }
-  .navbar-right { flex: 1; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .user-bubble-container { max-width: 92%; }
+
+  /* Navbar Layout Mobile Fixes */
+  .chat-navbar {
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    height: 52px;
+  }
+  .navbar-left {
+    display: flex !important;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 20;
+  }
+  #btn-open-sidebar {
+    display: flex !important;
+    padding: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+  }
+  .navbar-center {
+    display: flex !important;
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+  }
+  .model-selector-pill {
+    padding: 4px 10px;
+    font-size: 12px;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .navbar-right {
+    display: flex !important;
+    flex-shrink: 0;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 45%;
+  }
+
+  /* Always show Copy Action Bar on Mobile Touchscreens */
+  .message-action-bar {
+    opacity: 1 !important;
+    margin-top: 6px;
+  }
+  .btn-msg-action {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  .btn-code-copy {
+    opacity: 1 !important;
+  }
+
   .hide-mobile { display: inline-block; font-size: 11px; margin-left: 2px; }
   .modal-card { max-width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; align-self: flex-end; }
   .modal-backdrop { align-items: flex-end; padding: 0; }
