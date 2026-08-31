@@ -986,37 +986,139 @@ button, input, textarea, select {
   white-space: pre-wrap;
   word-break: break-word;
 }
-.claude-thinking-container.collapsed .claude-thinking-content { display: none; }
+/* ===== Damienchakma/Open-claude EXACT Thinking / Reasoning Panel ===== */
+:root {
+  --thinking-bg: linear-gradient(135deg, #f9f5ff 0%, #fdf2f8 50%, #fef7f0 100%);
+  --thinking-bg-flat: #f9f5ff;
+  --thinking-border: rgba(168, 85, 247, 0.2);
+  --thinking-hover: rgba(168, 85, 247, 0.06);
+  --thinking-accent: #8b5cf6;
+  --thinking-text: #5b21b6;
+  --thinking-muted: rgba(124, 58, 237, 0.6);
+  --thinking-content-bg: rgba(255, 255, 255, 0.5);
+  --thinking-content-text: #4c1d95;
+  --thinking-scrollbar: rgba(139, 92, 246, 0.2);
+  --thinking-scrollbar-hover: rgba(139, 92, 246, 0.4);
+}
 
-/* Signature Claude Thinking Shimmer & Pulse Animation */
-/* Official Claude Starburst Pinwheel Animations (Damienchakma/Open-claude) */
-.claude-starburst-spin {
-  display: inline-flex;
+[data-theme="dark"] {
+  --thinking-bg: linear-gradient(135deg, rgba(91, 33, 182, 0.12) 0%, rgba(147, 51, 234, 0.08) 50%, rgba(168, 85, 247, 0.04) 100%);
+  --thinking-bg-flat: rgba(91, 33, 182, 0.12);
+  --thinking-border: rgba(139, 92, 246, 0.25);
+  --thinking-hover: rgba(139, 92, 246, 0.1);
+  --thinking-accent: #a78bfa;
+  --thinking-text: #c4b5fd;
+  --thinking-muted: rgba(167, 139, 250, 0.6);
+  --thinking-content-bg: rgba(15, 10, 30, 0.3);
+  --thinking-content-text: #ddd6fe;
+  --thinking-scrollbar: rgba(167, 139, 250, 0.2);
+  --thinking-scrollbar-hover: rgba(167, 139, 250, 0.4);
+}
+
+.thinking-panel {
+  background: var(--thinking-bg);
+  background-color: var(--thinking-bg-flat);
+  border-radius: 12px;
+  border: 1px solid var(--thinking-border);
+  margin-bottom: 1rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.thinking-panel-header {
+  width: 100%;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  animation: spinSlow 2s linear infinite;
+  gap: 10px;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-@keyframes spinSlow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.thinking-panel-header:hover {
+  background: var(--thinking-hover);
 }
 
-.claude-starburst-pulse {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  animation: starburstPulse 2s ease-in-out infinite;
-}
-
-@keyframes starburstPulse {
-  0%, 100% { transform: scale(1); opacity: 0.85; }
-  50% { transform: scale(1.18); opacity: 1; filter: drop-shadow(0 0 6px rgba(217,119,87,0.5)); }
-}
-
-.brain-pulse {
-  animation: starburstPulse 1.5s ease-in-out infinite;
+.thinking-chevron-icon {
   display: inline-block;
+  transition: transform 0.2s ease-in-out;
+  color: var(--thinking-accent);
+}
+
+.thinking-panel.collapsed .thinking-chevron-icon {
+  transform: rotate(0deg);
+}
+
+.thinking-panel:not(.collapsed) .thinking-chevron-icon {
+  transform: rotate(90deg);
+}
+
+.thinking-panel.collapsed .thinking-scroll-container {
+  display: none;
+}
+
+.thinking-scroll-container {
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background: var(--thinking-content-bg);
+  border-top: 1px solid var(--thinking-border);
+  padding: 14px 16px;
+  color: var(--thinking-content-text);
+  font-size: 13.5px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.thinking-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid var(--thinking-border);
+  color: var(--thinking-text);
+  white-space: nowrap;
+}
+
+.thinking-live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #22c55e;
+  border-radius: 50%;
+  margin-right: 4px;
+  animation: thinking-live-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes thinking-live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.75); }
+}
+
+.thinking-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--thinking-accent);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: thinking-cursor-blink 1s step-end infinite;
+}
+
+@keyframes thinking-cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 @keyframes brainPulse {
