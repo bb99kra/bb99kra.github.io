@@ -7,6 +7,7 @@ const Artifacts = {
   currentArtifact: null,
 
   init() {
+    if (typeof document === 'undefined') return;
     this.panel = document.getElementById('artifact-panel');
     this.titleEl = document.getElementById('artifact-title');
     this.typeEl = document.getElementById('artifact-type');

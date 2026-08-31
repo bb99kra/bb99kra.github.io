@@ -7,6 +7,7 @@ const Workspaces = {
   currentModalWorkspaceId: null,
 
   init(onWorkspaceChanged) {
+    if (typeof document === 'undefined') return;
     this.onWorkspaceChanged = onWorkspaceChanged;
     this.badgeBtn = document.getElementById('btn-workspace-badge');
     this.modal = document.getElementById('modal-workspaces');

@@ -7,6 +7,7 @@ const Skills = {
   currentEditSkillId: null,
 
   init(onSkillsChanged) {
+    if (typeof document === 'undefined') return;
     this.onSkillsChanged = onSkillsChanged;
     this.btnNav = document.getElementById('nav-skills');
     this.modal = document.getElementById('modal-skills');

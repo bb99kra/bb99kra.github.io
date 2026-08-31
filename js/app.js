@@ -15,12 +15,13 @@ class ClaudeApp {
   }
 
   init() {
+    if (typeof document === 'undefined') return;
     try {
       // 1. Initialize Sub-modules & Markdown Engine
       this.setupMarked();
-      Artifacts.init();
-      Workspaces.init(() => this.onWorkspaceChanged());
-      Skills.init(() => this.updateSkillsBadge());
+      if (window.Artifacts) window.Artifacts.init();
+      if (window.Workspaces) window.Workspaces.init(() => this.onWorkspaceChanged());
+      if (window.Skills) window.Skills.init(() => this.updateSkillsBadge());
 
       // 2. DOM Elements
       this.messagesContainer = document.getElementById('messages-container');
@@ -128,6 +129,7 @@ class ClaudeApp {
   }
 
   showRecoveryBanner(err) {
+    if (typeof document === 'undefined' || !document.body) return;
     let banner = document.getElementById('claude-recovery-banner');
     if (!banner) {
       banner = document.createElement('div');
@@ -1017,7 +1019,7 @@ class ClaudeApp {
       a.download = filename;
       a.click();
     }
-  },
+  }
 
   openTerminalModal() {
     if (this.modalTerminal) {
@@ -1065,19 +1067,19 @@ class ClaudeApp {
         }
       });
     }
-  },
+  }
 
   closeTerminalModal() {
     if (this.modalTerminal) {
       this.modalTerminal.classList.add('hidden');
     }
-  },
+  }
 
   termPrompt() {
     if (this.xterm) {
       this.xterm.write('\r\n\x1b[1;34mroot@webvm-sandbox\x1b[0m:\x1b[1;36m~/workspace\x1b[0m# ');
     }
-  },
+  }
 
   async handleTerminalCommand(cmdText) {
     if (!cmdText) {
@@ -1151,7 +1153,7 @@ class ClaudeApp {
     }
 
     this.termPrompt();
-  },
+  }
 
   async handleAttachmentUpload(e) {
     const files = e.target.files;
@@ -2126,7 +2128,7 @@ function initClaudeApp() {
   }
 }
 
-if (document.readyState === 'loading') {
+if (typeof document !== 'undefined' && document.readyState === 'loading') {
   window.addEventListener('DOMContentLoaded', initClaudeApp);
 } else {
   initClaudeApp();
