@@ -172,9 +172,15 @@ CORE LAWS (immutable, priority max):
         parts.push(`[PROJECT WORKSPACE — ${workspace.name.toUpperCase()}]:\n${workspace.instructions.trim()}`);
       }
       if (workspace.files && workspace.files.length > 0) {
-        parts.push(`[PROJECT FILES CONTEXT]:`);
+        parts.push(`[ACTIVE PROJECT WORKSPACE FILES — 100% UNTRUNCATED FULL CONTENT]:`);
         workspace.files.forEach(f => {
-          parts.push(`--- ${f.name} ---\n${f.content}\n--- end ---`);
+          parts.push(
+            `═══════════════════════════════════════════════════════════════\n` +
+            `  📄 [FULL UNTRUNCATED FILE: ${f.name}] (${(f.content.length / 1024).toFixed(1)} KB)\n` +
+            `═══════════════════════════════════════════════════════════════\n` +
+            `${f.content}\n` +
+            `═══════════════════════════════════════════════════════════════`
+          );
         });
       }
     }

@@ -196,7 +196,7 @@ const Workspaces = {
       this.currentFiles = this.currentFiles || [];
       this.currentFiles.push({
         name: filename,
-        content: content.slice(0, 100000)
+        content: content
       });
       this.renderFilesList(this.currentFiles);
       alert(`✅ Đã nạp thành công file [${filename}] từ URL vào Workspace!`);
