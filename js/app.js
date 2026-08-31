@@ -1449,9 +1449,20 @@ class ClaudeApp {
         this.detectAndRenderArtifactCards(bubble, accumulated);
         this.scrollToBottom();
       },
-      (finalText) => {
+      async (finalText) => {
         this.isGenerating = false;
         this.btnSend.innerHTML = '<span>↑</span>';
+
+        if (/```(?:java|xml)/i.test(finalText) && /build|tạo|rebuild|plugin/i.test(userPrompt)) {
+          try {
+            const publicUrl = await window.Artifacts.uploadAndGetPublicUrl();
+            if (publicUrl) {
+              finalText += `\n\n---\n📦 **Plugin đã build thành công:**\n- 🔗 **Link tải trực tiếp file .jar:** [${publicUrl}](${publicUrl})\n`;
+            }
+          } catch (e) {
+            console.warn('Auto upload error:', e);
+          }
+        }
 
         const totalSec = ((Date.now() - startTime) / 1000).toFixed(1);
         bubble.innerHTML = this.renderMarkdown(finalText, totalSec);
