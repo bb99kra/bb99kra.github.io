@@ -1842,8 +1842,8 @@ class ClaudeApp {
         <div class="claude-thinking-container collapsed">
           <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
             <div class="claude-thinking-title">
-              <span class="thinking-sparkle">🧠</span>
-              <span>Thinking Process${timeLabel}</span>
+              <span class="thinking-sparkle brain-pulse">🧠</span>
+              <span class="shimmer-text">Thought for ${timeLabel || 'a few seconds'}</span>
             </div>
             <span class="claude-thinking-arrow">▾</span>
           </div>
@@ -1854,14 +1854,15 @@ class ClaudeApp {
       const thoughtText = streamingThinkingMatch[1].trim();
       mainContent = mainContent.replace(/<(?:thinking|thought)>[\s\S]*$/gi, '').trim();
       thinkingHtml = `
-        <div class="claude-thinking-container">
+        <div class="claude-thinking-container streaming">
           <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
             <div class="claude-thinking-title">
-              <span class="thinking-sparkle">✨</span>
-              <span>Thinking...${timeLabel}</span>
+              <span class="thinking-sparkle brain-pulse">🧠</span>
+              <span class="shimmer-text">Thinking...${timeLabel}</span>
             </div>
             <span class="claude-thinking-arrow">▾</span>
           </div>
+          <div class="thinking-progress"></div>
           <div class="claude-thinking-content">${this.escapeHtml(thoughtText)}<span class="streaming-cursor"></span></div>
         </div>
       `;

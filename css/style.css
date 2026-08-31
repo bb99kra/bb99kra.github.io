@@ -988,6 +988,74 @@ button, input, textarea, select {
 }
 .claude-thinking-container.collapsed .claude-thinking-content { display: none; }
 
+/* Signature Claude Thinking Shimmer & Pulse Animation */
+.brain-pulse {
+  animation: brainPulse 1.5s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes brainPulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    var(--text-muted) 0%,
+    var(--accent) 50%,
+    var(--text-muted) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmerSweep 2s ease-in-out infinite;
+  font-weight: 600;
+}
+
+@keyframes shimmerSweep {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.thinking-progress {
+  height: 2px;
+  background: var(--border-subtle);
+  border-radius: 1px;
+  overflow: hidden;
+  margin: 0 14px;
+}
+
+.thinking-progress::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 35%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent),
+    transparent
+  );
+  animation: progressShimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes progressShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
 /* Typing indicator & Streaming cursor */
 .typing-indicator {
   display: flex;
