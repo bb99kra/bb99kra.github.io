@@ -1960,21 +1960,21 @@ class ClaudeApp {
       const countLabel = `${thoughtText.length.toLocaleString()} chars`;
       thinkingHtml = `
         <div class="thinking-panel mb-4">
-          <button type="button" class="thinking-panel-header" onclick="this.parentElement.classList.toggle('collapsed')">
-            <span class="thinking-chevron-icon">▶</span>
-            <span class="claude-starburst-pulse">${CLAUDE_STARBURST_SVG}</span>
+          <button type="button" class="thinking-panel-header" onclick="this.parentElement.classList.toggle('collapsed'); const lbl = this.querySelector('.thinking-toggle-label'); if(this.parentElement.classList.contains('collapsed')) { lbl.textContent = 'Show reasoning'; } else { lbl.textContent = 'Hide reasoning'; }">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="thinking-chevron-icon"><polyline points="9 18 15 12 9 6"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--thinking-accent);flex-shrink:0;"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9z"/></svg>
             <div style="flex:1;min-width:0;text-align:left;">
-              <span style="font-size:14px;font-weight:500;color:var(--thinking-text);">Reasoning process</span>
-              <span style="font-size:12px;color:var(--thinking-muted);margin-left:6px;">— click to toggle</span>
+              <span class="thinking-toggle-label" style="font-size:14px;font-weight:500;color:var(--thinking-text);">Hide reasoning</span>
+              <span style="font-size:12px;color:var(--thinking-muted);margin-left:6px;">— click to expand</span>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
-              <span class="thinking-badge">claude-5</span>
+              <span class="thinking-badge" style="color:var(--thinking-muted);">claude-5</span>
               <span class="thinking-badge" style="color:var(--thinking-accent);">⚡ ${countLabel}</span>
-              ${elapsedSec ? `<span class="thinking-badge">🕒 ${elapsedSec}s</span>` : ''}
+              ${elapsedSec ? `<span class="thinking-badge" style="color:var(--thinking-muted);">🕒 ${elapsedSec}s</span>` : ''}
             </div>
           </button>
           <div class="thinking-scroll-container">
-            <div>${this.escapeHtml(thoughtText)}</div>
+            <div class="thinking-prose">${this.escapeHtml(thoughtText)}</div>
           </div>
         </div>
       `;
@@ -1985,20 +1985,20 @@ class ClaudeApp {
       thinkingHtml = `
         <div class="thinking-panel streaming mb-4">
           <button type="button" class="thinking-panel-header" onclick="this.parentElement.classList.toggle('collapsed')">
-            <span class="thinking-chevron-icon">▶</span>
-            <span class="claude-starburst-spin">${CLAUDE_STARBURST_SVG}</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="thinking-chevron-icon"><polyline points="9 18 15 12 9 6"/></svg>
+            <span class="claude-starburst-spin" style="color:var(--thinking-accent);">${CLAUDE_STARBURST_SVG}</span>
             <div style="flex:1;min-width:0;text-align:left;">
               <span style="font-size:14px;font-weight:500;color:var(--thinking-text);">Thinking...</span>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
-              <span class="thinking-badge" style="background:var(--thinking-accent);color:white;">
+              <span class="thinking-badge" style="color:var(--thinking-accent);">
                 <span class="thinking-live-dot"></span> Live
               </span>
               <span class="thinking-badge" style="color:var(--thinking-accent);">⚡ ${countLabel}</span>
             </div>
           </button>
           <div class="thinking-scroll-container">
-            <div>${this.escapeHtml(thoughtText)}<span class="thinking-cursor"></span></div>
+            <div class="thinking-prose">${this.escapeHtml(thoughtText)}<span class="thinking-cursor"></span></div>
           </div>
         </div>
       `;
