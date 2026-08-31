@@ -1250,10 +1250,13 @@ class ClaudeApp {
 
     this.attachmentsPreview.style.display = 'flex';
     this.attachmentsPreview.innerHTML = this.pendingAttachments.map((att, idx) => {
+      const isArchive = att.name.endsWith('.jar') || att.name.endsWith('.zip');
       const icon = att.name.endsWith('.jar') ? '📦' : att.name.endsWith('.zip') ? '🗂️' : '📄';
       const badge = att.name.endsWith('.jar') ? '<span class="user-attachment-badge">Decompiled</span>' : '';
+      const rebuildBtn = isArchive ? `<button class="btn-primary" style="padding:2px 8px;font-size:11px;margin-left:4px;" onclick="window.claudeApp.autoRebuildAttachment(${idx})" title="Tự động Decompile & Rebuild thành bản pure .jar">⚡ Rebuild (pure)</button>` : '';
+
       return `
-        <div class="user-attachment-card" style="margin:4px 0;max-width:320px;box-shadow:var(--shadow-sm);background:var(--bg-card);border:1px solid var(--border-color);">
+        <div class="user-attachment-card" style="margin:4px 0;max-width:340px;box-shadow:var(--shadow-sm);background:var(--bg-card);border:1px solid var(--border-color);display:flex;align-items:center;">
           <div class="user-attachment-icon" style="width:28px;height:28px;font-size:15px;">${icon}</div>
           <div class="user-attachment-info" style="flex:1;">
             <div class="user-attachment-name" title="${att.name}">${this.escapeHtml(att.name)}</div>
@@ -1262,10 +1265,19 @@ class ClaudeApp {
               ${badge}
             </div>
           </div>
+          ${rebuildBtn}
           <button style="border:none;background:transparent;cursor:pointer;color:var(--text-muted);font-size:14px;padding:2px 6px;border-radius:4px;" onclick="window.claudeApp.removeAttachment(${idx})" title="Remove">✕</button>
         </div>
       `;
     }).join('');
+  }
+
+  autoRebuildAttachment(idx) {
+    const att = this.pendingAttachments[idx];
+    if (!att) return;
+    const userPrompt = `(pure) Hãy tự động decompile, loại bỏ mọi dependency rác/cloud telemetry và rebuild file plugin [${att.name}] thành bản 100% standalone offline .jar hoàn chỉnh!`;
+    this.textarea.value = userPrompt;
+    this.handleSendMessage();
   }
 
   removeAttachment(idx) {
