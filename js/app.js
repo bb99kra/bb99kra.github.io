@@ -1602,6 +1602,29 @@ class ClaudeApp {
     }
   }
 
+  copyMessageText(btn) {
+    const bubble = btn.closest('.message-bubble');
+    if (!bubble) return;
+    const text = bubble.innerText || bubble.textContent || '';
+    const cleaned = this.cleanTextForClipboard(text.replace(/📋 Copy|🌿 Fork Chat|🔄 Regenerate/g, ''));
+    
+    const setSuccess = () => {
+      const old = btn.textContent;
+      btn.textContent = 'Copied! ✓';
+      btn.style.color = '#22c55e';
+      setTimeout(() => {
+        btn.textContent = old;
+        btn.style.color = '';
+      }, 2000);
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(cleaned).then(setSuccess).catch(() => this.fallbackCopyText(cleaned, setSuccess));
+    } else {
+      this.fallbackCopyText(cleaned, setSuccess);
+    }
+  }
+
   // ==========================================
   // LIBRECHAT PRESETS & FORKING SYSTEM
   // ==========================================
@@ -1823,16 +1846,42 @@ class ClaudeApp {
     const codeBlock = btn.closest('.code-block-wrapper').querySelector('code');
     if (!codeBlock) return;
     const cleaned = this.cleanTextForClipboard(codeBlock.textContent || '');
-    navigator.clipboard.writeText(cleaned);
-    const span = btn.querySelector('span');
-    if (span) {
-      const old = span.textContent;
-      span.textContent = 'Copied! ✓';
-      btn.style.color = '#22c55e';
-      setTimeout(() => {
-        span.textContent = old;
-        btn.style.color = '';
-      }, 2000);
+
+    const setSuccess = () => {
+      const span = btn.querySelector('span');
+      if (span) {
+        const old = span.textContent;
+        span.textContent = 'Copied! ✓';
+        btn.style.color = '#22c55e';
+        setTimeout(() => {
+          span.textContent = old;
+          btn.style.color = '';
+        }, 2000);
+      }
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(cleaned).then(setSuccess).catch(() => this.fallbackCopyText(cleaned, setSuccess));
+    } else {
+      this.fallbackCopyText(cleaned, setSuccess);
+    }
+  }
+
+  fallbackCopyText(text, onSuccess) {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      if (successful && typeof onSuccess === 'function') onSuccess();
+    } catch (err) {
+      alert('Vui lòng bôi đen và copy thủ công!');
     }
   }
 
