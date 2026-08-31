@@ -129,6 +129,46 @@ const Artifacts = {
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   },
 
+  async uploadAndGetDirectLink(customName = null) {
+    if (!window.JSZip) return alert('JSZip is loading, please try again.');
+    const ws = (window.claudeApp && window.claudeApp.storage) ? window.claudeApp.storage.getActiveWorkspace() : (window.Storage ? window.Storage.getActiveWorkspace() : null);
+    let jarName = customName || ((ws ? ws.name : 'PurePlugin') + '-1.0.0.jar').replace(/\s+/g, '_');
+    if (!jarName.endsWith('.jar')) jarName += '.jar';
+
+    const zip = new JSZip();
+    let hasPluginYml = false;
+    if (ws && ws.files && ws.files.length > 0) {
+      ws.files.forEach(f => {
+        if (f.name.endsWith('plugin.yml')) hasPluginYml = true;
+        zip.file(f.name.replace(/^src\/main\/resources\//, ''), f.content);
+      });
+    }
+
+    if (!hasPluginYml) {
+      zip.file('plugin.yml', `name: PurePlugin\nversion: 1.0.0\nmain: vn.nguyendz.purespeed.PureSpeedPlugin\napi-version: '1.20'\nauthor: Nguyendzvn\ndescription: Standalone Offline Ready Plugin`);
+    }
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const formData = new FormData();
+    formData.append('file', blob, jarName);
+
+    try {
+      const res = await fetch('https://tmpfiles.org/api/v1/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data && data.data && data.data.url) {
+        const directUrl = data.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+        prompt('🔗 Link tải trực tiếp file .jar từ internet (Bấm Copy):', directUrl);
+        return directUrl;
+      }
+    } catch (e) {
+      alert('Không thể tạo link public, tải file qua trình duyệt!');
+      this.downloadProjectAsJar(customName);
+    }
+  },
+
   parseMarkdownFiles(content) {
     const files = [];
     if (!content) return files;

@@ -1819,10 +1819,11 @@ class ClaudeApp {
         dlBar.style.cssText = 'display:flex;gap:8px;margin-top:12px;padding:10px 14px;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);border-radius:10px;align-items:center;flex-wrap:wrap;';
         dlBar.innerHTML = `
           <span style="font-weight:600;font-size:13px;color:var(--accent);display:flex;align-items:center;gap:6px;">
-            ⚡ Rebuild Success! Tải file thành phẩm:
+            ⚡ File thành phẩm:
           </span>
           <button class="btn-primary-sm" style="padding:5px 14px;background:var(--accent);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;" onclick="window.Artifacts.downloadProjectAsJar()">📥 Tải .jar (pure)</button>
           <button class="btn-secondary-sm" style="padding:5px 14px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);border-radius:6px;cursor:pointer;" onclick="if(window.Artifacts.btnDownloadZip) window.Artifacts.btnDownloadZip.click();">📦 Tải Source .zip</button>
+          <button class="btn-secondary-sm" style="padding:5px 14px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);border-radius:6px;cursor:pointer;" onclick="window.Artifacts.uploadAndGetDirectLink()">🔗 Lấy Link Tải Public</button>
         `;
         bubbleElement.appendChild(dlBar);
       }
