@@ -511,19 +511,22 @@ OPERATIONAL GUIDELINES:
         console.warn(`Upstream API attempt ${attempts}/${maxAttempts} (${response.status}): ${parsedMsg}`);
 
         if (attempts < maxAttempts) {
+          // If 9kiro has no available accounts or returns error, auto-failover to live Claude Opus 5 / Sonnet 5 on Sryze
+          if (activeEndpoint.includes('9kiro.lol') && (parsedMsg.includes('No available accounts') || response.status >= 400)) {
+            console.warn('⚠️ 9Kiro is out of accounts, auto-switching to live Claude SOTA pool on Sryze...');
+            activeEndpoint = 'https://k24z.sryze.cc/v1/chat/completions';
+            activeHeaders['Authorization'] = 'Bearer sk-49c2bdff020c1db0-e61ac6-90b46654';
+            payload.model = (payload.model || '').includes('sonnet') ? 'trk/anthropic/claude-sonnet-5' : 'trk/anthropic/claude-opus-5';
+          }
           // If antigravity pool on sryze.cc exhausted quota, failover to live trk pool
-          if (activeEndpoint.includes('sryze.cc') && parsedMsg.includes('exhausted their quota')) {
+          else if (activeEndpoint.includes('sryze.cc') && parsedMsg.includes('exhausted their quota')) {
             if (payload.model.includes('claude') || payload.model.includes('opus')) {
               payload.model = 'trk/anthropic/claude-opus-5';
             } else {
               payload.model = 'trk/google/gemini-3.7-flash';
             }
           }
-          // If using 9kiro and failed, try with 'auto' route
-          if (attempts === 2 && activeEndpoint.includes('9kiro.lol')) {
-            payload.model = 'auto';
-          }
-          await new Promise(r => setTimeout(r, 800));
+          await new Promise(r => setTimeout(r, 600));
           continue;
         }
 
