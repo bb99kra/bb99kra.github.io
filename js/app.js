@@ -1,7 +1,10 @@
 /**
  * CLAUDE AI - CORE APPLICATION CONTROLLER
  * Full 2026 Generation (Claude 5, GPT-5.6, DeepSeek V4, Gemini 3.7)
+ * Official Claude Starburst & Damienchakma/Open-claude Design System
  */
+
+const CLAUDE_STARBURST_SVG = `<svg width="18" height="18" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="claude-starburst-icon"><g transform="translate(16, 16)"><path d="M 0 -12 L 1.5 -3 L -1.5 -3 Z" fill="#d97757"/><path d="M 8.485 -8.485 L 4.243 -1.757 L 1.757 -4.243 Z" fill="#d97757"/><path d="M 12 0 L 3 -1.5 L 3 1.5 Z" fill="#d97757"/><path d="M 8.485 8.485 L 1.757 4.243 L 4.243 1.757 Z" fill="#d97757"/><path d="M 0 12 L -1.5 3 L 1.5 3 Z" fill="#d97757"/><path d="M -8.485 8.485 L -4.243 1.757 L -1.757 4.243 Z" fill="#d97757"/><path d="M -12 0 L -3 1.5 L -3 -1.5 Z" fill="#d97757"/><path d="M -8.485 -8.485 L -1.757 -4.243 L -4.243 -1.757 Z" fill="#d97757"/><circle cx="0" cy="0" r="2.5" fill="#d97757"/></g></svg>`;
 
 class ClaudeApp {
   constructor() {
@@ -1501,7 +1504,7 @@ class ClaudeApp {
 
     const avatar = document.createElement('div');
     avatar.className = 'assistant-avatar';
-    avatar.innerHTML = `<span>✳</span>`;
+    avatar.innerHTML = CLAUDE_STARBURST_SVG;
 
     const bubble = document.createElement('div');
     bubble.className = 'assistant-content-wrapper message-bubble markdown-body';
@@ -1575,7 +1578,7 @@ class ClaudeApp {
 
         const avatar = document.createElement('div');
         avatar.className = 'assistant-avatar';
-        avatar.innerHTML = `<span>✳</span>`;
+        avatar.innerHTML = CLAUDE_STARBURST_SVG;
 
         const bubble = document.createElement('div');
         bubble.className = 'assistant-content-wrapper message-bubble markdown-body';
@@ -1959,7 +1962,7 @@ class ClaudeApp {
           <div class="thinking-panel-header w-full flex items-center justify-between gap-2.5 px-4 py-3 cursor-pointer select-none" onclick="this.parentElement.classList.toggle('collapsed')">
             <div class="flex items-center gap-2.5">
               <span class="claude-thinking-arrow text-[var(--accent)] transition-transform duration-200">▾</span>
-              <span class="thinking-sparkle brain-pulse text-[var(--accent)] font-bold">🧠</span>
+              <span class="thinking-sparkle claude-starburst-pulse">${CLAUDE_STARBURST_SVG}</span>
               <span class="text-sm font-medium shimmer-text">Thought for ${timeLabel || 'a few seconds'}</span>
             </div>
             <div class="thinking-badges-row flex items-center gap-2 text-xs">
@@ -1980,7 +1983,7 @@ class ClaudeApp {
           <div class="thinking-panel-header w-full flex items-center justify-between gap-2.5 px-4 py-3 cursor-pointer select-none" onclick="this.parentElement.classList.toggle('collapsed')">
             <div class="flex items-center gap-2.5">
               <span class="claude-thinking-arrow text-[var(--accent)] transition-transform duration-200">▾</span>
-              <span class="thinking-sparkle brain-pulse text-[var(--accent)] font-bold">🧠</span>
+              <span class="thinking-sparkle claude-starburst-spin">${CLAUDE_STARBURST_SVG}</span>
               <span class="text-sm font-medium shimmer-text">Thinking...${timeLabel}</span>
             </div>
             <div class="thinking-badges-row flex items-center gap-2 text-xs">

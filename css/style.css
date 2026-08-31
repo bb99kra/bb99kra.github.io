@@ -989,8 +989,33 @@ button, input, textarea, select {
 .claude-thinking-container.collapsed .claude-thinking-content { display: none; }
 
 /* Signature Claude Thinking Shimmer & Pulse Animation */
+/* Official Claude Starburst Pinwheel Animations (Damienchakma/Open-claude) */
+.claude-starburst-spin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: spinSlow 2s linear infinite;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.claude-starburst-pulse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: starburstPulse 2s ease-in-out infinite;
+}
+
+@keyframes starburstPulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.18); opacity: 1; filter: drop-shadow(0 0 6px rgba(217,119,87,0.5)); }
+}
+
 .brain-pulse {
-  animation: brainPulse 1.5s ease-in-out infinite;
+  animation: starburstPulse 1.5s ease-in-out infinite;
   display: inline-block;
 }
 
