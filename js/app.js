@@ -1088,6 +1088,49 @@ class ClaudeApp {
       fullUserContent = fullUserContent ? `${fullUserContent}\n\n${attachBlock}` : attachBlock;
     }
 
+    // ── AUTO GIT & URL FETCH INTERCEPTOR ENGINE ──────────────────────────────
+    // When user types "git clone https://github.com/user/repo" or pastes GitHub/URL links:
+    // Automatically fetch repo metadata / zip or raw content and load into Workspace!
+    try {
+      const gitMatch = text.match(/git\s+clone\s+(https?:\/\/github\.com\/[^\s]+)/i) || 
+                       text.match(/(https?:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+)/i);
+
+      if (gitMatch) {
+        const gitUrl = gitMatch[1].replace(/\.git$/i, '');
+        const parts = gitUrl.replace('https://github.com/', '').split('/');
+        if (parts.length >= 2) {
+          const owner = parts[0];
+          const repo = parts[1].replace(/[\/#].*$/, '');
+          const repoApiUrl = `https://api.github.com/repos/${owner}/${repo}/contents`;
+          const res = await fetch(repoApiUrl);
+          if (res.ok) {
+            const files = await res.json();
+            if (Array.isArray(files)) {
+              let repoSummary = `[Auto-Fetched GitHub Repository: ${owner}/${repo}]\nProject Structure (${files.length} items):\n` + 
+                files.map(f => `• ${f.name} (${f.type})`).join('\n');
+              
+              // Load key files (plugin.yml, pom.xml, build.gradle, README.md, config.yml) into active workspace
+              for (const f of files.slice(0, 15)) {
+                if (['plugin.yml', 'paper-plugin.yml', 'pom.xml', 'build.gradle', 'README.md', 'config.yml'].includes(f.name)) {
+                  try {
+                    const rawRes = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/${f.name}`);
+                    if (rawRes.ok) {
+                      const textContent = await rawRes.text();
+                      Storage.addFileToActiveWorkspace(`${repo}/${f.name}`, textContent);
+                    }
+                  } catch(e) {}
+                }
+              }
+              this.updateTopWorkspaceDisplay();
+              fullUserContent += `\n\n${repoSummary}`;
+            }
+          }
+        }
+      }
+    } catch(gitErr) {
+      console.warn('Auto git fetch skipped:', gitErr);
+    }
+
     // ── AUTO-MEMORY ENGINE ─────────────────────────────────────────────────────
     // Tự động nhận diện và lưu thông tin quan trọng từ tin nhắn người dùng,
     // giống hệt cách ChatGPT Memory và hệ thống context-aware AI hoạt động.
