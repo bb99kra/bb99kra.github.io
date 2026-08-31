@@ -21,6 +21,7 @@ class ClaudeApp {
   }
 
   init() {
+    try {
       // 1. Initialize Sub-modules & Markdown Engine
       this.setupMarked();
       Artifacts.init();

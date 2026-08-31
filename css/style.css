@@ -1399,6 +1399,10 @@ button, input, textarea, select {
 }
 .btn-secondary-sm:hover { background: var(--bg-card-hover); color: var(--text-primary); }
 
+.btn-icon *, .btn-close-modal *, .btn-close-sidebar *, .btn-send * {
+  pointer-events: none;
+}
+
 .btn-icon {
   background: transparent;
   border: none;
