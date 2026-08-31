@@ -1831,13 +1831,13 @@ class ClaudeApp {
     let thinkingHtml = '';
     const timeLabel = elapsedSec ? ` (${elapsedSec}s)` : '';
 
-    // Extract thinking blocks (supports <thinking>, <thought>, <think>, <reasoning>)
-    const thinkingMatch = mainContent.match(/<(?:thinking|thought|think|reasoning)>([\s\S]*?)<\/(?:thinking|thought|think|reasoning)>/i);
-    const streamingThinkingMatch = mainContent.match(/<(?:thinking|thought|think|reasoning)>([\s\S]*)$/i);
+    // Extract thinking blocks (supports <thinking>, <thought>, <think>, <reasoning>, <details type="reasoning">, <details>)
+    const thinkingMatch = mainContent.match(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>([\s\S]*?)<\/(?:thinking|thought|think|reasoning|details)>/i);
+    const streamingThinkingMatch = mainContent.match(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>([\s\S]*)$/i);
 
     if (thinkingMatch) {
-      const thoughtText = thinkingMatch[1].trim();
-      mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning)>[\s\S]*?<\/(?:thinking|thought|think|reasoning)>/gi, '').trim();
+      let thoughtText = thinkingMatch[1].replace(/<summary>[\s\S]*?<\/summary>/gi, '').trim();
+      mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>[\s\S]*?<\/(?:thinking|thought|think|reasoning|details)>/gi, '').trim();
       thinkingHtml = `
         <div class="claude-thinking-container">
           <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
@@ -1851,8 +1851,8 @@ class ClaudeApp {
         </div>
       `;
     } else if (streamingThinkingMatch) {
-      const thoughtText = streamingThinkingMatch[1].trim();
-      mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning)>[\s\S]*$/gi, '').trim();
+      let thoughtText = streamingThinkingMatch[1].replace(/<summary>[\s\S]*?<\/summary>/gi, '').trim();
+      mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>[\s\S]*$/gi, '').trim();
       thinkingHtml = `
         <div class="claude-thinking-container streaming">
           <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
