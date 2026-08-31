@@ -149,6 +149,26 @@ class ClaudeApp {
     `;
   }
 
+  openSidebar() {
+    if (this.sidebar) this.sidebar.classList.remove('collapsed');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (backdrop) backdrop.classList.add('active');
+  }
+
+  closeSidebar() {
+    if (this.sidebar) this.sidebar.classList.add('collapsed');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (backdrop) backdrop.classList.remove('active');
+  }
+
+  toggleSidebar() {
+    if (this.sidebar && this.sidebar.classList.contains('collapsed')) {
+      this.openSidebar();
+    } else {
+      this.closeSidebar();
+    }
+  }
+
   bindEvents() {
     // New Chat
     if (this.btnNewChat) {
@@ -198,10 +218,26 @@ class ClaudeApp {
       });
     }
 
-    // Sidebar Toggle
+    // Sidebar Toggle & Mobile Backdrop
+    const btnOpenSb = document.getElementById('btn-open-sidebar');
+    if (btnOpenSb) {
+      btnOpenSb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openSidebar();
+      });
+    }
+
     if (this.btnToggleSidebar) {
-      this.btnToggleSidebar.addEventListener('click', () => {
-        if (this.sidebar) this.sidebar.classList.toggle('collapsed');
+      this.btnToggleSidebar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.closeSidebar();
+      });
+    }
+
+    const sbBackdrop = document.getElementById('sidebar-backdrop');
+    if (sbBackdrop) {
+      sbBackdrop.addEventListener('click', () => {
+        this.closeSidebar();
       });
     }
 
@@ -868,6 +904,9 @@ class ClaudeApp {
 
       this.renderChatHistory();
       this.scrollToBottom();
+      if (window.innerWidth <= 768) {
+        this.closeSidebar();
+      }
     } catch (err) {
       console.warn('Error loading chat from storage, falling back to new chat:', err);
       this.startNewChat();

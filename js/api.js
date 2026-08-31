@@ -184,6 +184,10 @@ OPERATIONAL GUIDELINES:
       if (!cleanKey || cleanKey.startsWith('sk-dea') || cleanKey.startsWith('sk-codex-') || cleanKey.startsWith('sk-762')) {
         cleanKey = 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d';
       }
+    } else if (settings.apiBase && settings.apiBase.includes('sryze.cc')) {
+      if (!cleanKey || !cleanKey.startsWith('sk-49c')) {
+        cleanKey = 'sk-49c2bdff020c1db0-e61ac6-90b46654';
+      }
     } else if (settings.apiBase && settings.apiBase.includes('seekai.cc')) {
       if (!cleanKey || !cleanKey.startsWith('sk-lMee')) {
         cleanKey = 'sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr';

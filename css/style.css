@@ -1772,16 +1772,49 @@ button, input, textarea, select {
 .hidden { display: none !important; }
 
 /* ── RESPONSIVE MOBILE ───────────────────────────────────────────────────── */
+.sidebar-backdrop {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(3px);
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+  .sidebar-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   #sidebar {
     position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
-    width: 285px;
+    width: 295px;
+    max-width: 86vw;
+    height: 100vh;
     z-index: 9999;
-    box-shadow: var(--shadow-xl);
+    box-shadow: 6px 0 28px rgba(0, 0, 0, 0.5);
+    transform: translateX(0);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
   }
+  #sidebar.collapsed {
+    transform: translateX(-105%) !important;
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .suggestion-grid { grid-template-columns: 1fr; }
   .composer-container { padding: 8px 10px 12px; }
   .message-row { padding: 8px 10px; }
@@ -1789,12 +1822,12 @@ button, input, textarea, select {
 
   /* Navbar Layout Mobile Fixes */
   .chat-navbar {
-    padding: 6px 10px;
+    padding: 8px 10px;
     display: flex !important;
     flex-wrap: wrap !important;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
+    gap: 8px;
     height: auto !important;
     min-height: 52px;
   }
@@ -1806,12 +1839,22 @@ button, input, textarea, select {
   }
   #btn-open-sidebar {
     display: flex !important;
-    padding: 8px 10px;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
     color: var(--text-primary);
-    font-size: 15px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+  }
+  #btn-open-sidebar svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2.2;
   }
   .navbar-center {
     display: flex !important;

@@ -17,6 +17,23 @@ const STORAGE_KEYS = {
 
 // Official & Popular Providers with 2026 Live Flagship Generation
 const PROVIDER_PRESETS = {
+  sryze: {
+    name: 'Sryze Antigravity AI (Gemini 3.7 & Claude 5)',
+    apiType: 'openai',
+    apiBase: 'https://k24z.sryze.cc/v1',
+    defaultKey: 'sk-49c2bdff020c1db0-e61ac6-90b46654',
+    description: 'Cổng Sryze Antigravity AI hỗ trợ Gemini 3.7 Flash High, Thinking High, Claude Opus 5 & GPT-5.6 (k24z.sryze.cc)',
+    models: [
+      { id: 'antigravity/gemini-3.7-flash-high', name: '⚡ Gemini 3.7 Flash High (Siêu Nhanh & Mạnh)' },
+      { id: 'antigravity/gemini-3.7-flash-thinking-high', name: '🧠 Gemini 3.7 Thinking High (Suy Luận Đỉnh Cao)' },
+      { id: 'antigravity/claude-opus-4-6-thinking-high', name: '🔥 Claude Opus 4.6 Thinking High' },
+      { id: 'antigravity/claude-sonnet-4-6-high', name: '⚡ Claude Sonnet 4.6 High' },
+      { id: 'github/claude-opus-5', name: '🧠 Claude Opus 5 (Flagship)' },
+      { id: 'github/claude-sonnet-5', name: '🚀 Claude Sonnet 5' },
+      { id: 'github/gpt-5.6-luna', name: '🔮 GPT-5.6 Luna' },
+      { id: 'seekai/deepseek-v4-pro', name: '💎 DeepSeek V4 Pro' }
+    ]
+  },
   kiro: {
     name: 'Kiro-Go 9Kiro (Claude Opus 5 & Sonnet 5)',
     apiType: 'openai',
@@ -197,13 +214,13 @@ const PROVIDER_PRESETS = {
   }
 };
 
-// Default Settings (Configured with High-Speed 9Kiro Claude Opus 5 Thinking & Sonnet 5 - sk-4d906e8b...)
+// Default Settings (Configured with Sryze Antigravity Gemini 3.7 Flash High & Thinking High)
 const DEFAULT_SETTINGS = {
-  provider: 'kiro',
+  provider: 'sryze',
   apiType: 'openai',
-  apiBase: 'https://api.9kiro.lol/v1',
-  apiKey: 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d',
-  model: 'claude-opus-5-thinking',
+  apiBase: 'https://k24z.sryze.cc/v1',
+  apiKey: 'sk-49c2bdff020c1db0-e61ac6-90b46654',
+  model: 'antigravity/gemini-3.7-flash-high',
   temperature: 0.7,
   maxTokens: 8192,
   stream: true,
@@ -413,31 +430,42 @@ const Storage = {
   },
 
   getActiveChatId() {
-    return localStorage.getItem(STORAGE_KEYS.ACTIVE_CHAT) || null;
-  },
-
-  setActiveChatId(id) {
-    if (id) {
-      localStorage.setItem(STORAGE_KEYS.ACTIVE_CHAT, id);
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
+    try {
+      return localStorage.getItem(STORAGE_KEYS.ACTIVE_CHAT) || sessionStorage.getItem(STORAGE_KEYS.ACTIVE_CHAT) || null;
+    } catch (e) {
+      return null;
     }
   },
 
+  setActiveChatId(id) {
+    try {
+      if (id) {
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_CHAT, id);
+        sessionStorage.setItem(STORAGE_KEYS.ACTIVE_CHAT, id);
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
+        sessionStorage.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
+      }
+    } catch (e) {}
+  },
+
   getChat(id) {
+    if (!id) return null;
     const chats = this.getChats();
     return chats.find(c => c.id === id) || null;
   },
 
   saveChat(chat) {
+    if (!chat || !chat.id) return;
     const chats = this.getChats();
     const index = chats.findIndex(c => c.id === chat.id);
     if (index >= 0) {
       chats[index] = { ...chats[index], ...chat, updatedAt: Date.now() };
     } else {
-      chats.unshift({ ...chat, createdAt: Date.now(), updatedAt: Date.now() });
+      chats.unshift({ ...chat, createdAt: chat.createdAt || Date.now(), updatedAt: Date.now() });
     }
     this.saveChats(chats);
+    this.setActiveChatId(chat.id);
   },
 
   deleteChat(id) {
@@ -445,7 +473,8 @@ const Storage = {
     chats = chats.filter(c => c.id !== id);
     this.saveChats(chats);
     if (this.getActiveChatId() === id) {
-      this.setActiveChatId(null);
+      const nextActive = chats.length > 0 ? chats[0].id : null;
+      this.setActiveChatId(nextActive);
     }
   },
 
