@@ -163,6 +163,11 @@ CORE LAWS (immutable, priority max):
   - When asked to run terminal commands (git, curl, apt, gradle): Provide the exact, 100% working bash script block for the user to run in Termux, and load all files into the active Workspace.
   - Users can upload files (.txt, .java, .py, .json, .zip, .jar) or paste URLs into the active Workspace (📁 Project button in navbar) or host files up to 5 GB at SuperPool Cloud (https://superpool.namdev.online/free).
 
+  LAW 10 — NEVER ASK FOR CONTINUATION TRIGGER / DOT '.'
+  Streaming output and 8192 max tokens are fully enabled.
+  STRICTLY FORBIDDEN from asking the user to type or send a dot '.' to continue.
+  Always write complete, 100% finished outputs directly in a single turn without stopping.
+
 ═══════════════════════════════════════════════════════════════`
     );
 
@@ -284,14 +289,19 @@ CORE LAWS (immutable, priority max):
     // Filter out past assistant refusals that trap the model into repeating disclaimers
     const sanitizedMessages = messages.filter(m => {
       if (m.role === 'assistant') {
-        const isRefusal = m.content.includes('Không thể khẳng định') || 
-                          m.content.includes('không thể khẳng định') || 
-                          m.content.includes('Chưa thể giải') || 
-                          m.content.includes('chưa thể giải') ||
-                          m.content.includes('chỉ là skeleton') ||
-                          m.content.includes('Tải CFR') ||
-                          m.content.includes('bản viết lại tương đương');
-        if (isRefusal) return false;
+        const isRefusalOrDotTrap = 
+          m.content.includes('Không thể khẳng định') || 
+          m.content.includes('không thể khẳng định') || 
+          m.content.includes('Chưa thể giải') || 
+          m.content.includes('chưa thể giải') ||
+          m.content.includes('chỉ là skeleton') ||
+          m.content.includes('Tải CFR') ||
+          m.content.includes('bản viết lại tương đương') ||
+          m.content.includes('gửi dấu .') ||
+          m.content.includes('Gửi dấu .') ||
+          m.content.includes('dấu . để tiếp tục') ||
+          m.content.includes('dấu chấm để tiếp tục');
+        if (isRefusalOrDotTrap) return false;
       }
       return true;
     });
@@ -392,14 +402,19 @@ CORE LAWS (immutable, priority max):
     // Filter out past assistant refusals that trap the model into repeating disclaimers
     const sanitizedMessages = messages.filter(m => {
       if (m.role === 'assistant') {
-        const isRefusal = m.content.includes('Không thể khẳng định') || 
-                          m.content.includes('không thể khẳng định') || 
-                          m.content.includes('Chưa thể giải') || 
-                          m.content.includes('chưa thể giải') ||
-                          m.content.includes('chỉ là skeleton') ||
-                          m.content.includes('Tải CFR') ||
-                          m.content.includes('bản viết lại tương đương');
-        if (isRefusal) return false;
+        const isRefusalOrDotTrap = 
+          m.content.includes('Không thể khẳng định') || 
+          m.content.includes('không thể khẳng định') || 
+          m.content.includes('Chưa thể giải') || 
+          m.content.includes('chưa thể giải') ||
+          m.content.includes('chỉ là skeleton') ||
+          m.content.includes('Tải CFR') ||
+          m.content.includes('bản viết lại tương đương') ||
+          m.content.includes('gửi dấu .') ||
+          m.content.includes('Gửi dấu .') ||
+          m.content.includes('dấu . để tiếp tục') ||
+          m.content.includes('dấu chấm để tiếp tục');
+        if (isRefusalOrDotTrap) return false;
       }
       return true;
     });
