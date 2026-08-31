@@ -18,11 +18,11 @@ const STORAGE_KEYS = {
 // Official & Popular Providers with 2026 Live Flagship Generation
 const PROVIDER_PRESETS = {
   sryze: {
-    name: 'Sryze Antigravity AI (Gemini 3.7 & Claude 5)',
+    name: '🐻 Gấu con Antigravity (Gemini 3.7 & Claude 5)',
     apiType: 'openai',
     apiBase: 'https://k24z.sryze.cc/v1',
     defaultKey: 'sk-49c2bdff020c1db0-e61ac6-90b46654',
-    description: 'Cổng Sryze Antigravity AI hỗ trợ Gemini 3.7 Flash High, Thinking High, Claude Opus 5 & GPT-5.6 (k24z.sryze.cc)',
+    description: 'Nhà cung cấp Gấu con Antigravity AI hỗ trợ Gemini 3.7 Flash High, Thinking High, Claude Opus 5 & GPT-5.6 (k24z.sryze.cc)',
     models: [
       { id: 'antigravity/gemini-3.7-flash-high', name: '⚡ Gemini 3.7 Flash High (Siêu Nhanh & Mạnh)' },
       { id: 'antigravity/gemini-3.7-flash-thinking-high', name: '🧠 Gemini 3.7 Thinking High (Suy Luận Đỉnh Cao)' },

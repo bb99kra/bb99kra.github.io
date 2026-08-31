@@ -6,6 +6,13 @@
 
 const CLAUDE_STARBURST_SVG = `<svg width="18" height="18" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="claude-starburst-icon"><g transform="translate(16, 16)"><path d="M 0 -12 L 1.5 -3 L -1.5 -3 Z" fill="#d97757"/><path d="M 8.485 -8.485 L 4.243 -1.757 L 1.757 -4.243 Z" fill="#d97757"/><path d="M 12 0 L 3 -1.5 L 3 1.5 Z" fill="#d97757"/><path d="M 8.485 8.485 L 1.757 4.243 L 4.243 1.757 Z" fill="#d97757"/><path d="M 0 12 L -1.5 3 L 1.5 3 Z" fill="#d97757"/><path d="M -8.485 8.485 L -4.243 1.757 L -1.757 4.243 Z" fill="#d97757"/><path d="M -12 0 L -3 1.5 L -3 -1.5 Z" fill="#d97757"/><path d="M -8.485 -8.485 L -1.757 -4.243 L -4.243 -1.757 Z" fill="#d97757"/><circle cx="0" cy="0" r="2.5" fill="#d97757"/></g></svg>`;
 
+const Storage = (typeof window !== 'undefined' && window.Storage) ? window.Storage : (typeof Storage !== 'undefined' ? Storage : null);
+const Api = (typeof window !== 'undefined' && window.Api) ? window.Api : (typeof Api !== 'undefined' ? Api : null);
+const Artifacts = (typeof window !== 'undefined' && window.Artifacts) ? window.Artifacts : (typeof Artifacts !== 'undefined' ? Artifacts : null);
+const Workspaces = (typeof window !== 'undefined' && window.Workspaces) ? window.Workspaces : (typeof Workspaces !== 'undefined' ? Workspaces : null);
+const Skills = (typeof window !== 'undefined' && window.Skills) ? window.Skills : (typeof Skills !== 'undefined' ? Skills : null);
+const CloudVM = (typeof window !== 'undefined' && window.CloudVM) ? window.CloudVM : (typeof CloudVM !== 'undefined' ? CloudVM : null);
+
 class ClaudeApp {
   constructor() {
     window.claudeApp = this;
@@ -106,8 +113,11 @@ class ClaudeApp {
       try {
         this.renderChatHistory();
         const activeChatId = Storage.getActiveChatId();
+        const allChats = Storage.getChats();
         if (activeChatId) {
           this.loadChat(activeChatId);
+        } else if (Array.isArray(allChats) && allChats.length > 0) {
+          this.loadChat(allChats[0].id);
         } else {
           this.showWelcome();
         }
@@ -714,20 +724,47 @@ class ClaudeApp {
 
   updateModelPill() {
     const s = Storage.getSettings();
-    let modelDisplay = s.model || 'anthropic/claude-sonnet-5';
+    let modelDisplay = s.model || 'antigravity/gemini-3.7-flash-high';
 
     if (modelDisplay.includes('sonnet-5')) modelDisplay = 'Claude Sonnet 5';
     else if (modelDisplay.includes('opus-5')) modelDisplay = 'Claude Opus 5';
     else if (modelDisplay.includes('fable-5')) modelDisplay = 'Claude Fable 5';
     else if (modelDisplay.includes('gpt-5.6')) modelDisplay = 'GPT-5.6 Luna';
-    else if (modelDisplay.includes('deepseek-v4')) modelDisplay = 'DeepSeek V4';
-    else if (modelDisplay.includes('gemini-3.7')) modelDisplay = 'Gemini 3.7 Flash';
+    else if (modelDisplay.includes('deepseek-v4')) modelDisplay = 'DeepSeek V4 Pro';
+    else if (modelDisplay.includes('gemini-3.7-flash-thinking')) modelDisplay = 'Gemini 3.7 Thinking';
+    else if (modelDisplay.includes('gemini-3.7')) modelDisplay = 'Gemini 3.7 Flash High';
+    else if (modelDisplay.includes('claude-opus-4-6')) modelDisplay = 'Claude Opus 4.6 Thinking';
+    else if (modelDisplay.includes('claude-sonnet-4-6')) modelDisplay = 'Claude Sonnet 4.6';
     else if (modelDisplay.includes('o3-mini')) modelDisplay = 'OpenAI o3-mini';
     else if (modelDisplay.includes('o3')) modelDisplay = 'OpenAI o3';
     else modelDisplay = modelDisplay.split('/').pop();
 
-    const el = document.getElementById('current-model-name');
-    if (el) el.textContent = modelDisplay;
+    let providerTag = 'Gấu con';
+    let brandIcon = '🐻';
+    if (s.provider === 'kiro') {
+      providerTag = '9Kiro';
+      brandIcon = '🔥';
+    } else if (s.provider === 'tuongtacgpt') {
+      providerTag = 'TuongTacGPT';
+      brandIcon = '⚡';
+    } else if (s.provider === 'seekai') {
+      providerTag = 'SeekAI';
+      brandIcon = '💎';
+    } else if (s.provider === 'openrouter') {
+      providerTag = 'OpenRouter';
+      brandIcon = '🌐';
+    }
+
+    const pill = document.getElementById('model-selector-pill');
+    if (pill) {
+      pill.innerHTML = `
+        <span class="status-dot"></span>
+        <span class="brand-star-icon" style="font-size:14px;">${brandIcon}</span>
+        <span id="current-model-name" style="font-weight:600;">${modelDisplay}</span>
+        <span class="badge-pro" style="background:linear-gradient(135deg, #f59e0b, #d97706);color:#ffffff;font-size:10.5px;padding:2px 7px;border-radius:10px;font-weight:bold;margin-left:2px;">${providerTag}</span>
+        <span class="caret-icon">▾</span>
+      `;
+    }
   }
 
   updateTopWorkspaceDisplay() {
@@ -854,10 +891,16 @@ class ClaudeApp {
     this.startNewChat();
   }
 
+  clearMessages() {
+    if (!this.messagesContainer) return;
+    const rows = this.messagesContainer.querySelectorAll('.message-row, .search-status-indicator, #claude-recovery-banner');
+    rows.forEach(r => r.remove());
+  }
+
   startNewChat() {
     this.currentChat = null;
     Storage.setActiveChatId(null);
-    this.messagesContainer.innerHTML = '';
+    this.clearMessages();
     this.showWelcome();
     this.renderChatHistory();
     this.textarea.value = '';
@@ -868,7 +911,11 @@ class ClaudeApp {
   }
 
   showWelcome() {
-    this.welcomeContainer.style.display = 'flex';
+    const doc = typeof document !== 'undefined' ? document : (typeof window !== 'undefined' ? window.document : null);
+    const el = this.welcomeContainer || (doc ? doc.getElementById('welcome-container') : null);
+    if (el) {
+      el.style.display = 'flex';
+    }
     const hour = new Date().getHours();
     let greet = 'Good morning';
     if (hour >= 4 && hour < 8) greet = 'Good early morning';
@@ -877,36 +924,48 @@ class ClaudeApp {
     else if (hour >= 17 && hour < 22) greet = 'Good evening';
     else greet = 'Burning the midnight oil?';
     
-    const greetEl = document.getElementById('welcome-greeting-text');
+    const greetEl = doc ? doc.getElementById('welcome-greeting-text') : null;
     if (greetEl) {
       greetEl.textContent = `${greet}, Nguyendzvn`;
     }
   }
 
   hideWelcome() {
-    this.welcomeContainer.style.display = 'none';
+    const doc = typeof document !== 'undefined' ? document : (typeof window !== 'undefined' ? window.document : null);
+    const el = this.welcomeContainer || (doc ? doc.getElementById('welcome-container') : null);
+    if (el) {
+      el.style.display = 'none';
+    }
   }
 
   loadChat(chatId) {
     try {
-      const chat = Storage.getChat(chatId);
+      let chat = Storage.getChat(chatId);
+      if (!chat) {
+        const chats = Storage.getChats();
+        if (Array.isArray(chats) && chats.length > 0) {
+          chat = chats[0];
+        }
+      }
       if (!chat) return this.startNewChat();
 
       this.currentChat = chat;
       Storage.setActiveChatId(chat.id);
       this.hideWelcome();
-      this.messagesContainer.innerHTML = '';
+      this.clearMessages();
 
-      (chat.messages || []).forEach(msg => {
-        if (!msg) return;
-        this.appendMessageElement(
-          msg.role || 'assistant',
-          msg.displayText || msg.content || '',
-          false,
-          msg.searchResults,
-          msg.attachments
-        );
-      });
+      if (Array.isArray(chat.messages) && chat.messages.length > 0) {
+        chat.messages.forEach(msg => {
+          if (!msg) return;
+          this.appendMessageElement(
+            msg.role || 'assistant',
+            msg.displayText || msg.content || '',
+            false,
+            msg.searchResults,
+            msg.attachments
+          );
+        });
+      }
 
       this.renderChatHistory();
       this.scrollToBottom();
