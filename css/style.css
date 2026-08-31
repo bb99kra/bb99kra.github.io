@@ -98,8 +98,9 @@
 }
 
 html, body {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
   overflow: hidden;
   font-family: var(--font-sans);
   background: var(--bg-app);
@@ -143,8 +144,9 @@ button, input, textarea, select {
 /* ── MAIN APP CONTAINER ─────────────────────────────────────────────────── */
 #app-container {
   display: flex;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
   position: relative;
   overflow: hidden;
   background: var(--bg-app);
@@ -1816,7 +1818,8 @@ button, input, textarea, select {
     bottom: 0;
     width: 295px;
     max-width: 86vw;
-    height: 100vh;
+    height: 100%;
+    height: 100dvh;
     z-index: 9999;
     box-shadow: 6px 0 28px rgba(0, 0, 0, 0.5);
     transform: translateX(0);
@@ -1828,45 +1831,45 @@ button, input, textarea, select {
     pointer-events: none;
   }
 
-  .suggestion-grid { grid-template-columns: 1fr; }
-  .composer-container { padding: 8px 10px 12px; }
-  .message-row { padding: 8px 10px; }
-  .user-bubble-container { max-width: 92%; }
-
-  /* Navbar Layout Mobile Fixes */
+  /* Single-Row Clean Mobile Navbar (No 2-story wrap!) */
   .chat-navbar {
-    padding: 8px 10px;
+    padding: 0 10px;
     display: flex !important;
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    height: auto !important;
-    min-height: 52px;
+    height: 52px !important;
+    min-height: 52px !important;
+    max-height: 52px !important;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-main);
+    z-index: 20;
+    overflow: hidden;
   }
   .navbar-left {
     display: flex !important;
     align-items: center;
+    gap: 6px;
     flex-shrink: 0;
-    z-index: 20;
   }
   #btn-open-sidebar {
     display: flex !important;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
     cursor: pointer;
     box-shadow: var(--shadow-sm);
   }
   #btn-open-sidebar svg {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     stroke-width: 2.2;
   }
   .navbar-center {
@@ -1874,42 +1877,154 @@ button, input, textarea, select {
     flex: 1;
     justify-content: center;
     min-width: 0;
+    padding: 0 4px;
+    overflow: hidden;
   }
   .model-selector-pill {
-    padding: 6px 12px;
-    font-size: 12.5px;
+    padding: 5px 10px;
+    font-size: 12px;
     border-radius: 20px;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     white-space: nowrap;
     max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  #current-model-name {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .navbar-right {
     display: flex !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    gap: 6px;
-    padding-top: 6px;
-    margin-top: 2px;
-    border-top: 1px solid var(--border-subtle);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    white-space: nowrap;
-    scrollbar-width: none;
+    width: auto !important;
+    max-width: none !important;
+    gap: 4px;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    border-top: none !important;
+    align-items: center;
+    flex-shrink: 0;
+    overflow: visible;
   }
-  .navbar-right::-webkit-scrollbar {
+  .nav-action-btn {
+    padding: 6px 8px !important;
+    font-size: 13px !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--bg-card) !important;
+    height: 36px;
+    min-width: 36px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  .hide-mobile {
+    display: none !important;
+  }
+  #btn-top-settings span:last-child {
+    display: none;
+  }
+  .top-ws-name {
     display: none;
   }
 
-  /* Always show Copy Action Bar on Mobile Touchscreens */
+  /* Chat Messages & Bubbles on Mobile */
+  .messages-container {
+    padding: 12px 8px 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .message-row {
+    padding: 6px 8px;
+    margin-bottom: 6px;
+  }
+  .user-bubble-container {
+    max-width: 90%;
+  }
+  .user-bubble {
+    font-size: 14.5px;
+    padding: 10px 14px;
+  }
+  .assistant-bubble-container {
+    max-width: 100%;
+    width: 100%;
+  }
+  .assistant-bubble {
+    font-size: 14.5px;
+  }
+  .welcome-container {
+    padding: 20px 12px;
+  }
+  .hero-title {
+    font-size: 22px !important;
+    line-height: 1.25;
+  }
+  .hero-subtitle {
+    font-size: 13px !important;
+  }
+  .suggestion-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .suggestion-card {
+    padding: 10px 12px;
+  }
+
+  /* Compact Chat Composer on Mobile */
+  .composer-container {
+    padding: 6px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg-main);
+    border-top: 1px solid var(--border-subtle);
+  }
+  .composer-card {
+    border-radius: 16px;
+    background: var(--bg-input);
+    margin: 0;
+  }
+  .composer-textarea {
+    font-size: 14.5px;
+    padding: 10px 12px 6px;
+    min-height: 40px;
+    max-height: 140px;
+  }
+  .composer-toolbar {
+    padding: 4px 8px 6px;
+    gap: 6px;
+  }
+  .toolbar-left {
+    gap: 4px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .toolbar-left::-webkit-scrollbar {
+    display: none;
+  }
+  .toolbar-pill-btn {
+    padding: 4px 8px;
+    font-size: 11.5px;
+    border-radius: 14px;
+    white-space: nowrap;
+  }
+  .btn-send {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Always show Action Bar on Mobile Touchscreens */
   .message-action-bar {
     opacity: 1 !important;
     margin-top: 6px;
     display: flex !important;
   }
   .btn-msg-action {
-    padding: 5px 12px;
-    font-size: 12px;
+    padding: 4px 10px;
+    font-size: 11.5px;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
   }
@@ -1917,10 +2032,30 @@ button, input, textarea, select {
     opacity: 1 !important;
   }
 
-  .hide-mobile { display: inline-block; font-size: 11px; margin-left: 2px; }
-  .modal-card { max-width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; align-self: flex-end; }
-  .modal-backdrop { align-items: flex-end; padding: 0; }
-  .artifact-panel { width: 100%; }
+  .modal-card {
+    max-width: 100%;
+    width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    align-self: flex-end;
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .artifact-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    z-index: 10000;
+  }
 }
 
 /* ===== Damienchakma/Open-claude StitchMCP & Loading Animations ===== */
