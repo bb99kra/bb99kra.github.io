@@ -428,49 +428,56 @@ CORE LAWS (immutable, priority max):
 
     let response;
     let attempts = 0;
-    const maxAttempts = 3;
+    const maxAttempts = 5;
+    let activeEndpoint = endpoint;
+    let activeHeaders = { ...headers };
 
     while (attempts < maxAttempts) {
       attempts++;
-      response = await fetch(endpoint, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) break;
-
-      const errText = await response.text();
-      let parsedMsg = errText;
       try {
-        const errJson = JSON.parse(errText);
-        parsedMsg = errJson.error?.message || errJson.message || errText;
-      } catch (e) {}
+        response = await fetch(activeEndpoint, {
+          method: 'POST',
+          headers: activeHeaders,
+          body: JSON.stringify(payload)
+        });
 
-      // If quota exhausted or account rotating, attempt retry or switch to auto model
-      const isQuotaOrBusy = parsedMsg.includes('quota exhausted') || 
-                            parsedMsg.includes('No available accounts') || 
-                            parsedMsg.includes('rate_limit') ||
-                            response.status === 500 || 
-                            response.status === 503;
+        if (response.ok) break;
 
-      if (isQuotaOrBusy && attempts < maxAttempts) {
-        console.warn(`Upstream quota exhausted or worker busy (attempt ${attempts}/${maxAttempts}). Retrying in 1.5s...`);
-        if (attempts === 2 && endpoint.includes('9kiro.lol')) {
-          payload.model = 'auto';
+        const errText = await response.text();
+        let parsedMsg = errText;
+        try {
+          const errJson = JSON.parse(errText);
+          parsedMsg = errJson.error?.message || errJson.message || errText;
+        } catch (e) {}
+
+        console.warn(`Upstream API attempt ${attempts}/${maxAttempts} (${response.status}): ${parsedMsg}`);
+
+        if (attempts < maxAttempts) {
+          // Attempt 2: Auto-switch model to 'auto' for 9kiro pool
+          if (attempts === 2 && activeEndpoint.includes('9kiro.lol')) {
+            payload.model = 'auto';
+          }
+          // Attempt 3+: Failover seamlessly to SeekAI Gateway backup
+          if (attempts >= 3) {
+            activeEndpoint = 'https://seekai.cc/v1/chat/completions';
+            activeHeaders = {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr'
+            };
+            payload.model = 'claude-sonnet-5';
+          }
+          await new Promise(r => setTimeout(r, 1200));
+          continue;
         }
-        await new Promise(r => setTimeout(r, 1500));
-        continue;
-      }
 
-      if (parsedMsg.includes('quota exhausted') || parsedMsg.includes('No available accounts')) {
-        throw new Error(
-          'Máy chủ Kiro CLI hiện đang tự động xoay vòng tài khoản upstream (thường mất 1-2 phút và không bị trừ credit). ' +
-          'Vui lòng bấm Thử lại sau giây lát hoặc đổi sang model "auto" ở trên!'
-        );
+        throw new Error(`API Error (${response.status}): ${parsedMsg}`);
+      } catch (fetchErr) {
+        if (attempts < maxAttempts) {
+          await new Promise(r => setTimeout(r, 1200));
+          continue;
+        }
+        throw fetchErr;
       }
-
-      throw new Error(`API Error (${response.status}): ${parsedMsg}`);
     }
 
     const reader = response.body.getReader();
