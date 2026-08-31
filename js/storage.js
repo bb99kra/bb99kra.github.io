@@ -18,16 +18,16 @@ const STORAGE_KEYS = {
 // Official & Popular Providers with 2026 Live Flagship Generation
 export const PROVIDER_PRESETS = {
   kiro: {
-    name: 'Kiro-Go 9Kiro (Claude Sonnet 5 & Opus 5)',
+    name: 'Kiro-Go 9Kiro (Claude Opus 5 & Sonnet 5)',
     apiType: 'openai',
     apiBase: 'https://api.9kiro.lol/v1',
-    defaultKey: 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8',
-    description: 'Pool Kiro-Go chuyên dụng cho Claude Sonnet 5, Opus 5 (api.9kiro.lol - 5000 Credits)',
+    defaultKey: 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d',
+    description: 'Pool Kiro-Go chuyên dụng cho Claude Opus 5 Thinking & Sonnet 5 (api.9kiro.lol - Check Quota Live)',
     models: [
+      { id: 'claude-opus-5-thinking', name: '💭 Claude Opus 5 Thinking (SOTA)' },
       { id: 'claude-sonnet-5', name: '🔥 Claude Sonnet 5 (2026 SOTA)' },
       { id: 'claude-opus-5', name: '🧠 Claude Opus 5 (Trí tuệ suy luận)' },
       { id: 'claude-sonnet-5-thinking', name: '💭 Claude Sonnet 5 Thinking' },
-      { id: 'claude-opus-5-thinking', name: '💭 Claude Opus 5 Thinking' },
       { id: 'claude-opus-4.8', name: 'Claude Opus 4.8' },
       { id: 'claude-opus-4.7', name: 'Claude Opus 4.7' },
       { id: 'claude-sonnet-4.6', name: 'Claude Sonnet 4.6' },
@@ -197,15 +197,15 @@ export const PROVIDER_PRESETS = {
   }
 };
 
-// Default Settings (Configured with High-Speed SeekAI Gateway - Claude Sonnet 5 & Gemini 3.6 Flash)
+// Default Settings (Configured with High-Speed 9Kiro Claude Opus 5 Thinking & Sonnet 5 - sk-4d906e8b...)
 const DEFAULT_SETTINGS = {
-  provider: 'seekai',
+  provider: 'kiro',
   apiType: 'openai',
-  apiBase: 'https://seekai.cc/v1',
-  apiKey: 'sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr',
-  model: 'claude-sonnet-5',
+  apiBase: 'https://api.9kiro.lol/v1',
+  apiKey: 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d',
+  model: 'claude-opus-5-thinking',
   temperature: 0.7,
-  maxTokens: 4096,
+  maxTokens: 8192,
   stream: true,
   lenientMode: true,
   webSearchEnabled: false,
@@ -280,13 +280,13 @@ export const Storage = {
       if (!data) return { ...DEFAULT_SETTINGS };
       const parsed = JSON.parse(data);
 
-      // Auto-migrate exhausted/expired API keys to live high-speed SeekAI Gateway:
-      if (!parsed.apiKey || parsed.apiKey.includes('sk-76207326d30e') || parsed.apiKey.includes('sk-codex-746a0b28') || parsed.apiBase?.includes('9kiro.lol') || parsed.apiBase?.includes('tuongtacgpt.click')) {
-        parsed.provider = 'seekai';
+      // Auto-migrate exhausted/expired API keys to working 9Kiro Claude Opus 5 key from ngu.txt:
+      if (!parsed.apiKey || parsed.apiKey.includes('sk-76207326d30e') || parsed.apiKey.includes('sk-codex-746a0b28')) {
+        parsed.provider = 'kiro';
         parsed.apiType = 'openai';
-        parsed.apiBase = 'https://seekai.cc/v1';
-        parsed.apiKey = 'sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr';
-        if (!parsed.model || parsed.model === 'claude-sonnet-5-thinking') parsed.model = 'claude-sonnet-5';
+        parsed.apiBase = 'https://api.9kiro.lol/v1';
+        parsed.apiKey = 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d';
+        parsed.model = 'claude-opus-5-thinking';
         localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
       }
       return { ...DEFAULT_SETTINGS, ...parsed };

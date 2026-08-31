@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
   
   <!-- Core Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=3.3.4">
+  <link rel="stylesheet" href="css/style.css?v=3.4.0">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -146,8 +146,12 @@
 
         <div class="navbar-right">
           <button id="btn-top-presets" class="nav-action-btn" title="LibreChat Presets">
-            <span>🎨</span>
+            <span>🔖</span>
             <span class="hide-mobile">Presets</span>
+          </button>
+          <button id="btn-top-quota" class="nav-action-btn" title="Check Live API Quota & Usage">
+            <span>📊</span>
+            <span class="hide-mobile">Quota</span>
           </button>
           <button id="btn-top-memory" class="nav-action-btn" title="AI Memory Facts">
             <span>🧠</span>
@@ -447,7 +451,10 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">API Key</label>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label class="form-label" style="margin:0;">API Key</label>
+            <button id="btn-check-credit" class="btn-secondary" style="padding:3px 10px;font-size:11.5px;">📊 Check Quota & Usage</button>
+          </div>
           <input type="password" id="setting-api-key" class="form-input" placeholder="sk-...">
           <div class="form-hint">Key được lưu trữ an toàn trong trình duyệt (localStorage) và không bao giờ gửi ra ngoài.</div>
         </div>
@@ -607,6 +614,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   
   <!-- Main App Controller Module -->
-  <script type="module" src="js/app.js?v=3.3.4"></script>
+  <script type="module" src="js/app.js?v=3.4.0"></script>
 </body>
 </html>

@@ -40,6 +40,25 @@ export const Api = {
   },
 
   /**
+   * Check Live Model Usage / Quota from 9Kiro Check Endpoint (api.9kiro.lol/check)
+   */
+  async checkQuota(apiKey) {
+    try {
+      const cleanKey = this.cleanApiKey(apiKey);
+      const res = await fetch('https://api.9kiro.lol/check/api/usage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: cleanKey })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      console.error('Error checking quota:', err);
+      throw err;
+    }
+  },
+
+  /**
    * Build complete system prompt integrating Workspace, Skills, Lenient Mode, and Web Results
    */
   buildSystemPrompt(settings, workspace, skills, searchResults = null, memories = []) {
