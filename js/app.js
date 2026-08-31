@@ -12,12 +12,13 @@ import { JavaClassDisassembler } from './decompiler.js';
 
 class ClaudeApp {
   constructor() {
+    window.claudeApp = this;
     this.currentChat = null;
     this.isGenerating = false;
     this.abortController = null;
     this.webSearchActive = false;
     this.pendingAttachments = [];
-    this.activePickerProvider = 'openrouter';
+    this.activePickerProvider = 'kiro';
   }
 
   init() {
@@ -133,49 +134,57 @@ class ClaudeApp {
 
   bindEvents() {
     // New Chat
-    this.btnNewChat.addEventListener('click', () => {
-      this.startNewChat();
-      if (window.innerWidth <= 768 && this.sidebar) this.sidebar.classList.add('collapsed');
-    });
+    if (this.btnNewChat) {
+      this.btnNewChat.addEventListener('click', () => {
+        this.startNewChat();
+        if (window.innerWidth <= 768 && this.sidebar) this.sidebar.classList.add('collapsed');
+      });
+    }
 
     // Textarea input & Auto-resize
-    this.textarea.addEventListener('input', () => {
-      this.textarea.style.height = 'auto';
-      this.textarea.style.height = Math.min(this.textarea.scrollHeight, 200) + 'px';
-    });
+    if (this.textarea) {
+      this.textarea.addEventListener('input', () => {
+        this.textarea.style.height = 'auto';
+        this.textarea.style.height = Math.min(this.textarea.scrollHeight, 200) + 'px';
+      });
 
-    this.textarea.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        if (!this.isGenerating) {
-          this.handleSendMessage();
+      this.textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (!this.isGenerating) {
+            this.handleSendMessage();
+          }
         }
-      }
-    });
+      });
+    }
 
     // Send Button
-    this.btnSend.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (this.isGenerating) {
-        this.stopGeneration();
-      } else {
-        this.handleSendMessage();
-      }
-    });
+    if (this.btnSend) {
+      this.btnSend.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (this.isGenerating) {
+          this.stopGeneration();
+        } else {
+          this.handleSendMessage();
+        }
+      });
+    }
 
     // Web Search Toggle Button
-    this.btnWebSearch.addEventListener('click', () => {
-      this.webSearchActive = !this.webSearchActive;
-      this.btnWebSearch.classList.toggle('active', this.webSearchActive);
-      this.btnWebSearch.innerHTML = this.webSearchActive 
-        ? '<span>🌐 Search: ON</span>' 
-        : '<span>🌐 Search</span>';
-    });
+    if (this.btnWebSearch) {
+      this.btnWebSearch.addEventListener('click', () => {
+        this.webSearchActive = !this.webSearchActive;
+        this.btnWebSearch.classList.toggle('active', this.webSearchActive);
+        this.btnWebSearch.innerHTML = this.webSearchActive 
+          ? '<span>🌐 Search: ON</span>' 
+          : '<span>🌐 Search</span>';
+      });
+    }
 
     // Sidebar Toggle
     if (this.btnToggleSidebar) {
       this.btnToggleSidebar.addEventListener('click', () => {
-        this.sidebar.classList.toggle('collapsed');
+        if (this.sidebar) this.sidebar.classList.toggle('collapsed');
       });
     }
 
@@ -237,9 +246,11 @@ class ClaudeApp {
     }
 
     // Top Model Pill Click -> Opens Interactive Model Picker Modal!
-    this.btnModelPill.addEventListener('click', () => {
-      this.openModelPickerModal();
-    });
+    if (this.btnModelPill) {
+      this.btnModelPill.addEventListener('click', () => {
+        this.openModelPickerModal();
+      });
+    }
 
     // Close Model Picker Modal
     if (this.btnCloseModelPicker) {
@@ -249,7 +260,7 @@ class ClaudeApp {
     // Apply Custom Model from Picker
     if (this.pickerBtnApplyCustom) {
       this.pickerBtnApplyCustom.addEventListener('click', () => {
-        const val = this.pickerCustomInput.value.trim();
+        const val = this.pickerCustomInput ? this.pickerCustomInput.value.trim() : '';
         if (val) {
           this.selectModel(val);
         } else {
@@ -290,8 +301,12 @@ class ClaudeApp {
     }
 
     // Settings Modal
-    this.btnSettings.addEventListener('click', () => this.openSettingsModal());
-    this.btnSaveSettings.addEventListener('click', () => this.saveSettings());
+    if (this.btnSettings) {
+      this.btnSettings.addEventListener('click', () => this.openSettingsModal());
+    }
+    if (this.btnSaveSettings) {
+      this.btnSaveSettings.addEventListener('click', () => this.saveSettings());
+    }
 
     // Universal Fail-Proof Delegated Modal Close Handler ('✕' button, backdrop, escape)
     // Uses capture phase (true) so click is caught BEFORE any inner element can block it!
