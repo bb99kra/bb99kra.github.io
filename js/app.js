@@ -341,8 +341,8 @@ class ClaudeApp {
         return;
       }
 
-      // 4. New Chat Button (#btn-new-chat / .btn-new-chat)
-      const newChatBtn = target.closest('#btn-new-chat, .btn-new-chat');
+      // 4. New Chat Button (#btn-new-chat / #btn-top-new-chat / .btn-new-chat)
+      const newChatBtn = target.closest('#btn-new-chat, #btn-top-new-chat, .btn-new-chat');
       if (newChatBtn) {
         e.preventDefault();
         this.startNewChat();
@@ -377,8 +377,8 @@ class ClaudeApp {
         return;
       }
 
-      // 8. Presets Button (#btn-top-presets / #nav-presets)
-      const presetsBtn = target.closest('#btn-top-presets, #nav-presets');
+      // 8. Presets Button (#btn-top-presets / #nav-presets / #btn-composer-presets)
+      const presetsBtn = target.closest('#btn-top-presets, #nav-presets, #btn-composer-presets');
       if (presetsBtn) {
         e.preventDefault();
         this.openPresetsModal();

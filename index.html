@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
   
   <!-- Core Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=3.7.0">
+  <link rel="stylesheet" href="css/style.css?v=3.8.0">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -113,7 +113,7 @@
 
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
-        <div class="user-profile-pill" onclick="document.getElementById('nav-settings').click()">
+        <div class="user-profile-pill">
           <div class="user-avatar">N</div>
           <div class="user-info">
             <span class="user-name">Nguyendzvn</span>
@@ -131,7 +131,7 @@
       <!-- Navbar (Open WebUI Centered Selector Style) -->
       <header class="chat-navbar">
         <div class="navbar-left">
-          <button id="btn-open-sidebar" class="btn-icon" title="Open Sidebar" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
+          <button id="btn-open-sidebar" class="btn-icon" title="Open Sidebar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
           </button>
         </div>
@@ -166,7 +166,7 @@
             <span>📁</span>
             <span id="top-workspace-name" class="top-ws-name">Project</span>
           </button>
-          <button class="btn-icon" title="Start new conversation" onclick="window.claudeApp.startNewChat()">
+          <button id="btn-top-new-chat" class="btn-icon" title="Start new conversation">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
           </button>
         </div>
@@ -255,7 +255,7 @@
                 <span>Web Search</span>
               </button>
 
-              <button class="toolbar-pill-btn" onclick="document.getElementById('nav-presets').click()" title="LibreChat Presets">
+              <button id="btn-composer-presets" class="toolbar-pill-btn" title="LibreChat Presets">
                 <span>🎨</span>
                 <span>Presets</span>
               </button>
@@ -618,13 +618,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   
-  <!-- Application Core Modules (Sequential Loading v3.7.0) -->
-  <script src="js/storage.js?v=3.7.0"></script>
-  <script src="js/api.js?v=3.7.0"></script>
-  <script src="js/artifacts.js?v=3.7.0"></script>
-  <script src="js/workspaces.js?v=3.7.0"></script>
-  <script src="js/skills.js?v=3.7.0"></script>
-  <script src="js/decompiler.js?v=3.7.0"></script>
-  <script src="js/app.js?v=3.7.0"></script>
+  <!-- Application Core Modules (Sequential Loading v3.8.0) -->
+  <script src="js/storage.js?v=3.8.0"></script>
+  <script src="js/api.js?v=3.8.0"></script>
+  <script src="js/artifacts.js?v=3.8.0"></script>
+  <script src="js/workspaces.js?v=3.8.0"></script>
+  <script src="js/skills.js?v=3.8.0"></script>
+  <script src="js/decompiler.js?v=3.8.0"></script>
+  <script src="js/app.js?v=3.8.0"></script>
 </body>
 </html>
