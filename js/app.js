@@ -6,13 +6,6 @@
 
 const CLAUDE_STARBURST_SVG = `<svg width="18" height="18" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="claude-starburst-icon"><g transform="translate(16, 16)"><path d="M 0 -12 L 1.5 -3 L -1.5 -3 Z" fill="#d97757"/><path d="M 8.485 -8.485 L 4.243 -1.757 L 1.757 -4.243 Z" fill="#d97757"/><path d="M 12 0 L 3 -1.5 L 3 1.5 Z" fill="#d97757"/><path d="M 8.485 8.485 L 1.757 4.243 L 4.243 1.757 Z" fill="#d97757"/><path d="M 0 12 L -1.5 3 L 1.5 3 Z" fill="#d97757"/><path d="M -8.485 8.485 L -4.243 1.757 L -1.757 4.243 Z" fill="#d97757"/><path d="M -12 0 L -3 1.5 L -3 -1.5 Z" fill="#d97757"/><path d="M -8.485 -8.485 L -1.757 -4.243 L -4.243 -1.757 Z" fill="#d97757"/><circle cx="0" cy="0" r="2.5" fill="#d97757"/></g></svg>`;
 
-const Storage = (typeof window !== 'undefined' && window.Storage) ? window.Storage : (typeof Storage !== 'undefined' ? Storage : null);
-const Api = (typeof window !== 'undefined' && window.Api) ? window.Api : (typeof Api !== 'undefined' ? Api : null);
-const Artifacts = (typeof window !== 'undefined' && window.Artifacts) ? window.Artifacts : (typeof Artifacts !== 'undefined' ? Artifacts : null);
-const Workspaces = (typeof window !== 'undefined' && window.Workspaces) ? window.Workspaces : (typeof Workspaces !== 'undefined' ? Workspaces : null);
-const Skills = (typeof window !== 'undefined' && window.Skills) ? window.Skills : (typeof Skills !== 'undefined' ? Skills : null);
-const CloudVM = (typeof window !== 'undefined' && window.CloudVM) ? window.CloudVM : (typeof CloudVM !== 'undefined' ? CloudVM : null);
-
 class ClaudeApp {
   constructor() {
     window.claudeApp = this;
@@ -1514,10 +1507,14 @@ class ClaudeApp {
 
       searchResults = await Api.searchWeb(userPrompt);
       if (searchStatusEl) {
-        searchStatusEl.innerHTML = `<span>✓ Completed live web search</span>`;
-        searchStatusEl.style.opacity = '0.7';
+        this.updateSearchStatusDone(searchStatusEl, userPrompt);
       }
     }
+
+    // Writing indicator
+    const writingEl = this.createWritingIndicator();
+    this.messagesContainer.appendChild(writingEl);
+    this.scrollToBottom();
 
     const { row, bubble } = this.createAssistantMessageRow();
     this.messagesContainer.appendChild(row);
@@ -1529,12 +1526,13 @@ class ClaudeApp {
     bubble.innerHTML = `
       <div class="generating-pill">
         <div class="generating-dot-ping"></div>
-        <span style="font-weight:500;color:var(--text-primary);">Generating response...</span>
+        <span style="font-weight:500;color:var(--text-primary);">Đang tạo câu trả lời...</span>
       </div>
     `;
 
     let fullAssistantText = '';
     let lastRender = 0;
+    let writingRemoved = false;
 
     await Api.streamChat(
       this.currentChat.messages,
@@ -1543,6 +1541,11 @@ class ClaudeApp {
       skills,
       searchResults,
       (chunk, accumulated) => {
+        // Remove writing indicator on first chunk
+        if (!writingRemoved && writingEl && writingEl.parentNode) {
+          writingEl.remove();
+          writingRemoved = true;
+        }
         fullAssistantText = accumulated;
         const now = Date.now();
         if (now - lastRender < 50) return;
@@ -1588,6 +1591,7 @@ class ClaudeApp {
       (error) => {
         this.isGenerating = false;
         this.btnSend.innerHTML = '<span>↑</span>';
+        if (writingEl && writingEl.parentNode) writingEl.remove();
         bubble.innerHTML += `<div style="color:#ef4444;margin-top:8px;font-size:13.5px;padding:8px 12px;background:rgba(239,68,68,0.1);border-radius:8px;border:1px solid rgba(239,68,68,0.2);">⚠️ ${this.escapeHtml(error.message)}</div>`;
         this.scrollToBottom();
       },
@@ -1602,12 +1606,41 @@ class ClaudeApp {
 
   createSearchStatusElement(query) {
     const el = document.createElement('div');
-    el.className = 'message-row assistant-message-row';
-    el.style.padding = '4px 20px';
+    el.className = 'search-status-indicator';
+    el.style.cssText = 'padding:6px 20px;';
     el.innerHTML = `
-      <div style="font-size:12.5px;color:var(--text-muted);display:flex;align-items:center;gap:6px;background:var(--bg-card);padding:6px 12px;border-radius:14px;border:1px solid var(--border-subtle);">
-        <span class="status-dot" style="background:var(--accent);box-shadow:0 0 6px var(--accent);"></span>
-        <span>Searching live web for: <strong>${this.escapeHtml(query.slice(0, 50))}</strong>...</span>
+      <div style="font-size:13px;color:#9ca3af;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;border-left:3px solid #3b82f6;background:rgba(59,130,246,0.06);">
+        <span class="claude-thinking-spinner" style="border-top-color:#3b82f6;border-color:rgba(59,130,246,0.2);"></span>
+        <div>
+          <div style="font-weight:600;color:#60a5fa;font-size:12.5px;">🌐 Đang tìm kiếm trên Internet...</div>
+          <div style="font-size:12px;color:#9ca3af;margin-top:2px;">Từ khoá: <strong style="color:#d1d5db;">${this.escapeHtml(query.slice(0, 60))}</strong></div>
+        </div>
+      </div>
+    `;
+    return el;
+  }
+
+  updateSearchStatusDone(el, query) {
+    if (!el) return;
+    el.innerHTML = `
+      <div style="font-size:13px;color:#9ca3af;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;border-left:3px solid #22c55e;background:rgba(34,197,94,0.06);">
+        <span style="font-size:14px;">✅</span>
+        <div>
+          <div style="font-weight:600;color:#4ade80;font-size:12.5px;">Đã tìm kiếm xong</div>
+          <div style="font-size:12px;color:#9ca3af;margin-top:2px;">Từ khoá: <strong style="color:#d1d5db;">${this.escapeHtml(query.slice(0, 60))}</strong></div>
+        </div>
+      </div>
+    `;
+  }
+
+  createWritingIndicator() {
+    const el = document.createElement('div');
+    el.className = 'writing-indicator';
+    el.style.cssText = 'padding:4px 20px;';
+    el.innerHTML = `
+      <div style="font-size:12.5px;color:#9ca3af;display:flex;align-items:center;gap:8px;">
+        <span class="claude-thinking-spinner" style="width:12px;height:12px;border-width:1.5px;border-top-color:#d97757;border-color:rgba(217,119,87,0.2);"></span>
+        <span style="color:#d97757;font-weight:500;">Gấu con đang viết trả lời...</span>
       </div>
     `;
     return el;
