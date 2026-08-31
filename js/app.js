@@ -1289,37 +1289,105 @@ class ClaudeApp {
       const fileName = file.name;
       const lowerName = fileName.toLowerCase();
 
-      // .jar / .zip archive — extract 100% full source contents of all text files inside
+      // ── JAR / ZIP ARCHIVE WITH AUTOMATIC BYTECODE DECOMPILATION ──────────
       if (lowerName.endsWith('.jar') || lowerName.endsWith('.zip')) {
         try {
           let fullExtractedContent = `📦 [ARCHIVE ATTACHMENT: ${fileName} (${(file.size / 1024).toFixed(1)} KB)]\n\n`;
+          let decompiledCount = 0;
+          let resourceCount = 0;
+
           if (window.JSZip) {
             const zip = await JSZip.loadAsync(file);
-            const entries = Object.keys(zip.files).filter(n => !zip.files[n].dir);
+            const allEntries = Object.keys(zip.files).filter(n => !zip.files[n].dir);
+
+            // 1. Extract Plugin Metadata & Resources first (.yml, .xml, .json, .properties)
             const textExts = ['.yml', '.yaml', '.json', '.xml', '.txt', '.md', '.properties', '.toml', '.conf', '.java', '.py', '.js', '.ts', '.kt', '.cs', '.gradle', '.mf'];
-            
-            let extractedCount = 0;
-            for (const ePath of entries) {
-              if (textExts.some(ext => ePath.toLowerCase().endsWith(ext)) && !ePath.includes('.git/') && !ePath.includes('.idea/')) {
-                try {
-                  const content = await zip.file(ePath).async('string');
-                  fullExtractedContent += 
-                    `═══════════════════════════════════════════════════════════════\n` +
-                    `  📄 [FILE: ${ePath}] (${(content.length / 1024).toFixed(1)} KB)\n` +
-                    `═══════════════════════════════════════════════════════════════\n` +
-                    `${content}\n\n`;
-                  
-                  // Auto-sync into Active Workspace with full relative path
-                  Storage.addFileToActiveWorkspace(ePath, content);
-                  extractedCount++;
-                } catch (e) {}
+            const resourceEntries = allEntries.filter(e => textExts.some(ext => e.toLowerCase().endsWith(ext)) && !e.includes('.git/') && !e.includes('.idea/'));
+
+            let mainPackagePrefix = '';
+            for (const rPath of resourceEntries) {
+              try {
+                const content = await zip.file(rPath).async('string');
+                // Detect main class package from plugin.yml
+                if (rPath.toLowerCase().endsWith('plugin.yml') || rPath.toLowerCase().endsWith('bungee.yml')) {
+                  const mainMatch = content.match(/main:\s*([^\s\r\n]+)/i);
+                  if (mainMatch) {
+                    const mainClass = mainMatch[1];
+                    const pkgParts = mainClass.split('.');
+                    pkgParts.pop(); // remove class name
+                    mainPackagePrefix = pkgParts.join('/');
+                  }
+                }
+
+                fullExtractedContent += 
+                  `═══════════════════════════════════════════════════════════════\n` +
+                  `  📄 [RESOURCE FILE: ${rPath}] (${(content.length / 1024).toFixed(1)} KB)\n` +
+                  `═══════════════════════════════════════════════════════════════\n` +
+                  `${content}\n\n`;
+
+                Storage.addFileToActiveWorkspace(rPath, content);
+                resourceCount++;
+              } catch (resErr) {
+                console.warn('Resource extract error:', rPath, resErr);
               }
             }
-            this.updateTopWorkspaceDisplay();
-            if (extractedCount === 0) {
-              fullExtractedContent += `Archive contains ${entries.length} files:\n` + entries.slice(0, 100).join('\n');
+
+            // 2. Extract & DECOMPILE all .class Bytecode Files into Clean Java Source!
+            const classEntries = allEntries.filter(e => e.toLowerCase().endsWith('.class') && !e.startsWith('META-INF/'));
+            
+            // Prioritize main plugin classes over shaded libraries
+            const sortedClasses = classEntries.sort((a, b) => {
+              const aIsMain = mainPackagePrefix && a.startsWith(mainPackagePrefix);
+              const bIsMain = mainPackagePrefix && b.startsWith(mainPackagePrefix);
+              if (aIsMain && !bIsMain) return -1;
+              if (!aIsMain && bIsMain) return 1;
+              // Push heavily shaded libs to the end
+              const aIsLib = /^(com\/google|org\/apache|it\/unimi|kotlin|org\/jetbrains|org\/slf4j|io\/netty|javax|jakarta|com\/zaxxer)\//.test(a);
+              const bIsLib = /^(com\/google|org\/apache|it\/unimi|kotlin|org\/jetbrains|org\/slf4j|io\/netty|javax|jakarta|com\/zaxxer)\//.test(b);
+              if (!aIsLib && bIsLib) return -1;
+              if (aIsLib && !bIsLib) return 1;
+              return 0;
+            });
+
+            // Decompile classes (up to 120 primary plugin classes)
+            const maxDecompile = 120;
+            const classesToDecompile = sortedClasses.slice(0, maxDecompile);
+
+            fullExtractedContent += `\n═══════════════════════════════════════════════════════════════\n`;
+            fullExtractedContent += `  ☕ [BYTECODE DECOMPILATION — ${sortedClasses.length} TOTAL CLASSES DETECTED]\n`;
+            fullExtractedContent += `═══════════════════════════════════════════════════════════════\n\n`;
+
+            for (const cPath of classesToDecompile) {
+              try {
+                const arrayBuffer = await zip.file(cPath).async('arraybuffer');
+                if (window.JavaClassDisassembler) {
+                  const parsed = JavaClassDisassembler.parse(arrayBuffer);
+                  if (parsed && parsed.className) {
+                    const javaSource = JavaClassDisassembler.toJavaSource(parsed);
+                    const javaPath = cPath.replace(/\.class$/i, '.java');
+
+                    fullExtractedContent += 
+                      `═══════════════════════════════════════════════════════════════\n` +
+                      `  📄 [DECOMPILED JAVA SOURCE: ${javaPath}] (${(javaSource.length / 1024).toFixed(1)} KB)\n` +
+                      `═══════════════════════════════════════════════════════════════\n` +
+                      `${javaSource}\n\n`;
+
+                    Storage.addFileToActiveWorkspace(javaPath, javaSource);
+                    decompiledCount++;
+                  }
+                }
+              } catch (clsErr) {
+                console.warn('Class decompile error:', cPath, clsErr);
+              }
             }
+
+            if (sortedClasses.length > maxDecompile) {
+              fullExtractedContent += `\n[+ ${sortedClasses.length - maxDecompile} additional shaded library classes in archive]\n`;
+            }
+
+            this.updateTopWorkspaceDisplay();
           }
+
           this.pendingAttachments.push({
             name: fileName,
             size: file.size,
@@ -1328,14 +1396,42 @@ class ClaudeApp {
             content: fullExtractedContent
           });
         } catch (err) {
+          console.error('JAR/ZIP Processing Error:', err);
           this.pendingAttachments.push({
             name: fileName, size: file.size,
             sizeStr: (file.size / 1024).toFixed(1) + ' KB',
             type: 'archive', content: `[Archive: ${fileName} — ${(file.size / 1024).toFixed(1)} KB]`
           });
         }
+      } else if (lowerName.endsWith('.class')) {
+        // ── STANDALONE .CLASS BYTECODE FILE DECOMPILATION ────────────────────
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          let javaSource = '';
+          if (window.JavaClassDisassembler) {
+            const parsed = JavaClassDisassembler.parse(arrayBuffer);
+            if (parsed) {
+              javaSource = JavaClassDisassembler.toJavaSource(parsed);
+            }
+          }
+          if (!javaSource) {
+            javaSource = `// [Bytecode file: ${fileName} — ${(file.size / 1024).toFixed(1)} KB]`;
+          }
+          const javaName = fileName.replace(/\.class$/i, '.java');
+          this.pendingAttachments.push({
+            name: javaName,
+            size: file.size,
+            sizeStr: (file.size / 1024).toFixed(1) + ' KB',
+            type: 'java',
+            content: javaSource
+          });
+          Storage.addFileToActiveWorkspace(javaName, javaSource);
+          this.updateTopWorkspaceDisplay();
+        } catch (clsErr) {
+          console.error('Standalone class decompile error:', clsErr);
+        }
       } else {
-        // Regular text file (.java, .yml, .json, .txt, .xml, .md, .log, etc.)
+        // ── REGULAR TEXT FILE (.java, .yml, .json, .txt, .xml, .md, .log) ────
         await new Promise((resolve) => {
           const reader = new FileReader();
           reader.onload = (event) => {
@@ -1347,7 +1443,6 @@ class ClaudeApp {
               type: 'text',
               content: fileContent
             });
-            // Also sync into Workspace
             Storage.addFileToActiveWorkspace(fileName, fileContent);
             this.updateTopWorkspaceDisplay();
             resolve();
