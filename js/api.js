@@ -477,11 +477,19 @@ OPERATIONAL GUIDELINES:
         console.warn(`Upstream API attempt ${attempts}/${maxAttempts} (${response.status}): ${parsedMsg}`);
 
         if (attempts < maxAttempts) {
+          // If antigravity pool on sryze.cc exhausted quota, failover to live trk pool
+          if (activeEndpoint.includes('sryze.cc') && parsedMsg.includes('exhausted their quota')) {
+            if (payload.model.includes('claude') || payload.model.includes('opus')) {
+              payload.model = 'trk/anthropic/claude-opus-5';
+            } else {
+              payload.model = 'trk/google/gemini-3.7-flash';
+            }
+          }
           // If using 9kiro and failed, try with 'auto' route
           if (attempts === 2 && activeEndpoint.includes('9kiro.lol')) {
             payload.model = 'auto';
           }
-          await new Promise(r => setTimeout(r, 1200));
+          await new Promise(r => setTimeout(r, 800));
           continue;
         }
 

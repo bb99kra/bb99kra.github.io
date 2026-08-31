@@ -2156,12 +2156,13 @@ class ClaudeApp {
     if (thinkingMatch) {
       let thoughtText = thinkingMatch[1].replace(/<summary>[\s\S]*?<\/summary>/gi, '').trim();
       mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>[\s\S]*?<\/(?:thinking|thought|think|reasoning|details)>/gi, '').trim();
-      const thoughtTime = elapsedSec ? `Thought for ${elapsedSec}s` : 'Thinking process';
+      const thoughtTime = elapsedSec ? `${elapsedSec}s` : '';
+      const thoughtLabel = thoughtTime ? `Thought for ${thoughtTime}` : 'Thinking process';
       thinkingHtml = `
-        <div class="thinking-panel mb-3 collapsed">
-          <button type="button" class="thinking-panel-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="thinking-panel mb-3">
+          <button type="button" class="thinking-panel-header" onclick="this.parentElement.classList.toggle('collapsed')" title="Bấm để đóng / mở suy luận">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="thinking-chevron-icon"><polyline points="9 18 15 12 9 6"/></svg>
-            <span style="font-size:13.5px;font-weight:500;color:#9ca3af;">${thoughtTime}</span>
+            <span style="font-size:13.5px;font-weight:500;color:#9ca3af;">${thoughtLabel}</span>
           </button>
           <div class="thinking-scroll-container">
             <div class="thinking-prose">${this.escapeHtml(thoughtText)}</div>
@@ -2173,7 +2174,7 @@ class ClaudeApp {
       mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>[\s\S]*$/gi, '').trim();
       thinkingHtml = `
         <div class="thinking-panel streaming mb-3">
-          <button type="button" class="thinking-panel-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <button type="button" class="thinking-panel-header" onclick="this.parentElement.classList.toggle('collapsed')" title="Bấm để đóng / mở suy luận">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="thinking-chevron-icon"><polyline points="9 18 15 12 9 6"/></svg>
             <span class="claude-thinking-spinner"></span>
             <span style="font-size:13.5px;font-weight:500;color:#9ca3af;">Thinking...</span>

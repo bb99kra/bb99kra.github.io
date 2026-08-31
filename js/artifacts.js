@@ -104,28 +104,100 @@ const Artifacts = {
   async downloadProjectAsJar(customName = null) {
     if (!window.JSZip) return alert('JSZip library is loading, please try again.');
     const zip = new JSZip();
-    const ws = (window.claudeApp && window.claudeApp.storage) ? window.claudeApp.storage.getActiveWorkspace() : (window.Storage ? window.Storage.getActiveWorkspace() : null);
+    const storageObj = window.Storage || (window.claudeApp ? window.claudeApp.storage : null);
+    const ws = storageObj ? storageObj.getActiveWorkspace() : null;
     let jarName = customName || ((ws ? ws.name : 'PurePlugin') + '-1.0.0.jar').replace(/\s+/g, '_');
     if (!jarName.endsWith('.jar')) jarName += '.jar';
 
-    let hasPluginYml = false;
+    const packedFiles = new Map(); // path -> content
+
+    // 1. Collect files from Active Workspace
     if (ws && ws.files && ws.files.length > 0) {
       ws.files.forEach(f => {
-        if (f.name.endsWith('plugin.yml')) hasPluginYml = true;
-        zip.file(f.name.replace(/^src\/main\/resources\//, ''), f.content);
+        if (f.name && f.content) {
+          packedFiles.set(f.name, f.content);
+        }
       });
     }
 
-    if (!hasPluginYml) {
-      zip.file('plugin.yml', `name: PurePlugin\nversion: 1.0.0\nmain: vn.nguyendz.purespeed.PureSpeedPlugin\napi-version: '1.20'\nauthor: Nguyendzvn\ndescription: Standalone Offline Ready Plugin`);
+    // 2. Collect files from Current Active Artifact
+    if (this.currentArtifact && this.currentArtifact.content) {
+      const artFiles = this.parseMarkdownFiles(this.currentArtifact.content);
+      artFiles.forEach(af => packedFiles.set(af.path, af.content));
     }
 
+    // 3. Scan Current Chat Messages for all Java code, XML, YAML blocks emitted by AI
+    if (window.claudeApp && window.claudeApp.currentChat && window.claudeApp.currentChat.messages) {
+      window.claudeApp.currentChat.messages.forEach(msg => {
+        if (msg.role === 'assistant' && msg.content) {
+          const raw = msg.content;
+          
+          // Match all code blocks: ```java ... ```, ```xml ... ```, ```yaml ... ```, ```yml ... ```
+          const codeBlockRegex = /```(?:([a-zA-Z0-9_-]+)(?::([^\n\r]+))?)?\n([\s\S]*?)```/g;
+          let cbMatch;
+          while ((cbMatch = codeBlockRegex.exec(raw)) !== null) {
+            const lang = (cbMatch[1] || '').toLowerCase();
+            const tagPath = (cbMatch[2] || '').trim();
+            const code = cbMatch[3].trim();
+
+            if (lang === 'java' || (!lang && code.includes('public class '))) {
+              // Extract package and class name
+              const pkgMatch = code.match(/package\s+([a-zA-Z0-9_.]+);/);
+              const clsMatch = code.match(/public\s+(?:class|interface|enum)\s+([a-zA-Z0-9_]+)/);
+              const pkg = pkgMatch ? pkgMatch[1].replace(/\./g, '/') : '';
+              const cls = clsMatch ? clsMatch[1] : ('Class_' + (packedFiles.size + 1));
+              const filePath = tagPath || (pkg ? `${pkg}/${cls}.java` : `${cls}.java`);
+              packedFiles.set(filePath, code);
+              packedFiles.set(`src/main/java/${filePath}`, code);
+            } else if (lang === 'xml' || code.includes('<project xmlns="http://maven.apache.org')) {
+              packedFiles.set(tagPath || 'pom.xml', code);
+            } else if (lang === 'yml' || lang === 'yaml' || code.includes('main:') || code.includes('version:')) {
+              const fileName = tagPath || (code.includes('main:') && code.includes('version:') ? 'plugin.yml' : 'config.yml');
+              packedFiles.set(fileName, code);
+              packedFiles.set(`src/main/resources/${fileName}`, code);
+            }
+          }
+        }
+      });
+    }
+
+    // 4. Ensure plugin.yml exists
+    let hasPluginYml = false;
+    for (const path of packedFiles.keys()) {
+      if (path.toLowerCase().endsWith('plugin.yml')) {
+        hasPluginYml = true;
+        break;
+      }
+    }
+
+    if (!hasPluginYml) {
+      const defaultPluginYml = `name: PurePlugin\nversion: 1.0.0\nmain: vn.nguyendz.purespeed.PureSpeedPlugin\napi-version: '1.20'\nauthor: Nguyendzvn\ndescription: Standalone Offline Ready Plugin`;
+      packedFiles.set('plugin.yml', defaultPluginYml);
+      packedFiles.set('src/main/resources/plugin.yml', defaultPluginYml);
+    }
+
+    // 5. Add all files to the ZIP/JAR archive
+    packedFiles.forEach((content, filePath) => {
+      zip.file(filePath, content);
+      // Also sync back to workspace so it stays preserved
+      if (storageObj) {
+        storageObj.addFileToActiveWorkspace(filePath, content);
+      }
+    });
+
+    if (window.claudeApp) {
+      window.claudeApp.updateTopWorkspaceDisplay();
+    }
+
+    // 6. Generate and trigger download
     const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = jarName;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   },
 
