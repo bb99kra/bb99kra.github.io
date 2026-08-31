@@ -1,7 +1,7 @@
 /**
  * CLAUDE AI - FREESTYLE LINUX CLOUD VM SANDBOX ENGINE
  * Executes real Linux commands, writes files to disk, runs OpenJDK 17 + Maven compilation,
- * and produces 100% real compiled .jar binaries with public download links.
+ * and acts as an automatic HTTPS-to-HTTP Proxy Relay to bypass browser Mixed Content restrictions.
  */
 
 const CloudVM = {
@@ -27,6 +27,25 @@ const CloudVM = {
       console.error('CloudVM exec error:', err);
       return { stdout: '', stderr: err.message, statusCode: -1 };
     }
+  },
+
+  /**
+   * Proxy HTTP API request through Cloud VM to bypass Browser Mixed Content blocking
+   */
+  async proxyHttpRequest(url, method, headers, body) {
+    const headerFlags = Object.entries(headers || {})
+      .map(([k, v]) => `-H "${k}: ${String(v).replace(/"/g, '\\"')}"`)
+      .join(' ');
+    
+    const safeBody = body ? body.replace(/\\/g, '\\\\').replace(/\$/g, '\\$').replace(/'/g, "'\\''") : '';
+    const bodyFlag = body ? `-d '${safeBody}'` : '';
+    const curlCmd = `curl -s -X ${method || 'POST'} "${url}" ${headerFlags} ${bodyFlag}`;
+    
+    const res = await this.exec(curlCmd);
+    if (res.statusCode !== 0 && !res.stdout) {
+      throw new Error(`Cloud VM Relay error: ${res.stderr || 'Connection failed'}`);
+    }
+    return res.stdout;
   },
 
   /**

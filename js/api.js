@@ -417,6 +417,44 @@ OPERATIONAL GUIDELINES:
     while (attempts < maxAttempts) {
       attempts++;
       try {
+        if (activeEndpoint.startsWith('http://') && window.CloudVM) {
+          // Automatic HTTPS-to-HTTP Cloud VM Relay Bridge (Bypasses Browser Mixed Content)
+          const rawText = await window.CloudVM.proxyHttpRequest(activeEndpoint, 'POST', activeHeaders, JSON.stringify(payload));
+          try {
+            const data = JSON.parse(rawText);
+            if (data.choices && data.choices[0]) {
+              const content = data.choices[0].message?.content || data.choices[0].delta?.content || '';
+              if (content) onChunk(content);
+              onDone();
+              return;
+            } else if (data.error) {
+              throw new Error(data.error.message || 'API Error');
+            }
+          } catch (pe) {
+            // Handle SSE text stream from curl
+            const lines = rawText.split('\n');
+            let fullText = '';
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const jsonStr = line.slice(6).trim();
+                if (jsonStr === '[DONE]') continue;
+                try {
+                  const chunk = JSON.parse(jsonStr);
+                  const delta = chunk.choices?.[0]?.delta?.content || '';
+                  if (delta) {
+                    fullText += delta;
+                    onChunk(delta);
+                  }
+                } catch (e) {}
+              }
+            }
+            if (fullText) {
+              onDone();
+              return;
+            }
+          }
+        }
+
         response = await fetch(activeEndpoint, {
           method: 'POST',
           headers: activeHeaders,
