@@ -283,14 +283,24 @@ OPERATIONAL GUIDELINES:
       modelName = modelName.replace('anthropic/', '');
     }
 
+    const maxToks = parseInt(settings.maxTokens, 10) || 4096;
+    const isThinkingModel = modelName.includes('thinking') || modelName.includes('opus-5') || modelName.includes('sonnet-5');
+
     const payload = {
       model: modelName,
-      max_tokens: parseInt(settings.maxTokens, 10) || 4096,
-      temperature: parseFloat(settings.temperature) || 0.7,
+      max_tokens: maxToks,
+      temperature: isThinkingModel ? 1.0 : (parseFloat(settings.temperature) || 0.7),
       system: systemPrompt,
       messages: formattedMessages,
       stream: true
     };
+
+    if (isThinkingModel && maxToks > 1024) {
+      payload.thinking = {
+        type: 'enabled',
+        budget_tokens: Math.min(2048, maxToks - 512)
+      };
+    }
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -317,6 +327,7 @@ OPERATIONAL GUIDELINES:
     const decoder = new TextDecoder('utf-8');
     let buffer = '';
     let fullText = '';
+    let isReasoning = false;
 
     while (true) {
       const { value, done } = await reader.read();
@@ -334,15 +345,32 @@ OPERATIONAL GUIDELINES:
 
         try {
           const parsed = JSON.parse(dataStr);
-          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-            const textChunk = parsed.delta.text;
-            fullText += textChunk;
-            onChunk(textChunk, fullText);
+          if (parsed.type === 'content_block_delta') {
+            if (parsed.delta?.type === 'thinking_delta' && parsed.delta.thinking) {
+              if (!isReasoning) {
+                isReasoning = true;
+                fullText += '<thinking>\n';
+              }
+              fullText += parsed.delta.thinking;
+              onChunk(parsed.delta.thinking, fullText);
+            } else if (parsed.delta?.text) {
+              if (isReasoning) {
+                isReasoning = false;
+                fullText += '\n</thinking>\n\n';
+              }
+              const textChunk = parsed.delta.text;
+              fullText += textChunk;
+              onChunk(textChunk, fullText);
+            }
           }
         } catch (e) {
           // ignore partial parse errors
         }
       }
+    }
+
+    if (isReasoning) {
+      fullText += '\n</thinking>\n\n';
     }
 
     onDone(fullText);
@@ -393,13 +421,19 @@ OPERATIONAL GUIDELINES:
       }))
     ];
 
+    const isThinkingModel = (settings.model || '').includes('thinking') || (settings.model || '').includes('reasoner') || (settings.model || '').includes('o3') || (settings.model || '').includes('r1');
     const payload = {
-      model: settings.model || 'antigravity/gemini-3.7-flash-high',
+      model: settings.model || 'trk/google/gemini-3.7-flash',
       messages: formattedMessages,
-      temperature: parseFloat(settings.temperature) || 0.7,
+      temperature: isThinkingModel ? 1.0 : (parseFloat(settings.temperature) || 0.7),
       max_tokens: parseInt(settings.maxTokens, 10) || 4096,
       stream: true
     };
+
+    if (isThinkingModel) {
+      payload.reasoning_effort = 'high';
+      payload.thinking = { type: 'enabled', budget_tokens: 2048 };
+    }
 
     const headers = {
       'Content-Type': 'application/json',
