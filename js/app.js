@@ -1163,32 +1163,43 @@ class ClaudeApp {
       const fileName = file.name;
       const lowerName = fileName.toLowerCase();
 
-      // .jar / .zip archive — list contents and extract readable text files
+      // .jar / .zip archive — extract 100% full source contents of all text files inside
       if (lowerName.endsWith('.jar') || lowerName.endsWith('.zip')) {
         try {
-          let archiveContent = `[Archive: ${fileName} — ${(file.size / 1024).toFixed(1)} KB]\n`;
+          let fullExtractedContent = `📦 [ARCHIVE ATTACHMENT: ${fileName} (${(file.size / 1024).toFixed(1)} KB)]\n\n`;
           if (window.JSZip) {
             const zip = await JSZip.loadAsync(file);
             const entries = Object.keys(zip.files).filter(n => !zip.files[n].dir);
-            archiveContent += `\nFiles (${entries.length} total):\n` + entries.slice(0, 80).join('\n');
-            if (entries.length > 80) archiveContent += `\n... and ${entries.length - 80} more files.`;
-
-            // Extract readable text files into workspace
-            const textExts = ['.yml', '.yaml', '.json', '.xml', '.txt', '.md', '.properties', '.toml', '.conf', '.java', '.py', '.js', '.ts'];
-            for (const ePath of entries.slice(0, 60)) {
-              if (textExts.some(ext => ePath.toLowerCase().endsWith(ext))) {
+            const textExts = ['.yml', '.yaml', '.json', '.xml', '.txt', '.md', '.properties', '.toml', '.conf', '.java', '.py', '.js', '.ts', '.kt', '.cs', '.gradle'];
+            
+            let extractedCount = 0;
+            for (const ePath of entries) {
+              if (textExts.some(ext => ePath.toLowerCase().endsWith(ext)) && !ePath.includes('.git/') && !ePath.includes('.idea/')) {
                 try {
                   const content = await zip.file(ePath).async('string');
+                  fullExtractedContent += 
+                    `═══════════════════════════════════════════════════════════════\n` +
+                    `  📄 [FILE INSIDE ${fileName}: ${ePath}] (${(content.length / 1024).toFixed(1)} KB)\n` +
+                    `═══════════════════════════════════════════════════════════════\n` +
+                    `${content}\n\n`;
+                  
+                  // Also sync into Workspace
                   Storage.addFileToActiveWorkspace(`${fileName}/${ePath.split('/').pop()}`, content);
+                  extractedCount++;
                 } catch (e) {}
               }
             }
             this.updateTopWorkspaceDisplay();
+            if (extractedCount === 0) {
+              fullExtractedContent += `Archive contains ${entries.length} files:\n` + entries.slice(0, 100).join('\n');
+            }
           }
           this.pendingAttachments.push({
-            name: fileName, size: file.size,
+            name: fileName,
+            size: file.size,
             sizeStr: (file.size / 1024).toFixed(1) + ' KB',
-            type: 'archive', content: archiveContent
+            type: 'archive',
+            content: fullExtractedContent
           });
         } catch (err) {
           this.pendingAttachments.push({
@@ -1202,13 +1213,17 @@ class ClaudeApp {
         await new Promise((resolve) => {
           const reader = new FileReader();
           reader.onload = (event) => {
+            const fileContent = event.target.result;
             this.pendingAttachments.push({
               name: fileName,
               size: file.size,
               sizeStr: (file.size / 1024).toFixed(1) + ' KB',
               type: 'text',
-              content: event.target.result
+              content: fileContent
             });
+            // Also sync into Workspace
+            Storage.addFileToActiveWorkspace(fileName, fileContent);
+            this.updateTopWorkspaceDisplay();
             resolve();
           };
           reader.readAsText(file);
