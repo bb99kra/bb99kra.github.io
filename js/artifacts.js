@@ -170,13 +170,18 @@ const Artifacts = {
   },
 
   async uploadAndGetPublicUrl(customName = null) {
-    if (!window.JSZip) return null;
+    const JSZipClass = window.JSZip || (typeof JSZip !== 'undefined' ? JSZip : null);
+    if (!JSZipClass) {
+      console.warn('JSZip library not available!');
+      return null;
+    }
     try {
-      const ws = (window.claudeApp && window.claudeApp.storage) ? window.claudeApp.storage.getActiveWorkspace() : (window.Storage ? window.Storage.getActiveWorkspace() : null);
+      const storageObj = window.Storage || (window.claudeApp ? window.claudeApp.storage : (typeof Storage !== 'undefined' ? Storage : null));
+      const ws = storageObj ? storageObj.getActiveWorkspace() : null;
       let jarName = customName || ((ws ? ws.name : 'PurePlugin') + '-1.0.0.jar').replace(/\s+/g, '_');
       if (!jarName.endsWith('.jar')) jarName += '.jar';
 
-      const zip = new JSZip();
+      const zip = new JSZipClass();
       let hasPluginYml = false;
       if (ws && ws.files && ws.files.length > 0) {
         ws.files.forEach(f => {
@@ -189,11 +194,16 @@ const Artifacts = {
         zip.file('plugin.yml', `name: PurePlugin\nversion: 1.0.0\nmain: vn.nguyendz.purespeed.PureSpeedPlugin\napi-version: '1.20'\nauthor: Nguyendzvn\ndescription: Standalone Offline Ready Plugin`);
       }
 
-      const blob = await zip.generateAsync({ type: 'blob' });
-      const formData = new FormData();
+      const uint8 = await zip.generateAsync({ type: 'uint8array' });
+      const BlobClass = window.Blob || (typeof Blob !== 'undefined' ? Blob : globalThis.Blob);
+      const FormDataClass = window.FormData || (typeof FormData !== 'undefined' ? FormData : globalThis.FormData);
+      const fetchFn = window.fetch || (typeof fetch !== 'undefined' ? fetch : globalThis.fetch);
+
+      const blob = new BlobClass([uint8], { type: 'application/java-archive' });
+      const formData = new FormDataClass();
       formData.append('file', blob, jarName);
 
-      const res = await fetch('https://tmpfiles.org/api/v1/upload', {
+      const res = await fetchFn('https://tmpfiles.org/api/v1/upload', {
         method: 'POST',
         body: formData
       });
@@ -202,7 +212,7 @@ const Artifacts = {
         return data.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
       }
     } catch (e) {
-      console.warn('uploadAndGetPublicUrl error:', e);
+      console.error('uploadAndGetPublicUrl error:', e);
     }
     return null;
   },
