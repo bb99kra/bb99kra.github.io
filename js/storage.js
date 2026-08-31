@@ -24,17 +24,12 @@ const PROVIDER_PRESETS = {
     defaultKey: 'sk-49c2bdff020c1db0-e61ac6-90b46654',
     description: 'Nhà cung cấp Gấu con Antigravity AI — Gemini 3.7 Flash, Claude Opus/Sonnet 4.6, Gemini 3.1 Pro (k24z.sryze.cc)',
     models: [
-      { id: 'trk/google/gemini-3.7-flash', name: '✨ Gemini 3.7 Flash Thinking (Live Quota & Thinking)' },
-      { id: 'trk/anthropic/claude-opus-5', name: '🧠 Claude Opus 5 Thinking (Live SOTA)' },
-      { id: 'trk/anthropic/claude-sonnet-5', name: '🔥 Claude Sonnet 5 Thinking (Live SOTA)' },
-      { id: 'trk/deepseek/deepseek-v4-pro', name: '🔮 DeepSeek V4 Pro Reasoning' },
-      { id: 'trk/openai/gpt-5.6-luna', name: '🚀 GPT-5.6 Luna Reasoning' },
-      { id: 'antigravity/gemini-3.7-flash-high', name: '⚡ Gemini 3.7 Flash High (Antigravity Pool)' },
+      { id: 'antigravity/gemini-3.7-flash-high', name: '⚡ Gemini 3.7 Flash High (Google Deepmind)' },
+      { id: 'antigravity/gemini-3-flash', name: '⚡ Gemini 3 Flash (Siêu nhanh)' },
       { id: 'antigravity/claude-opus-4-6-thinking-high', name: '🔥 Claude Opus 4.6 Thinking High' },
       { id: 'antigravity/claude-sonnet-4-6-high', name: '💎 Claude Sonnet 4.6 High' },
       { id: 'antigravity/gemini-3.1-pro-high', name: '🧠 Gemini 3.1 Pro High' },
       { id: 'antigravity/gemini-3.6-flash-tiered', name: '✨ Gemini 3.6 Flash Tiered' },
-      { id: 'antigravity/gemini-3-flash', name: '⚡ Gemini 3 Flash' },
       { id: 'antigravity/gpt-oss-120b-medium', name: '🔮 GPT OSS 120B Medium' }
     ]
   },
@@ -224,7 +219,7 @@ const DEFAULT_SETTINGS = {
   apiType: 'openai',
   apiBase: 'https://k24z.sryze.cc/v1',
   apiKey: 'sk-49c2bdff020c1db0-e61ac6-90b46654',
-  model: 'trk/google/gemini-3.7-flash',
+  model: 'antigravity/gemini-3.7-flash-high',
   temperature: 0.7,
   maxTokens: 8192,
   stream: true,

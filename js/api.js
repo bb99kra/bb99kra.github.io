@@ -511,19 +511,12 @@ OPERATIONAL GUIDELINES:
         console.warn(`Upstream API attempt ${attempts}/${maxAttempts} (${response.status}): ${parsedMsg}`);
 
         if (attempts < maxAttempts) {
-          // If 9kiro has no available accounts or returns error, auto-failover to live Claude Opus 5 / Sonnet 5 on Sryze
-          if (activeEndpoint.includes('9kiro.lol') && (parsedMsg.includes('No available accounts') || response.status >= 400)) {
-            console.warn('⚠️ 9Kiro is out of accounts, auto-switching to live Claude SOTA pool on Sryze...');
-            activeEndpoint = 'https://k24z.sryze.cc/v1/chat/completions';
-            activeHeaders['Authorization'] = 'Bearer sk-49c2bdff020c1db0-e61ac6-90b46654';
-            payload.model = (payload.model || '').includes('sonnet') ? 'trk/anthropic/claude-sonnet-5' : 'trk/anthropic/claude-opus-5';
-          }
-          // If antigravity pool on sryze.cc exhausted quota, failover to live trk pool
-          else if (activeEndpoint.includes('sryze.cc') && parsedMsg.includes('exhausted their quota')) {
-            if (payload.model.includes('claude') || payload.model.includes('opus')) {
-              payload.model = 'trk/anthropic/claude-opus-5';
+          // If antigravity pool on sryze.cc temporarily exhausted quota, failover to available Gemini pool
+          if (activeEndpoint.includes('sryze.cc') && parsedMsg.includes('exhausted their quota')) {
+            if (payload.model.includes('claude')) {
+              payload.model = 'antigravity/claude-opus-4-6-thinking-high';
             } else {
-              payload.model = 'trk/google/gemini-3.7-flash';
+              payload.model = payload.model.includes('3.7') ? 'antigravity/gemini-3-flash' : 'antigravity/gemini-3.7-flash-high';
             }
           }
           await new Promise(r => setTimeout(r, 600));

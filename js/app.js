@@ -2165,6 +2165,15 @@ class ClaudeApp {
       return '';
     });
 
+    // 2.5. Detect and extract leading un-tagged meta reasoning (e.g. 'We are given a role...', 'The user asks...', 'According to the policies...')
+    const metaRegex = /^(?:We are given a role|According to the (?:policies|instructions|guidelines)|The user asks:|In Vietnamese, that translates to|I need to answer that|We need to respond with a <thinking>|We are to follow OGL guidelines|Let me analyze the request)[\s\S]*?(?=\n\n|\n[A-ZÀ-Ỹ]|$)/i;
+    const metaMatch = mainContent.match(metaRegex);
+    if (metaMatch) {
+      const cleanMeta = metaMatch[0].trim();
+      if (cleanMeta) thoughts.unshift(cleanMeta);
+      mainContent = mainContent.slice(metaMatch[0].length).trim();
+    }
+
     // 3. Remove any stray opening or closing thinking tags left behind
     mainContent = mainContent.replace(/<\/?(?:thinking|thought|think|reasoning|details(?:\s+[^>]*)*)>/gi, '').trim();
 
