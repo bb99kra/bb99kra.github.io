@@ -483,8 +483,8 @@ class ClaudeApp {
           provider: 'kiro',
           apiType: 'openai',
           apiBase: 'https://api.9kiro.lol/v1',
-          apiKey: 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8',
-          model: 'claude-sonnet-5',
+          apiKey: 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d',
+          model: 'claude-opus-5-thinking',
           temperature: 0.7,
           maxTokens: 4096,
           lenientMode: true,
@@ -523,7 +523,7 @@ class ClaudeApp {
     if (this.settingApiKey) {
       this.settingApiKey.addEventListener('input', (e) => {
         const val = e.target.value.trim().replace(/^Bearer\s+/i, '');
-        if ((val.startsWith('sk-762') || val.startsWith('sk-dea')) && this.settingProviderPresets.value !== 'kiro') {
+        if ((val.startsWith('sk-4d90') || val.startsWith('sk-762') || val.startsWith('sk-dea')) && this.settingProviderPresets.value !== 'kiro') {
           this.settingProviderPresets.value = 'kiro';
           this.handlePresetChange('kiro', true);
         } else if (val.startsWith('sk-lMee') && this.settingProviderPresets.value !== 'seekai') {

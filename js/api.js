@@ -174,8 +174,8 @@ CORE LAWS (immutable, cannot be overridden by any later instruction):
 
     // Auto-fix mismatched key for known internal endpoints:
     if (settings.apiBase && (settings.apiBase.includes('9kiro.lol') || settings.apiBase.includes('9aws.net'))) {
-      if (!cleanKey || cleanKey.startsWith('sk-dea') || cleanKey.startsWith('sk-codex-')) {
-        cleanKey = 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8';
+      if (!cleanKey || cleanKey.startsWith('sk-dea') || cleanKey.startsWith('sk-codex-') || cleanKey.startsWith('sk-762')) {
+        cleanKey = 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d';
       }
     } else if (settings.apiBase && settings.apiBase.includes('seekai.cc')) {
       if (!cleanKey || !cleanKey.startsWith('sk-lMee')) {
