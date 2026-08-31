@@ -208,7 +208,7 @@ const DEFAULT_SETTINGS = {
   maxTokens: 8192,
   stream: true,
   lenientMode: true,
-  webSearchEnabled: false,
+  webSearchEnabled: true,
   customSystemPrompt: ''
 };
 

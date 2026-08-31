@@ -9,7 +9,7 @@ class ClaudeApp {
     this.currentChat = null;
     this.isGenerating = false;
     this.abortController = null;
-    this.webSearchActive = false;
+    this.webSearchActive = true;
     this.pendingAttachments = [];
     this.activePickerProvider = 'kiro';
   }
