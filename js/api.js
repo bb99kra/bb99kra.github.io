@@ -394,7 +394,7 @@ OPERATIONAL GUIDELINES:
     ];
 
     const payload = {
-      model: settings.model || 'anthropic/claude-sonnet-5',
+      model: settings.model || 'antigravity/gemini-3.7-flash-high',
       messages: formattedMessages,
       temperature: parseFloat(settings.temperature) || 0.7,
       max_tokens: parseInt(settings.maxTokens, 10) || 4096,
@@ -477,18 +477,9 @@ OPERATIONAL GUIDELINES:
         console.warn(`Upstream API attempt ${attempts}/${maxAttempts} (${response.status}): ${parsedMsg}`);
 
         if (attempts < maxAttempts) {
-          // Attempt 2: Auto-switch model to 'auto' for 9kiro pool
+          // If using 9kiro and failed, try with 'auto' route
           if (attempts === 2 && activeEndpoint.includes('9kiro.lol')) {
             payload.model = 'auto';
-          }
-          // Attempt 3+: Failover seamlessly to SeekAI Gateway backup
-          if (attempts >= 3) {
-            activeEndpoint = 'https://seekai.cc/v1/chat/completions';
-            activeHeaders = {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr'
-            };
-            payload.model = 'claude-sonnet-5';
           }
           await new Promise(r => setTimeout(r, 1200));
           continue;

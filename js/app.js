@@ -593,7 +593,10 @@ class ClaudeApp {
     if (this.settingApiKey) {
       this.settingApiKey.addEventListener('input', (e) => {
         const val = e.target.value.trim().replace(/^Bearer\s+/i, '');
-        if ((val.startsWith('sk-4d90') || val.startsWith('sk-762') || val.startsWith('sk-dea')) && this.settingProviderPresets.value !== 'kiro') {
+        if (val.startsWith('sk-49c2') && this.settingProviderPresets.value !== 'sryze') {
+          this.settingProviderPresets.value = 'sryze';
+          this.handlePresetChange('sryze', true);
+        } else if ((val.startsWith('sk-4d90') || val.startsWith('sk-762') || val.startsWith('sk-dea')) && this.settingProviderPresets.value !== 'kiro') {
           this.settingProviderPresets.value = 'kiro';
           this.handlePresetChange('kiro', true);
         } else if (val.startsWith('sk-lMee') && this.settingProviderPresets.value !== 'seekai') {
@@ -718,44 +721,57 @@ class ClaudeApp {
 
   updateModelPill() {
     const s = Storage.getSettings();
-    let modelDisplay = s.model || 'antigravity/gemini-3.7-flash-high';
+    const currentModelId = s.model || 'antigravity/gemini-3.7-flash-high';
+    const currentProvider = s.provider || 'sryze';
 
-    if (modelDisplay.includes('sonnet-5')) modelDisplay = 'Claude Sonnet 5';
-    else if (modelDisplay.includes('opus-5')) modelDisplay = 'Claude Opus 5';
-    else if (modelDisplay.includes('fable-5')) modelDisplay = 'Claude Fable 5';
-    else if (modelDisplay.includes('gpt-5.6')) modelDisplay = 'GPT-5.6 Luna';
-    else if (modelDisplay.includes('deepseek-v4')) modelDisplay = 'DeepSeek V4 Pro';
-    else if (modelDisplay.includes('gemini-3.7-flash-thinking')) modelDisplay = 'Gemini 3.7 Thinking';
-    else if (modelDisplay.includes('gemini-3.7')) modelDisplay = 'Gemini 3.7 Flash High';
-    else if (modelDisplay.includes('claude-opus-4-6')) modelDisplay = 'Claude Opus 4.6 Thinking';
-    else if (modelDisplay.includes('claude-sonnet-4-6')) modelDisplay = 'Claude Sonnet 4.6';
-    else if (modelDisplay.includes('o3-mini')) modelDisplay = 'OpenAI o3-mini';
-    else if (modelDisplay.includes('o3')) modelDisplay = 'OpenAI o3';
-    else modelDisplay = modelDisplay.split('/').pop();
-
-    let providerTag = 'Gấu con';
-    let brandIcon = '🐻';
-    if (s.provider === 'kiro') {
-      providerTag = '9Kiro';
-      brandIcon = '🔥';
-    } else if (s.provider === 'tuongtacgpt') {
-      providerTag = 'TuongTacGPT';
-      brandIcon = '⚡';
-    } else if (s.provider === 'seekai') {
-      providerTag = 'SeekAI';
-      brandIcon = '💎';
-    } else if (s.provider === 'openrouter') {
-      providerTag = 'OpenRouter';
-      brandIcon = '🌐';
+    // 1. Find exact model name from presets
+    let modelDisplay = null;
+    if (typeof PROVIDER_PRESETS !== 'undefined' && PROVIDER_PRESETS[currentProvider]?.models) {
+      const found = PROVIDER_PRESETS[currentProvider].models.find(m => m.id === currentModelId);
+      if (found) {
+        modelDisplay = found.name.replace(/^[\p{Emoji}\u200d\uFE0F\s]+/gu, '').trim();
+      }
     }
+    if (!modelDisplay && typeof PROVIDER_PRESETS !== 'undefined') {
+      for (const preset of Object.values(PROVIDER_PRESETS)) {
+        const found = preset.models?.find(m => m.id === currentModelId);
+        if (found) {
+          modelDisplay = found.name.replace(/^[\p{Emoji}\u200d\uFE0F\s]+/gu, '').trim();
+          break;
+        }
+      }
+    }
+    if (!modelDisplay) {
+      modelDisplay = currentModelId.split('/').pop().replace(/[-_]/g, ' ');
+    }
+
+    // 2. Comprehensive Provider Metadata
+    const PROVIDER_METAS = {
+      sryze: { tag: 'Gấu con', icon: '🐻', color: 'linear-gradient(135deg, #f59e0b, #d97706)' },
+      kiro: { tag: '9Kiro', icon: '🔥', color: 'linear-gradient(135deg, #ef4444, #dc2626)' },
+      seekai: { tag: 'SeekAI', icon: '✨', color: 'linear-gradient(135deg, #8b5cf6, #7c3aed)' },
+      tuongtacgpt: { tag: 'TuongTacGPT', icon: '⚡', color: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
+      openrouter: { tag: 'OpenRouter', icon: '🌐', color: 'linear-gradient(135deg, #10b981, #059669)' },
+      anthropic: { tag: 'Anthropic', icon: '🎭', color: 'linear-gradient(135deg, #d97757, #b45309)' },
+      deepseek: { tag: 'DeepSeek', icon: '🔮', color: 'linear-gradient(135deg, #4f46e5, #4338ca)' },
+      openai: { tag: 'OpenAI', icon: '🟢', color: 'linear-gradient(135deg, #10a37f, #0d8a6a)' },
+      gemini: { tag: 'Gemini', icon: '🔷', color: 'linear-gradient(135deg, #4285f4, #1a73e8)' },
+      groq: { tag: 'Groq', icon: '⚡', color: 'linear-gradient(135deg, #f97316, #ea580c)' },
+      together: { tag: 'Together AI', icon: '🤝', color: 'linear-gradient(135deg, #6366f1, #4f46e5)' },
+      mistral: { tag: 'Mistral', icon: '🌪️', color: 'linear-gradient(135deg, #ff7000, #e65c00)' },
+      ollama: { tag: 'Ollama', icon: '🦙', color: 'linear-gradient(135deg, #64748b, #475569)' },
+      custom: { tag: 'Custom', icon: '⚙️', color: 'linear-gradient(135deg, #6b7280, #4b5563)' }
+    };
+
+    const meta = PROVIDER_METAS[currentProvider] || { tag: currentProvider || 'AI', icon: '✨', color: 'linear-gradient(135deg, #f59e0b, #d97706)' };
 
     const pill = document.getElementById('model-selector-pill');
     if (pill) {
       pill.innerHTML = `
         <span class="status-dot"></span>
-        <span class="brand-star-icon" style="font-size:14px;">${brandIcon}</span>
-        <span id="current-model-name" style="font-weight:600;">${modelDisplay}</span>
-        <span class="badge-pro" style="background:linear-gradient(135deg, #f59e0b, #d97706);color:#ffffff;font-size:10.5px;padding:2px 7px;border-radius:10px;font-weight:bold;margin-left:2px;">${providerTag}</span>
+        <span class="brand-star-icon" style="font-size:14px;">${meta.icon}</span>
+        <span id="current-model-name" style="font-weight:600;">${this.escapeHtml(modelDisplay)}</span>
+        <span class="badge-pro" style="background:${meta.color};color:#ffffff;font-size:10.5px;padding:2px 7px;border-radius:10px;font-weight:bold;margin-left:2px;">${this.escapeHtml(meta.tag)}</span>
         <span class="caret-icon">▾</span>
       `;
     }
@@ -2143,16 +2159,18 @@ class ClaudeApp {
   // ==========================================
   openSettingsModal() {
     const s = Storage.getSettings();
-    const curProvider = s.provider || 'tuongtacgpt';
+    const curProvider = s.provider || 'sryze';
+    const preset = (typeof PROVIDER_PRESETS !== 'undefined' && PROVIDER_PRESETS[curProvider]) ? PROVIDER_PRESETS[curProvider] : PROVIDER_PRESETS.sryze;
+
     this.settingProviderPresets.value = curProvider;
     this.handlePresetChange(curProvider, false);
 
-    this.settingApiType.value = s.apiType || 'openai';
-    this.settingApiBase.value = s.apiBase || 'https://api.tuongtacgpt.click/v1';
-    this.settingApiKey.value = s.apiKey || 'sk-codex-746a0b28f0a7ba097528bfa0cf8d173c03bed31e1b038460386b347b6e134127';
-    this.settingModel.value = s.model || 'gpt-5.6-luna';
+    this.settingApiType.value = s.apiType || preset?.apiType || 'openai';
+    this.settingApiBase.value = s.apiBase || preset?.apiBase || 'https://k24z.sryze.cc/v1';
+    this.settingApiKey.value = s.apiKey || preset?.defaultKey || 'sk-49c2bdff020c1db0-e61ac6-90b46654';
+    this.settingModel.value = s.model || preset?.models?.[0]?.id || 'antigravity/gemini-3.7-flash-high';
     if (this.settingModelSelect) {
-      this.settingModelSelect.value = s.model || 'gpt-5.6-luna';
+      this.settingModelSelect.value = s.model || preset?.models?.[0]?.id || 'antigravity/gemini-3.7-flash-high';
     }
     this.settingTemp.value = s.temperature || 0.7;
     this.settingTempVal.textContent = s.temperature || 0.7;
@@ -2210,13 +2228,15 @@ class ClaudeApp {
   saveSettings() {
     const rawKey = this.settingApiKey.value.trim();
     const cleanKey = rawKey.replace(/^Bearer\s+/i, '').replace(/["']/g, '');
+    const currentProvider = this.settingProviderPresets.value;
+    const defaultModel = PROVIDER_PRESETS[currentProvider]?.models?.[0]?.id || 'antigravity/gemini-3.7-flash-high';
 
     const newSettings = {
-      provider: this.settingProviderPresets.value,
+      provider: currentProvider,
       apiType: this.settingApiType.value,
       apiBase: this.settingApiBase.value.trim(),
       apiKey: cleanKey,
-      model: this.settingModel.value.trim() || 'anthropic/claude-sonnet-5',
+      model: this.settingModel.value.trim() || defaultModel,
       temperature: parseFloat(this.settingTemp.value),
       maxTokens: parseInt(this.settingMaxTokens.value, 10) || 4096,
       lenientMode: this.settingLenient.checked,

@@ -324,19 +324,21 @@ const Storage = {
       if (!data) return { ...DEFAULT_SETTINGS };
       const parsed = JSON.parse(data) || {};
 
-      const currentKey = typeof parsed.apiKey === 'string' ? parsed.apiKey : '';
-      const currentBase = typeof parsed.apiBase === 'string' ? parsed.apiBase : '';
-
-      // Auto-migrate exhausted/expired API keys to working Sryze Gemini 3.7 or 9Kiro key:
-      if (!currentKey || currentKey.includes('sk-76207326d30e') || currentKey.includes('sk-codex-746a0b28') || currentBase.includes('tuongtacgpt.click')) {
-        parsed.provider = 'sryze';
-        parsed.apiType = 'openai';
-        parsed.apiBase = 'https://k24z.sryze.cc/v1';
+      // Migrate obsolete demo key if present
+      if (parsed.apiKey === 'sk-76207326d30e461280fa138c20d75a89') {
         parsed.apiKey = 'sk-49c2bdff020c1db0-e61ac6-90b46654';
-        parsed.model = 'antigravity/gemini-3.7-flash-high';
-        if (ls) ls.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
       }
-      return { ...DEFAULT_SETTINGS, ...parsed };
+
+      // Merge user settings on top of default settings
+      const merged = { ...DEFAULT_SETTINGS, ...parsed };
+
+      // If model is somehow empty, fallback to the first model of the active provider
+      if (!merged.model) {
+        const providerPreset = (typeof PROVIDER_PRESETS !== 'undefined' && PROVIDER_PRESETS[merged.provider]) ? PROVIDER_PRESETS[merged.provider] : null;
+        merged.model = providerPreset?.models?.[0]?.id || DEFAULT_SETTINGS.model;
+      }
+
+      return merged;
     } catch (e) {
       return { ...DEFAULT_SETTINGS };
     }
