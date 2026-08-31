@@ -1016,38 +1016,41 @@ button, input, textarea, select {
 }
 
 .thinking-panel {
-  background: var(--thinking-bg);
-  background-color: var(--thinking-bg-flat);
-  border-radius: 12px;
-  border: 1px solid var(--thinking-border);
-  margin-bottom: 1rem;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 6px 0 10px 0;
+  padding: 0;
 }
 
 .thinking-panel-header {
-  width: 100%;
-  display: flex;
+  width: auto;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: transparent;
-  border: none;
+  gap: 8px;
+  padding: 4px 8px;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px;
   cursor: pointer;
   user-select: none;
-  transition: all 0.2s ease;
   font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #9ca3af !important;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .thinking-panel-header:hover {
-  background: var(--thinking-hover);
+  background: rgba(156, 163, 175, 0.1) !important;
+  color: #d1d5db !important;
 }
 
 .thinking-chevron-icon {
-  display: inline-block;
+  width: 14px;
+  height: 14px;
+  color: #9ca3af !important;
   transition: transform 0.2s ease-in-out;
-  color: var(--thinking-accent);
 }
 
 .thinking-panel.collapsed .thinking-chevron-icon {
@@ -1063,31 +1066,41 @@ button, input, textarea, select {
 }
 
 .thinking-scroll-container {
-  max-height: 400px;
+  margin-top: 4px;
+  margin-left: 6px;
+  padding: 8px 14px;
+  border-left: 2px solid rgba(156, 163, 175, 0.35);
+  background: transparent !important;
+  border-top: none !important;
+  border-radius: 0;
+  max-height: 380px;
   overflow-y: auto;
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-  background: var(--thinking-content-bg);
-  border-top: 1px solid var(--thinking-border);
-  padding: 14px 16px;
-  color: var(--thinking-content-text);
-  font-size: 13.5px;
-  line-height: 1.65;
+}
+
+.thinking-prose {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #9ca3af !important;
+  font-style: normal;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-.thinking-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 500;
-  background: rgba(139, 92, 246, 0.08);
-  border: 1px solid var(--thinking-border);
-  color: var(--thinking-text);
+.claude-thinking-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(156, 163, 175, 0.25);
+  border-top-color: #9ca3af;
+  border-radius: 50%;
+  animation: thinking-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes thinking-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
   white-space: nowrap;
 }
 

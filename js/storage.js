@@ -291,23 +291,40 @@ const DEFAULT_SKILLS = [
 ];
 
 const Storage = {
+  _getLS() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+      if (typeof localStorage !== 'undefined') return localStorage;
+    } catch (e) {}
+    return null;
+  },
+
+  _getSS() {
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) return window.sessionStorage;
+      if (typeof sessionStorage !== 'undefined') return sessionStorage;
+    } catch (e) {}
+    return null;
+  },
+
   getSettings() {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+      const ls = this._getLS();
+      const data = ls ? ls.getItem(STORAGE_KEYS.SETTINGS) : null;
       if (!data) return { ...DEFAULT_SETTINGS };
       const parsed = JSON.parse(data) || {};
 
       const currentKey = typeof parsed.apiKey === 'string' ? parsed.apiKey : '';
       const currentBase = typeof parsed.apiBase === 'string' ? parsed.apiBase : '';
 
-      // Auto-migrate exhausted/expired API keys to working 9Kiro Claude Opus 5 key from ngu.txt:
+      // Auto-migrate exhausted/expired API keys to working Sryze Gemini 3.7 or 9Kiro key:
       if (!currentKey || currentKey.includes('sk-76207326d30e') || currentKey.includes('sk-codex-746a0b28') || currentBase.includes('tuongtacgpt.click')) {
-        parsed.provider = 'kiro';
+        parsed.provider = 'sryze';
         parsed.apiType = 'openai';
-        parsed.apiBase = 'https://api.9kiro.lol/v1';
-        parsed.apiKey = 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d';
-        parsed.model = 'claude-opus-5-thinking';
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
+        parsed.apiBase = 'https://k24z.sryze.cc/v1';
+        parsed.apiKey = 'sk-49c2bdff020c1db0-e61ac6-90b46654';
+        parsed.model = 'antigravity/gemini-3.7-flash-high';
+        if (ls) ls.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
       }
       return { ...DEFAULT_SETTINGS, ...parsed };
     } catch (e) {
@@ -316,12 +333,14 @@ const Storage = {
   },
 
   saveSettings(settings) {
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    const ls = this._getLS();
+    if (ls) ls.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   },
 
   getCustomProviders() {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.CUSTOM_PROVIDERS);
+      const ls = this._getLS();
+      const data = ls ? ls.getItem(STORAGE_KEYS.CUSTOM_PROVIDERS) : null;
       return data ? JSON.parse(data) : [];
     } catch (e) {
       return [];
@@ -329,20 +348,24 @@ const Storage = {
   },
 
   saveCustomProviders(providers) {
-    localStorage.setItem(STORAGE_KEYS.CUSTOM_PROVIDERS, JSON.stringify(providers));
+    const ls = this._getLS();
+    if (ls) ls.setItem(STORAGE_KEYS.CUSTOM_PROVIDERS, JSON.stringify(providers));
   },
 
   getTheme() {
-    return localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
+    const ls = this._getLS();
+    return (ls ? ls.getItem(STORAGE_KEYS.THEME) : null) || 'dark';
   },
 
   setTheme(theme) {
-    localStorage.setItem(STORAGE_KEYS.THEME, theme);
+    const ls = this._getLS();
+    if (ls) ls.setItem(STORAGE_KEYS.THEME, theme);
   },
 
   getWorkspaces() {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.WORKSPACES);
+      const ls = this._getLS();
+      const data = ls ? ls.getItem(STORAGE_KEYS.WORKSPACES) : null;
       return data ? JSON.parse(data) : DEFAULT_WORKSPACES;
     } catch (e) {
       return DEFAULT_WORKSPACES;
@@ -352,18 +375,21 @@ const Storage = {
   saveWorkspaces(workspaces) {
     this._inMemoryWorkspaces = workspaces;
     try {
-      localStorage.setItem(STORAGE_KEYS.WORKSPACES, JSON.stringify(workspaces));
+      const ls = this._getLS();
+      if (ls) ls.setItem(STORAGE_KEYS.WORKSPACES, JSON.stringify(workspaces));
     } catch (e) {
       console.warn('LocalStorage limit for workspaces exceeded, retaining 100% full content in memory/IndexedDB...', e);
     }
   },
 
   getActiveWorkspaceId() {
-    return localStorage.getItem(STORAGE_KEYS.ACTIVE_WORKSPACE) || 'ws-default';
+    const ls = this._getLS();
+    return (ls ? ls.getItem(STORAGE_KEYS.ACTIVE_WORKSPACE) : null) || 'ws-default';
   },
 
   setActiveWorkspaceId(id) {
-    localStorage.setItem(STORAGE_KEYS.ACTIVE_WORKSPACE, id);
+    const ls = this._getLS();
+    if (ls) ls.setItem(STORAGE_KEYS.ACTIVE_WORKSPACE, id);
   },
 
   getActiveWorkspace() {
@@ -389,7 +415,8 @@ const Storage = {
 
   getSkills() {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.SKILLS);
+      const ls = this._getLS();
+      const data = ls ? ls.getItem(STORAGE_KEYS.SKILLS) : null;
       let list = data ? JSON.parse(data) : [...DEFAULT_SKILLS];
       // Ensure all builtin skills exist in user skills list
       DEFAULT_SKILLS.forEach(ds => {
@@ -404,34 +431,94 @@ const Storage = {
   },
 
   saveSkills(skills) {
-    localStorage.setItem(STORAGE_KEYS.SKILLS, JSON.stringify(skills));
+    const ls = this._getLS();
+    if (ls) ls.setItem(STORAGE_KEYS.SKILLS, JSON.stringify(skills));
+  },
+
+  _sanitizeChatForStorage(chat) {
+    if (!chat) return null;
+    return {
+      id: chat.id,
+      title: chat.title || 'New Conversation',
+      workspaceId: chat.workspaceId,
+      createdAt: chat.createdAt || Date.now(),
+      updatedAt: chat.updatedAt || Date.now(),
+      messages: (chat.messages || []).map(m => {
+        let cleanContent = m.content || '';
+        if (typeof cleanContent !== 'string') cleanContent = String(cleanContent);
+        return {
+          role: m.role || 'assistant',
+          content: cleanContent,
+          displayText: m.displayText || (cleanContent.length > 500 ? cleanContent.slice(0, 500) + '...' : cleanContent),
+          searchResults: !!m.searchResults,
+          attachments: (m.attachments || []).map(a => ({
+            name: a.name,
+            sizeStr: a.sizeStr || '',
+            type: a.type || 'file'
+          })),
+          timestamp: m.timestamp || Date.now()
+        };
+      })
+    };
   },
 
   getChats() {
-    if (this._inMemoryChats && this._inMemoryChats.length > 0) {
-      return this._inMemoryChats;
-    }
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.CHATS);
-      return data ? JSON.parse(data) : [];
-    } catch (e) {
-      return [];
-    }
+      const ls = this._getLS();
+      const data = ls ? ls.getItem(STORAGE_KEYS.CHATS) : null;
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this._inMemoryChats = parsed;
+          return parsed;
+        }
+      }
+    } catch (e) {}
+
+    // Fallback to active chat object if chats array was corrupted/overflowed
+    try {
+      const ls = this._getLS();
+      const activeObj = ls ? ls.getItem('claude_active_chat_obj') : null;
+      if (activeObj) {
+        const parsedActive = JSON.parse(activeObj);
+        if (parsedActive && parsedActive.id) {
+          this._inMemoryChats = [parsedActive];
+          return [parsedActive];
+        }
+      }
+    } catch (e) {}
+
+    return this._inMemoryChats || [];
   },
 
   saveChats(chats) {
     if (!Array.isArray(chats)) return;
     this._inMemoryChats = chats;
+
+    // Sanitize to guarantee it never exceeds localStorage quota
+    const sanitized = chats.slice(0, 50).map(c => this._sanitizeChatForStorage(c));
+
     try {
-      localStorage.setItem(STORAGE_KEYS.CHATS, JSON.stringify(chats));
+      const ls = this._getLS();
+      if (ls) ls.setItem(STORAGE_KEYS.CHATS, JSON.stringify(sanitized));
     } catch (e) {
-      console.warn('LocalStorage limit for chats reached, preserving 100% full content in memory...', e);
+      console.warn('LocalStorage limit for chats array reached, trimming older history...', e);
+      try {
+        const ls = this._getLS();
+        const compact = sanitized.slice(0, 15).map(c => ({
+          ...c,
+          messages: (c.messages || []).slice(-20)
+        }));
+        if (ls) ls.setItem(STORAGE_KEYS.CHATS, JSON.stringify(compact));
+      } catch (e2) {}
     }
   },
 
   getActiveChatId() {
     try {
-      return localStorage.getItem(STORAGE_KEYS.ACTIVE_CHAT) || sessionStorage.getItem(STORAGE_KEYS.ACTIVE_CHAT) || null;
+      const ls = this._getLS();
+      const ss = this._getSS();
+      return (ls ? ls.getItem(STORAGE_KEYS.ACTIVE_CHAT) : null) || (ss ? ss.getItem(STORAGE_KEYS.ACTIVE_CHAT) : null) || null;
     } catch (e) {
       return null;
     }
@@ -439,12 +526,14 @@ const Storage = {
 
   setActiveChatId(id) {
     try {
+      const ls = this._getLS();
+      const ss = this._getSS();
       if (id) {
-        localStorage.setItem(STORAGE_KEYS.ACTIVE_CHAT, id);
-        sessionStorage.setItem(STORAGE_KEYS.ACTIVE_CHAT, id);
+        if (ls) ls.setItem(STORAGE_KEYS.ACTIVE_CHAT, id);
+        if (ss) ss.setItem(STORAGE_KEYS.ACTIVE_CHAT, id);
       } else {
-        localStorage.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
-        sessionStorage.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
+        if (ls) ls.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
+        if (ss) ss.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
       }
     } catch (e) {}
   },
@@ -452,17 +541,40 @@ const Storage = {
   getChat(id) {
     if (!id) return null;
     const chats = this.getChats();
-    return chats.find(c => c.id === id) || null;
+    let found = chats.find(c => c.id === id);
+    if (found) return found;
+
+    // Check direct active chat object
+    try {
+      const ls = this._getLS();
+      const activeObj = ls ? ls.getItem('claude_active_chat_obj') : null;
+      if (activeObj) {
+        const parsed = JSON.parse(activeObj);
+        if (parsed && parsed.id === id) return parsed;
+      }
+    } catch (e) {}
+
+    return null;
   },
 
   saveChat(chat) {
     if (!chat || !chat.id) return;
+    const cleanChat = this._sanitizeChatForStorage(chat);
+    
+    // Always persist current active chat object directly so active session is NEVER lost on reload
+    try {
+      const ls = this._getLS();
+      const ss = this._getSS();
+      if (ls) ls.setItem('claude_active_chat_obj', JSON.stringify(cleanChat));
+      if (ss) ss.setItem('claude_active_chat_obj', JSON.stringify(cleanChat));
+    } catch (e) {}
+
     const chats = this.getChats();
     const index = chats.findIndex(c => c.id === chat.id);
     if (index >= 0) {
-      chats[index] = { ...chats[index], ...chat, updatedAt: Date.now() };
+      chats[index] = { ...chats[index], ...cleanChat, updatedAt: Date.now() };
     } else {
-      chats.unshift({ ...chat, createdAt: chat.createdAt || Date.now(), updatedAt: Date.now() });
+      chats.unshift({ ...cleanChat, createdAt: cleanChat.createdAt || Date.now(), updatedAt: Date.now() });
     }
     this.saveChats(chats);
     this.setActiveChatId(chat.id);
@@ -483,12 +595,12 @@ const Storage = {
   // ==========================================
   getMemories() {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.MEMORY);
-      if (!data) return [
+      const ls = this._getLS();
+      const data = ls ? ls.getItem(STORAGE_KEYS.MEMORY) : null;
+      return data ? JSON.parse(data) : [
         { id: 'mem-1', text: 'Người dùng tên: Nguyendzvn (bb99kra) - Lập trình viên & Creator.', createdAt: Date.now() },
         { id: 'mem-2', text: 'Phong cách làm việc: Thân thiện, tôn trọng, thông minh, hỗ trợ tận tình, luôn xuất ra code hoàn chỉnh 100%.', createdAt: Date.now() }
       ];
-      return JSON.parse(data);
     } catch (e) {
       return [];
     }
