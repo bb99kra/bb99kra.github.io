@@ -98,6 +98,7 @@ class ClaudeApp {
 
       // 5. Bind Global Handlers
       this.bindEvents();
+      this._initScrollTracking();
 
       // 6. Apply Theme
       this.applyTheme(Storage.getTheme());
@@ -1491,6 +1492,7 @@ class ClaudeApp {
 
   async generateAssistantResponse(userPrompt) {
     this.isGenerating = true;
+    this._userScrolledUp = false;
     this.btnSend.innerHTML = '<span>■</span>';
 
     const settings = Storage.getSettings();
@@ -1558,18 +1560,8 @@ class ClaudeApp {
       },
       async (finalText) => {
         this.isGenerating = false;
+        this._userScrolledUp = false;
         this.btnSend.innerHTML = '<span>↑</span>';
-
-        if (/```(?:java|xml)/i.test(finalText) && /build|tạo|rebuild|plugin/i.test(userPrompt)) {
-          try {
-            const publicUrl = await window.Artifacts.uploadAndGetPublicUrl();
-            if (publicUrl) {
-              finalText += `\n\n---\n📦 **Plugin đã build thành công:**\n- 🔗 **Link tải trực tiếp file .jar:** [${publicUrl}](${publicUrl})\n`;
-            }
-          } catch (e) {
-            console.warn('Auto upload error:', e);
-          }
-        }
 
         const totalSec = ((Date.now() - startTime) / 1000).toFixed(1);
         bubble.innerHTML = this.renderMarkdown(finalText, totalSec);
@@ -1582,11 +1574,7 @@ class ClaudeApp {
           timestamp: Date.now()
         });
         Storage.saveChat(this.currentChat);
-
-        const artifacts = Artifacts.extractArtifacts(finalText);
-        if (artifacts.length > 0) {
-          Artifacts.open(artifacts[0]);
-        }
+        this.scrollToBottom(true);
       },
       (error) => {
         this.isGenerating = false;
@@ -2113,8 +2101,31 @@ class ClaudeApp {
     return cleaned;
   }
 
-  scrollToBottom() {
+  scrollToBottom(force = false) {
+    if (!this.messagesContainer) return;
+    if (force) {
+      this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+      this._userScrolledUp = false;
+      return;
+    }
+    // Don't auto-scroll if user manually scrolled up
+    if (this._userScrolledUp) return;
     this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+  }
+
+  _initScrollTracking() {
+    if (!this.messagesContainer) return;
+    this._userScrolledUp = false;
+    this.messagesContainer.addEventListener('scroll', () => {
+      if (!this.isGenerating) {
+        this._userScrolledUp = false;
+        return;
+      }
+      const el = this.messagesContainer;
+      const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      // If user scrolled more than 150px from bottom, they want to read above
+      this._userScrolledUp = distFromBottom > 150;
+    }, { passive: true });
   }
 
   escapeHtml(str) {
