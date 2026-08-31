@@ -284,15 +284,19 @@ class ClaudeApp {
     this.btnSaveSettings.addEventListener('click', () => this.saveSettings());
 
     // Universal Fail-Proof Delegated Modal Close Handler ('✕' button, backdrop, escape)
+    // Uses capture phase (true) so click is caught BEFORE any inner element can block it!
     document.addEventListener('click', (e) => {
-      const closeBtn = e.target.closest('[id^="btn-close-"]') || e.target.closest('.btn-close-modal') || e.target.closest('.btn-close-sidebar');
+      const targetEl = (e.target && e.target.nodeType === 3) ? e.target.parentElement : e.target;
+      if (!targetEl) return;
+
+      const closeBtn = targetEl.closest('[id^="btn-close-"], .btn-close-modal, .btn-close-sidebar');
       if (closeBtn) {
         e.preventDefault();
         e.stopPropagation();
         const modal = closeBtn.closest('.modal-backdrop');
         if (modal) {
           modal.classList.add('hidden');
-        } else if (closeBtn.classList.contains('btn-close-sidebar')) {
+        } else if (closeBtn.classList.contains('btn-close-sidebar') && this.sidebar) {
           this.sidebar.classList.add('collapsed');
         } else {
           document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.add('hidden'));
@@ -300,10 +304,10 @@ class ClaudeApp {
         return;
       }
 
-      if (e.target.classList && e.target.classList.contains('modal-backdrop')) {
-        e.target.classList.add('hidden');
+      if (targetEl.classList && targetEl.classList.contains('modal-backdrop')) {
+        targetEl.classList.add('hidden');
       }
-    });
+    }, true);
 
     // Universal Escape Key Handler
     document.addEventListener('keydown', (e) => {
