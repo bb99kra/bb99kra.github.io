@@ -1456,7 +1456,6 @@ class ClaudeApp {
         const totalSec = ((Date.now() - startTime) / 1000).toFixed(1);
         bubble.innerHTML = this.renderMarkdown(finalText, totalSec);
         this.detectAndRenderArtifactCards(bubble, finalText);
-        this.autoDispatchCloudVMExecution(finalText);
 
         this.currentChat.messages.push({
           role: 'assistant',
@@ -1828,37 +1827,6 @@ class ClaudeApp {
         bubbleElement.appendChild(dlBar);
       }
     }
-  }
-
-  autoDispatchCloudVMExecution(text) {
-    if (!text) return;
-    const bashMatch = text.match(/```bash\n([\s\S]*?)```/i);
-    if (!bashMatch) return;
-
-    const lastBubble = this.messagesContainer.querySelector('.assistant-message-row:last-child .message-bubble');
-    if (!lastBubble || lastBubble.querySelector('.cloud-vm-status-widget')) return;
-
-    const statusWidget = document.createElement('div');
-    statusWidget.className = 'cloud-vm-status-widget';
-    statusWidget.style.cssText = 'margin-top:12px;padding:10px 14px;background:#0d1117;border:1px solid #30363d;border-radius:10px;font-family:JetBrains Mono,monospace;font-size:12.5px;color:#58a6ff;box-shadow:var(--shadow-sm);';
-    statusWidget.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <span style="display:flex;align-items:center;gap:6px;font-weight:600;color:#3fb950;">
-          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3fb950;box-shadow:0 0 8px #3fb950;"></span>
-          ⚡ Freestyle Cloud VM (dash.freestyle.sh) Auto-Executing Build
-        </span>
-        <span style="font-size:11px;color:#8b949e;">Account: acct-63ed071f...</span>
-      </div>
-      <pre style="margin:0;color:#c9d1d9;white-space:pre-wrap;word-break:break-word;max-height:160px;overflow-y:auto;background:#161b22;padding:8px 12px;border-radius:6px;border:1px solid #21262d;">[Cloud VM Log]: Connected to Freestyle Linux Ubuntu Container (vm-3350a5728f7b)
-[Cloud VM Log]: Auto-installing dependencies (apt-get update && apt-get install -y openjdk-17-jdk maven)...
-[Cloud VM Log]: Executing build script 'mvn clean package'...
-[INFO] BUILD SUCCESS
-[INFO] Standalone .jar & Source .zip packaged successfully on Cloud VM!
-[INFO] Output status: 1-click Download buttons rendered below. ✓</pre>
-    `;
-
-    lastBubble.appendChild(statusWidget);
-    this.scrollToBottom();
   }
 
   setupMarked() {
