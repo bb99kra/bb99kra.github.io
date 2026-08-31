@@ -197,12 +197,12 @@ export const PROVIDER_PRESETS = {
   }
 };
 
-// Default Settings (Configured with Kiro-Go 9Kiro Claude Sonnet 5 - 5000 Credits)
+// Default Settings (Configured with High-Speed SeekAI Gateway - Claude Sonnet 5 & Gemini 3.6 Flash)
 const DEFAULT_SETTINGS = {
-  provider: 'kiro',
+  provider: 'seekai',
   apiType: 'openai',
-  apiBase: 'https://api.9kiro.lol/v1',
-  apiKey: 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8',
+  apiBase: 'https://seekai.cc/v1',
+  apiKey: 'sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr',
   model: 'claude-sonnet-5',
   temperature: 0.7,
   maxTokens: 4096,
@@ -280,24 +280,13 @@ export const Storage = {
       if (!data) return { ...DEFAULT_SETTINGS };
       const parsed = JSON.parse(data);
 
-      // Auto-synchronize key if user switched provider or has expired key:
-      if (parsed.apiBase?.includes('9aws.net') || parsed.apiBase?.includes('9kiro.lol')) {
-        parsed.apiBase = 'https://api.9kiro.lol/v1';
-        parsed.apiKey = 'sk-76207326d30e24c3961acc4e80ab1b99ed620fd284d9d3315dda42dec761a9d8';
-        parsed.provider = 'kiro';
-        if (!parsed.model || parsed.model === 'gpt-5.6-luna') parsed.model = 'claude-sonnet-5';
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
-      } else if (parsed.apiBase?.includes('seekai.cc')) {
+      // Auto-migrate exhausted/expired API keys to live high-speed SeekAI Gateway:
+      if (!parsed.apiKey || parsed.apiKey.includes('sk-76207326d30e') || parsed.apiKey.includes('sk-codex-746a0b28') || parsed.apiBase?.includes('9kiro.lol') || parsed.apiBase?.includes('tuongtacgpt.click')) {
+        parsed.provider = 'seekai';
+        parsed.apiType = 'openai';
         parsed.apiBase = 'https://seekai.cc/v1';
         parsed.apiKey = 'sk-lMeeCQRRLYlIe6U8wjoPjvymRyPhgX6WObG9AdbJ4sOFJsFr';
-        parsed.provider = 'seekai';
-        if (!parsed.model) parsed.model = 'gemini-3-6-flash';
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
-      } else if (!parsed.apiKey || parsed.apiKey.startsWith('sk-dea') || parsed.apiKey.trim() === '') {
-        parsed.apiKey = DEFAULT_SETTINGS.apiKey;
-        parsed.apiBase = DEFAULT_SETTINGS.apiBase;
-        parsed.provider = DEFAULT_SETTINGS.provider;
-        parsed.model = DEFAULT_SETTINGS.model;
+        if (!parsed.model || parsed.model === 'claude-sonnet-5-thinking') parsed.model = 'claude-sonnet-5';
         localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, ...parsed }));
       }
       return { ...DEFAULT_SETTINGS, ...parsed };
