@@ -1831,15 +1831,15 @@ class ClaudeApp {
     let thinkingHtml = '';
     const timeLabel = elapsedSec ? ` (${elapsedSec}s)` : '';
 
-    // Extract thinking blocks
-    const thinkingMatch = mainContent.match(/<(?:thinking|thought)>([\s\S]*?)<\/(?:thinking|thought)>/i);
-    const streamingThinkingMatch = mainContent.match(/<(?:thinking|thought)>([\s\S]*)$/i);
+    // Extract thinking blocks (supports <thinking>, <thought>, <think>, <reasoning>)
+    const thinkingMatch = mainContent.match(/<(?:thinking|thought|think|reasoning)>([\s\S]*?)<\/(?:thinking|thought|think|reasoning)>/i);
+    const streamingThinkingMatch = mainContent.match(/<(?:thinking|thought|think|reasoning)>([\s\S]*)$/i);
 
     if (thinkingMatch) {
       const thoughtText = thinkingMatch[1].trim();
-      mainContent = mainContent.replace(/<(?:thinking|thought)>[\s\S]*?<\/(?:thinking|thought)>/gi, '').trim();
+      mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning)>[\s\S]*?<\/(?:thinking|thought|think|reasoning)>/gi, '').trim();
       thinkingHtml = `
-        <div class="claude-thinking-container collapsed">
+        <div class="claude-thinking-container">
           <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
             <div class="claude-thinking-title">
               <span class="thinking-sparkle brain-pulse">🧠</span>
@@ -1852,7 +1852,7 @@ class ClaudeApp {
       `;
     } else if (streamingThinkingMatch) {
       const thoughtText = streamingThinkingMatch[1].trim();
-      mainContent = mainContent.replace(/<(?:thinking|thought)>[\s\S]*$/gi, '').trim();
+      mainContent = mainContent.replace(/<(?:thinking|thought|think|reasoning)>[\s\S]*$/gi, '').trim();
       thinkingHtml = `
         <div class="claude-thinking-container streaming">
           <div class="claude-thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
