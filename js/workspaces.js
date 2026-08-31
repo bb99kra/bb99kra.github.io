@@ -193,19 +193,18 @@ const Workspaces = {
         try {
           const zip = await JSZip.loadAsync(file);
           const entries = Object.keys(zip.files).filter(n => !zip.files[n].dir);
-          const textExts = ['.yml', '.yaml', '.json', '.xml', '.txt', '.md', '.properties', '.toml', '.conf', '.java', '.py', '.js', '.ts', '.kt', '.cs', '.gradle'];
+          const textExts = ['.yml', '.yaml', '.json', '.xml', '.txt', '.md', '.properties', '.toml', '.conf', '.java', '.py', '.js', '.ts', '.kt', '.cs', '.gradle', '.mf'];
           let addedCount = 0;
           for (const ePath of entries) {
-            if (addedCount >= 40) break;
-            if (this.isSourceFile(ePath) && textExts.some(ext => ePath.toLowerCase().endsWith(ext))) {
+            if (addedCount >= 200) break;
+            if (textExts.some(ext => ePath.toLowerCase().endsWith(ext)) && !ePath.includes('.git/') && !ePath.includes('.idea/')) {
               try {
                 const textContent = await zip.file(ePath).async('string');
-                const baseName = ePath.split('/').pop();
-                const existingIdx = this.currentFiles.findIndex(f => f.name === baseName);
+                const existingIdx = this.currentFiles.findIndex(f => f.name === ePath);
                 if (existingIdx >= 0) {
                   this.currentFiles[existingIdx].content = textContent;
                 } else {
-                  this.currentFiles.push({ name: baseName, content: textContent });
+                  this.currentFiles.push({ name: ePath, content: textContent });
                   addedCount++;
                 }
               } catch (e) {}

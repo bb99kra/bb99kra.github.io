@@ -1181,7 +1181,7 @@ class ClaudeApp {
           if (window.JSZip) {
             const zip = await JSZip.loadAsync(file);
             const entries = Object.keys(zip.files).filter(n => !zip.files[n].dir);
-            const textExts = ['.yml', '.yaml', '.json', '.xml', '.txt', '.md', '.properties', '.toml', '.conf', '.java', '.py', '.js', '.ts', '.kt', '.cs', '.gradle'];
+            const textExts = ['.yml', '.yaml', '.json', '.xml', '.txt', '.md', '.properties', '.toml', '.conf', '.java', '.py', '.js', '.ts', '.kt', '.cs', '.gradle', '.mf'];
             
             let extractedCount = 0;
             for (const ePath of entries) {
@@ -1190,12 +1190,12 @@ class ClaudeApp {
                   const content = await zip.file(ePath).async('string');
                   fullExtractedContent += 
                     `═══════════════════════════════════════════════════════════════\n` +
-                    `  📄 [FILE INSIDE ${fileName}: ${ePath}] (${(content.length / 1024).toFixed(1)} KB)\n` +
+                    `  📄 [FILE: ${ePath}] (${(content.length / 1024).toFixed(1)} KB)\n` +
                     `═══════════════════════════════════════════════════════════════\n` +
                     `${content}\n\n`;
                   
-                  // Also sync into Workspace
-                  Storage.addFileToActiveWorkspace(`${fileName}/${ePath.split('/').pop()}`, content);
+                  // Auto-sync into Active Workspace with full relative path
+                  Storage.addFileToActiveWorkspace(ePath, content);
                   extractedCount++;
                 } catch (e) {}
               }
