@@ -332,9 +332,13 @@ const Storage = {
       if (!data) return { ...DEFAULT_SETTINGS };
       const parsed = JSON.parse(data) || {};
 
-      // Migrate obsolete demo key if present
-      if (parsed.apiKey === 'sk-76207326d30e461280fa138c20d75a89') {
-        parsed.apiKey = 'sk-49c2bdff020c1db0-e61ac6-90b46654';
+      // Migrate obsolete demo/old keys to latest active keys
+      if (!parsed.apiKey || parsed.apiKey === 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d' || parsed.apiKey === 'sk-76207326d30e461280fa138c20d75a89') {
+        if (parsed.provider === 'kiro') {
+          parsed.apiKey = 'sk-ddc1b02c1d43c51c9ca0851c5e9cff1dff59fe1e7e727a404299df04788c8da6';
+        } else {
+          parsed.apiKey = 'sk-49c2bdff020c1db0-e61ac6-90b46654';
+        }
       }
 
       // Merge user settings on top of default settings

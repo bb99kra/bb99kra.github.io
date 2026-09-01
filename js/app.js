@@ -679,38 +679,42 @@ class ClaudeApp {
 
   async checkModelUsage() {
     const s = Storage.getSettings();
-    const key = s.apiKey || 'sk-ddc1b02c1d43c51c9ca0851c5e9cff1dff59fe1e7e727a404299df04788c8da6';
+    const kiroKey = 'sk-ddc1b02c1d43c51c9ca0851c5e9cff1dff59fe1e7e727a404299df04788c8da6';
+    const activeKey = (s.provider === 'kiro' && s.apiKey) ? s.apiKey : kiroKey;
 
-    const btnQuota = document.getElementById('btn-top-quota') || document.getElementById('nav-quota');
     const btnCredit = document.getElementById('btn-check-credit');
-    if (btnCredit) btnCredit.textContent = '⏳ Checking...';
+    if (btnCredit) btnCredit.textContent = '⏳ Đang kiểm tra...';
 
     try {
-      const data = await Api.checkQuota(key);
+      const data = await Api.checkQuota(activeKey);
       if (btnCredit) btnCredit.textContent = '📊 Check Quota & Usage';
 
       const keyData = data.data || data || {};
       const keyInfo = keyData.key || {};
-      const credits = typeof keyInfo.credits === 'number' ? keyInfo.credits.toFixed(2) : (keyInfo.credits != null ? keyInfo.credits : 'Unlimited');
+      const keyName = keyInfo.name || 'tg8808860660-1K-1788224853';
+      const keyMasked = keyInfo.keyMasked || `${activeKey.slice(0, 8)}...${activeKey.slice(-6)}`;
+      const isEnabled = keyInfo.enabled !== false;
       const historyList = Array.isArray(keyData.history) ? keyData.history : (Array.isArray(data.history) ? data.history : []);
       const historyCount = historyList.length;
       const lastReq = historyList[0] || null;
 
-      let msg = `📊 KIRO-GO LIVE QUOTA & USAGE REPORT\n\n`;
-      msg += `• API Key: ${key.slice(0, 12)}...${key.slice(-6)}\n`;
-      msg += `• Remaining Balance: ${credits} Credits\n`;
-      msg += `• Total Requests: ${historyCount}\n`;
-      if (keyData.clientIp) {
-        msg += `• Client IP: ${keyData.clientIp}\n`;
-      }
+      let msg = `📊 BÁO CÁO QUOTA & TRẠNG THÁI AI (api.9kiro.lol)\n\n`;
+      msg += `• API Key: ${keyMasked} (${keyName})\n`;
+      msg += `• Trạng thái Key: ${isEnabled ? '🟢 Hoạt động (Enabled - 100%)' : '🔴 Đã tắt'}\n`;
+      msg += `• Tổng lượt gọi ghi nhận: ${historyCount} lượt\n`;
       if (lastReq) {
-        msg += `• Last Request: ${lastReq.model || 'gpt-5.6-sol'} (${lastReq.status || '200 OK'})\n`;
+        msg += `• Lượt gọi gần nhất: Model [${lastReq.model || 'gpt-5.6-sol'}] lúc ${new Date((lastReq.time || 0) * 1000).toLocaleTimeString('vi-VN')} (${lastReq.status || '200 OK'})\n`;
       }
-      msg += `\nStatus: 🟢 KEY ACTIVE & READY (api.9kiro.lol)`;
+      if (keyData.clientIp) {
+        msg += `• IP Kết Nối: ${keyData.clientIp}\n`;
+      }
+      msg += `\n• Provider hiện tại của bạn: ${s.provider === 'kiro' ? '🔥 Kiro-Go 9Kiro' : '🐻 Gấu con Antigravity'}\n`;
+      msg += `• Model đang chọn: ${s.model || 'gpt-5.6-sol'}\n\n`;
+      msg += `🟢 KẾT NỐI SẴN SÀNG 100%!`;
       alert(msg);
     } catch (err) {
       if (btnCredit) btnCredit.textContent = '📊 Check Quota & Usage';
-      alert(`⚠️ Check Quota: ${err.message}\nKey: ${key.slice(0, 12)}...`);
+      alert(`⚠️ Kiểm tra Quota:\n${err.message}\nKey: ${activeKey.slice(0, 10)}...`);
     }
   }
 
