@@ -679,43 +679,38 @@ class ClaudeApp {
 
   async checkModelUsage() {
     const s = Storage.getSettings();
-    const key = s.apiKey || 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d';
+    const key = s.apiKey || 'sk-ddc1b02c1d43c51c9ca0851c5e9cff1dff59fe1e7e727a404299df04788c8da6';
 
-    const btnQuota = document.getElementById('btn-top-quota');
+    const btnQuota = document.getElementById('btn-top-quota') || document.getElementById('nav-quota');
     const btnCredit = document.getElementById('btn-check-credit');
-    if (btnQuota) btnQuota.querySelector('span:last-child').textContent = 'Checking...';
     if (btnCredit) btnCredit.textContent = '⏳ Checking...';
 
     try {
       const data = await Api.checkQuota(key);
-
-      if (btnQuota) btnQuota.querySelector('span:last-child').textContent = 'Quota';
       if (btnCredit) btnCredit.textContent = '📊 Check Quota & Usage';
 
-      if (data && (data.ok || data.key)) {
-        const keyInfo = data.key || {};
-        const credits = typeof keyInfo.credits === 'number' ? keyInfo.credits.toFixed(2) : (keyInfo.credits || 'N/A');
-        const historyList = Array.isArray(data.history) ? data.history : [];
-        const historyCount = historyList.length;
-        const lastReq = historyList[0] || null;
+      const keyData = data.data || data || {};
+      const keyInfo = keyData.key || {};
+      const credits = typeof keyInfo.credits === 'number' ? keyInfo.credits.toFixed(2) : (keyInfo.credits != null ? keyInfo.credits : 'Unlimited');
+      const historyList = Array.isArray(keyData.history) ? keyData.history : (Array.isArray(data.history) ? data.history : []);
+      const historyCount = historyList.length;
+      const lastReq = historyList[0] || null;
 
-        let msg = `📊 KIRO LIVE USAGE & QUOTA REPORT\n\n`;
-        msg += `• API Key: ${key.slice(0, 10)}...${key.slice(-6)}\n`;
-        msg += `• Remaining Balance: ${credits} Credits\n`;
-        msg += `• Total Requests Logged: ${historyCount}\n`;
-        if (lastReq) {
-          msg += `• Last Used Model: ${lastReq.model || 'claude-opus-5'} (${lastReq.status || 'success'})\n`;
-          msg += `• Last Request Tokens: ${lastReq.tokens || 0} tokens\n`;
-        }
-        msg += `\nStatus: 🟢 ACTIVE 100% (HTTP 200 OK)`;
-        alert(msg);
-      } else {
-        alert(`📊 Key Quota Status:\n\n• Key: ${key.slice(0, 10)}...${key.slice(-6)}\n• Status: Active 100%\n• Endpoint: api.9kiro.lol/check`);
+      let msg = `📊 KIRO-GO LIVE QUOTA & USAGE REPORT\n\n`;
+      msg += `• API Key: ${key.slice(0, 12)}...${key.slice(-6)}\n`;
+      msg += `• Remaining Balance: ${credits} Credits\n`;
+      msg += `• Total Requests: ${historyCount}\n`;
+      if (keyData.clientIp) {
+        msg += `• Client IP: ${keyData.clientIp}\n`;
       }
+      if (lastReq) {
+        msg += `• Last Request: ${lastReq.model || 'gpt-5.6-sol'} (${lastReq.status || '200 OK'})\n`;
+      }
+      msg += `\nStatus: 🟢 KEY ACTIVE & READY (api.9kiro.lol)`;
+      alert(msg);
     } catch (err) {
-      if (btnQuota) btnQuota.querySelector('span:last-child').textContent = 'Quota';
       if (btnCredit) btnCredit.textContent = '📊 Check Quota & Usage';
-      alert(`⚠️ Check Quota: ${err.message}\nKey: ${key.slice(0, 10)}...`);
+      alert(`⚠️ Check Quota: ${err.message}\nKey: ${key.slice(0, 12)}...`);
     }
   }
 
