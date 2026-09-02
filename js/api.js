@@ -477,6 +477,15 @@ OPERATIONAL GUIDELINES:
       'Authorization': `Bearer ${settings.apiKey}`
     };
 
+    // QZeen Router: Cloudflare returns 401 on OPTIONS preflight when Authorization header is used.
+    // Fix: Move API key to query param + use text/plain Content-Type to make it a "simple request" (no preflight).
+    if (endpoint.includes('router.qzeen.dev')) {
+      const sep = endpoint.includes('?') ? '&' : '?';
+      endpoint = `${endpoint}${sep}key=${encodeURIComponent(settings.apiKey)}`;
+      headers['Content-Type'] = 'text/plain';
+      delete headers['Authorization'];
+    }
+
     // Add OpenRouter specific headers for proper browser routing
     if (endpoint.includes('openrouter.ai')) {
       headers['HTTP-Referer'] = window.location.origin || 'https://bb99kra.github.io';
