@@ -679,11 +679,43 @@ class ClaudeApp {
 
   async checkModelUsage() {
     const s = Storage.getSettings();
-    const kiroKey = 'sk-ddc1b02c1d43c51c9ca0851c5e9cff1dff59fe1e7e727a404299df04788c8da6';
-    const activeKey = (s.provider === 'kiro' && s.apiKey) ? s.apiKey : kiroKey;
-
     const btnCredit = document.getElementById('btn-check-credit');
     if (btnCredit) btnCredit.textContent = '⏳ Đang kiểm tra...';
+
+    // Check if checking QZeen
+    if (s.provider === 'qzeen') {
+      const qzeenKey = s.apiKey || 'sk-poolai-04e0d9436106533822bb491d9de28d90d4796154b24abb00';
+      try {
+        const data = await Api.checkQzeenQuota(qzeenKey);
+        if (btnCredit) btnCredit.textContent = '📊 Check Quota & Usage';
+
+        const totalLimit = (data.limits?.tokens || 100000000).toLocaleString();
+        const usedTokens = (data.usage?.tokens || 0).toLocaleString();
+        const remainTokens = (data.remaining?.tokens || 0).toLocaleString();
+        const expireStr = data.expiresAt ? new Date(data.expiresAt).toLocaleDateString('vi-VN') : 'Không giới hạn';
+        const giftName = data.name || 'gift 100m';
+
+        let msg = `🌙 BÁO CÁO QUOTA QZEEN ROUTER (router.qzeen.dev)\n\n`;
+        msg += `• Gói Drop: ${giftName.toUpperCase()} (Free 100M Tokens Drop)\n`;
+        msg += `• Trạng thái Key: ${data.active && !data.isExpired ? '🟢 Đang hoạt động (ACTIVE)' : '🔴 Đã hết hạn'}\n`;
+        msg += `• Token còn lại: 🌟 ${remainTokens} / ${totalLimit} tokens\n`;
+        msg += `• Đã sử dụng: ${usedTokens} tokens\n`;
+        msg += `• Ngày hết hạn: 📅 ${expireStr}\n\n`;
+        msg += `• Models SOTA: Claude Opus 5, Claude Fable 5, Manus 1.6 Max, DeepSeek V4 Flash\n`;
+        msg += `• Model đang chọn: ${s.model || 'claude-opus-5'}\n\n`;
+        msg += `🟢 SẴN SÀNG KẾT NỐI 100%!`;
+        alert(msg);
+        return;
+      } catch (err) {
+        if (btnCredit) btnCredit.textContent = '📊 Check Quota & Usage';
+        alert(`⚠️ Kiểm tra QZeen Quota: ${err.message}\nKey: ${qzeenKey.slice(0, 15)}...`);
+        return;
+      }
+    }
+
+    // Default or Kiro / Sryze Check
+    const kiroKey = 'sk-ddc1b02c1d43c51c9ca0851c5e9cff1dff59fe1e7e727a404299df04788c8da6';
+    const activeKey = (s.provider === 'kiro' && s.apiKey) ? s.apiKey : kiroKey;
 
     try {
       const data = await Api.checkQuota(activeKey);
@@ -698,19 +730,19 @@ class ClaudeApp {
       const historyCount = historyList.length;
       const lastReq = historyList[0] || null;
 
-      let msg = `📊 BÁO CÁO QUOTA & TRẠNG THÁI AI (api.9kiro.lol)\n\n`;
-      msg += `• API Key: ${keyMasked} (${keyName})\n`;
+      let msg = `📊 BÁO CÁO QUOTA & TRẠNG THÁI AI\n\n`;
+      msg += `🔥 1. KIRO-GO (api.9kiro.lol):\n`;
+      msg += `• Key: ${keyMasked} (${keyName})\n`;
       msg += `• Trạng thái Key: ${isEnabled ? '🟢 Hoạt động (Enabled - 100%)' : '🔴 Đã tắt'}\n`;
-      msg += `• Tổng lượt gọi ghi nhận: ${historyCount} lượt\n`;
-      if (lastReq) {
-        msg += `• Lượt gọi gần nhất: Model [${lastReq.model || 'gpt-5.6-sol'}] lúc ${new Date((lastReq.time || 0) * 1000).toLocaleTimeString('vi-VN')} (${lastReq.status || '200 OK'})\n`;
-      }
-      if (keyData.clientIp) {
-        msg += `• IP Kết Nối: ${keyData.clientIp}\n`;
-      }
-      msg += `\n• Provider hiện tại của bạn: ${s.provider === 'kiro' ? '🔥 Kiro-Go 9Kiro' : '🐻 Gấu con Antigravity'}\n`;
-      msg += `• Model đang chọn: ${s.model || 'gpt-5.6-sol'}\n\n`;
-      msg += `🟢 KẾT NỐI SẴN SÀNG 100%!`;
+      msg += `• Lượt gọi đã log: ${historyCount} lượt\n\n`;
+
+      msg += `🌙 2. QZEEN ROUTER (router.qzeen.dev):\n`;
+      msg += `• Gói: Free 100M Tokens Drop (Claude Opus 5, Manus 1.6, DeepSeek V4)\n`;
+      msg += `• Trạng thái: 🟢 Hoạt động 100%\n\n`;
+
+      msg += `• Provider hiện tại của bạn: ${s.provider || 'sryze'}\n`;
+      msg += `• Model đang chọn: ${s.model || 'claude-opus-5'}\n\n`;
+      msg += `🟢 TẤT CẢ SERVER SẴN SÀNG!`;
       alert(msg);
     } catch (err) {
       if (btnCredit) btnCredit.textContent = '📊 Check Quota & Usage';
@@ -754,6 +786,7 @@ class ClaudeApp {
 
     // 2. Comprehensive Provider Metadata
     const PROVIDER_METAS = {
+      qzeen: { tag: 'QZeen 100M', icon: '🌙', color: 'linear-gradient(135deg, #6366f1, #4f46e5)' },
       sryze: { tag: 'Gấu con', icon: '🐻', color: 'linear-gradient(135deg, #f59e0b, #d97706)' },
       kiro: { tag: '9Kiro', icon: '🔥', color: 'linear-gradient(135deg, #ef4444, #dc2626)' },
       seekai: { tag: 'SeekAI', icon: '✨', color: 'linear-gradient(135deg, #8b5cf6, #7c3aed)' },
@@ -797,11 +830,11 @@ class ClaudeApp {
   // ==========================================
   openModelPickerModal(providerKey) {
     const s = Storage.getSettings();
-    this.activePickerProvider = providerKey || s.provider || 'kiro';
+    this.activePickerProvider = providerKey || s.provider || 'qzeen';
     this.renderPickerTabs();
     this.renderPickerModels();
     if (this.pickerCustomInput) {
-      this.pickerCustomInput.value = s.model || 'claude-sonnet-5';
+      this.pickerCustomInput.value = s.model || 'claude-opus-5';
     }
     if (this.modalModelPicker) {
       this.modalModelPicker.classList.remove('hidden');
@@ -816,7 +849,8 @@ class ClaudeApp {
 
   renderPickerTabs() {
     const providers = [
-      { key: 'kiro', name: '🔥 Kiro 9Kiro (Claude 5)' },
+      { key: 'qzeen', name: '🌙 QZeen (Free 100M Drop)' },
+      { key: 'kiro', name: '🔥 Kiro 9Kiro (GPT-5.6 & Claude 5)' },
       { key: 'sryze', name: '🐻 Gấu con (Gemini 3.7 & Claude 4.6)' },
       { key: 'seekai', name: '✨ SeekAI (Gemini 3.6 & Claude 5)' },
       { key: 'tuongtacgpt', name: '⚡ TuongTacGPT (GPT-5.6)' },

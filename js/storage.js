@@ -33,6 +33,24 @@ const PROVIDER_PRESETS = {
       { id: 'antigravity/gpt-oss-120b-medium', name: '🔮 GPT OSS 120B Medium' }
     ]
   },
+  qzeen: {
+    name: 'QZeen Router (Claude Opus 5, Manus 1.6, DeepSeek V4)',
+    apiType: 'openai',
+    apiBase: 'https://router.qzeen.dev/v1',
+    defaultKey: 'sk-poolai-04e0d9436106533822bb491d9de28d90d4796154b24abb00',
+    description: 'Pool QZeen Router Free 100M Tokens Drop (router.qzeen.dev - Check Quota Live)',
+    models: [
+      { id: 'claude-opus-5', name: '👑 Claude Opus 5 (Trí tuệ tối thượng)' },
+      { id: 'claude-fable-5', name: '🎭 Claude Fable 5 (Sáng tạo & Code)' },
+      { id: 'claude-opus-4.8', name: 'Claude Opus 4.8' },
+      { id: 'manus-1.6-max', name: '⚡ Manus 1.6 Max (Agent Flagship)' },
+      { id: 'manus-1.6-lite', name: '🚀 Manus 1.6 Lite (Siêu nhanh)' },
+      { id: 'deepseek-v4-flash', name: '✨ DeepSeek V4 Flash' },
+      { id: 'deepseek-v4-flash-vision-exp', name: '👁️ DeepSeek V4 Vision Exp' },
+      { id: 'qwen-3.8-flash', name: '💻 Qwen 3.8 Flash' },
+      { id: 'glm-5.3-flash', name: '🔥 GLM 5.3 Flash' }
+    ]
+  },
   kiro: {
     name: 'Kiro-Go 9Kiro (Claude Opus 5 & Sonnet 5)',
     apiType: 'openai',
@@ -334,7 +352,9 @@ const Storage = {
 
       // Migrate obsolete demo/old keys to latest active keys
       if (!parsed.apiKey || parsed.apiKey === 'sk-4d906e8b4ef3d9e0637ea43cd23a426e406c95cb78aa809a2d875fc3cc7ec03d' || parsed.apiKey === 'sk-76207326d30e461280fa138c20d75a89') {
-        if (parsed.provider === 'kiro') {
+        if (parsed.provider === 'qzeen') {
+          parsed.apiKey = 'sk-poolai-04e0d9436106533822bb491d9de28d90d4796154b24abb00';
+        } else if (parsed.provider === 'kiro') {
           parsed.apiKey = 'sk-ddc1b02c1d43c51c9ca0851c5e9cff1dff59fe1e7e727a404299df04788c8da6';
         } else {
           parsed.apiKey = 'sk-49c2bdff020c1db0-e61ac6-90b46654';
