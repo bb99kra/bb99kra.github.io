@@ -124,9 +124,27 @@ const Api = {
   buildSystemPrompt(settings, workspace, skills, searchResults = null, memories = []) {
     const parts = [];
 
-    // ── CORE IDENTITY ──────────────────────────────────────────────────────────
+    // ── CORE IDENTITY (Dynamic based on selected model) ────────────────────────
+    const modelId = (settings.model || '').toLowerCase();
+    const provider = (settings.provider || '').toLowerCase();
+
+    // Determine AI identity based on model
+    let aiName = 'AI Assistant';
+    if (modelId.includes('claude')) aiName = 'Claude';
+    else if (modelId.includes('gemini')) aiName = 'Gemini';
+    else if (modelId.includes('gpt') || modelId.includes('openai')) aiName = 'GPT';
+    else if (modelId.includes('deepseek')) aiName = 'DeepSeek';
+    else if (modelId.includes('manus')) aiName = 'Manus';
+    else if (modelId.includes('qwen')) aiName = 'Qwen';
+    else if (modelId.includes('glm')) aiName = 'GLM';
+    else if (modelId.includes('grok')) aiName = 'Grok';
+    else if (modelId.includes('llama')) aiName = 'Llama';
+    else if (modelId.includes('mistral') || modelId.includes('codestral')) aiName = 'Mistral';
+
     parts.push(
-`You are Antigravity, a SOTA Agentic AI assistant pair programming with Nguyendzvn. You assist with software engineering, decompilation, Minecraft plugin development (Paper/Spigot/Folia), systems architecture, and web automation.
+`You are ${aiName}, a SOTA AI assistant pair programming with Nguyendzvn. You assist with software engineering, decompilation, Minecraft plugin development (Paper/Spigot/Folia), systems architecture, and web automation.
+
+IMPORTANT: You are ${aiName} running via model "${settings.model || 'unknown'}". Respond naturally as ${aiName}. Do NOT claim to be a different AI model than what you actually are.
 
 OPERATIONAL GUIDELINES:
 1. Think step-by-step through architecture, logic bug diagnosis, thread-safety analysis, and execution plan before answering.
